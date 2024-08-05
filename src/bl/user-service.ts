@@ -37,7 +37,7 @@ export class UserService implements IUserService {
     }
 
     async add(entityRequest: IUserRequest, contextUser?: ITokenUser): Promise<IUserResponse> {
-        let user = new User().toEntity(entityRequest, contextUser);
+        let user = new User().toEntity(entityRequest, undefined, contextUser);
         user.passwordHash = await encrypt(entityRequest.password);
         user.status = UserStatus.Online;
 
@@ -49,7 +49,7 @@ export class UserService implements IUserService {
 
     async addMany(entitesRequest: IUserRequest[], contextUser: ITokenUser): Promise<IUserResponse[]> {
         return this.userRepository.addMany(entitesRequest.map<User>(acc => {
-            let user = new User().toEntity(acc, contextUser);
+            let user = new User().toEntity(acc, undefined, contextUser);
             user.id = randomUUID();
             return user;
         }))
@@ -64,21 +64,13 @@ export class UserService implements IUserService {
     }
 
     async update(id: string, entityRequest: IUserRequest, contextUser: ITokenUser): Promise<IUserResponse> {
-        let user = new User().toEntity(entityRequest);
-        user.modifiedAt = new Date();
-        user.modifiedById = contextUser.id;
-        user.modifiedBy = contextUser.name;
-        user.id = id;
+        let user = new User().toEntity(entityRequest, id, contextUser);
         return await this.userRepository.updateRecord(user);
     }
 
     async updateMany(entitesRequest: (IUserRequest & { id: string; })[], contextUser: ITokenUser): Promise<IUserResponse[]> {
         return this.userRepository.updateMany(entitesRequest.map<User>(acc => {
-            let user = new User().toEntity(acc, contextUser);
-            user.modifiedAt = new Date();
-            user.modifiedById = contextUser.id;
-            user.modifiedBy = contextUser.name;
-            user.id = acc.id;
+            let user = new User().toEntity(acc, acc.id, contextUser);
             return user;
         }))
     }

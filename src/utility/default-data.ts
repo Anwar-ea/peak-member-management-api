@@ -12,7 +12,6 @@ export const AddDefaultData = async (dataSource: DataSource) => {
     let roleRepo = dataSource.getRepository(Role)
     
     let accountCount = await accountRepo.count();
-    let userCount = await userRepo.count();
     let roleCount = await roleRepo.count();
 
     let account: Account = new Account().toEntity({
@@ -29,13 +28,16 @@ export const AddDefaultData = async (dataSource: DataSource) => {
         street: "N/A",
         longitude: 0,
         latitude: 1
-    },{name: "Admin", id: EmptyGuid, accountId:'', privileges: []});
+    }, undefined,{name: "Admin", id: EmptyGuid, accountId:'', privileges: []});
     account.id = randomUUID();
     let role: Role = new Role().toEntity(
-      { name: "Account Admin", code: "accountAdmin" },
+      { name: "Account Admin", code: "accountAdmin" }, undefined,
       { name: "Admin", id: EmptyGuid, accountId: "", privileges: [] }
     );
     role.id = randomUUID();
+    role.privileges = [];
+    role.accountId = undefined;
+    role.account = undefined;
     let user: User = new User().toEntity(
       {
         userName: "defaultAdmin",
@@ -43,34 +45,20 @@ export const AddDefaultData = async (dataSource: DataSource) => {
         firstName: "Admin",
         middleName: undefined,
         lastName: "User",
-        age: 0,
         dateOfBirth: new Date(),
-        phoneNo: account.phoneNo,
         password: "asdf@123",
-        address: account.address,
-        temporaryAddress: account.temporaryAddress,
-        country: account.country,
-        state: account.state,
-        city: account.city,
-        zipCode: account.zipCode,
-        street: account.street,
-        longitude: account.longitude,
-        latitude: account.latitude,
         roleId: role.id,
-      },
-      { name: "Admin", id: EmptyGuid, accountId: "", privileges: [] }
+      }, undefined,
+      { name: "Admin", id: EmptyGuid, accountId: EmptyGuid, privileges: [] }
     );
-    user.status = UserStatus.Online;
-    user.accountId = account.id,
-    user.account = account;
-    user.passwordHash  = await encrypt("asdf@123");
-    user.id = randomUUID();
-    
+
+    user.passwordHash = await encrypt("asdf@123");
+
+    if(!roleCount) await roleRepo.save(role);
     if(!accountCount){
         await accountRepo.save(account);
         await userRepo.save({...user,account: account});
     }
 
-    if(!roleCount) await roleRepo.save(role);
 
 }

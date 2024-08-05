@@ -1,0 +1,65 @@
+import { inject, injectable } from "tsyringe";
+import { IGoalService } from "./abstractions";
+import { IGoalRepository } from "../dal";
+import { IDataSourceResponse, IFetchRequest, IFilter, IGoalRequest, IGoalResponse, ITokenUser } from "../models";
+import { randomUUID } from "crypto";
+import { In } from "typeorm";
+import { Goal } from "../entities";
+
+@injectable()
+export class GoalService implements IGoalService {
+    constructor(@inject('GoalRepository') private readonly goalRepository: IGoalRepository) { }
+
+    async getOne(contextGoal: ITokenUser, filtersRequest: Array<IFilter<Goal, keyof Goal>>): Promise<IGoalResponse | null> {
+        return await this.goalRepository.getOne(filtersRequest)
+    }
+
+    async add(entityRequest: IGoalRequest, contextGoal?: ITokenUser): Promise<IGoalResponse> {
+        let goal = new Goal().toEntity(entityRequest, undefined, contextGoal);
+        let response  = await this.goalRepository.addRecord(goal);
+        if (response) return response;
+        else throw new Error(`Error adding ${entityRequest}`);
+    }
+
+    async addMany(entitesRequest: IGoalRequest[], contextGoal: ITokenUser): Promise<IGoalResponse[]> {
+        return this.goalRepository.addMany(entitesRequest.map<Goal>(acc => {
+            let goal = new Goal().toEntity(acc, undefined, contextGoal);
+            goal.id = randomUUID();
+            return goal;
+        }))
+    }
+
+    async get(contextGoal: ITokenUser, fetchRequest: IFetchRequest<Goal>): Promise<IDataSourceResponse<IGoalResponse>> {
+        return await this.goalRepository.get(fetchRequest, contextGoal.accountId);
+    }
+
+    async getById(id: string, contextGoal: ITokenUser): Promise<IGoalResponse | null> {
+        return await this.goalRepository.getById(id);
+    }
+
+    async update(id: string, entityRequest: IGoalRequest, contextGoal: ITokenUser): Promise<IGoalResponse> {
+        let goal = new Goal().toEntity(entityRequest, id, contextGoal);
+        return await this.goalRepository.updateRecord(goal);
+    }
+
+    async updateMany(entitesRequest: (IGoalRequest & { id: string; })[], contextGoal: ITokenUser): Promise<IGoalResponse[]> {
+        return this.goalRepository.updateMany(entitesRequest.map<Goal>(acc => {
+            let goal = new Goal().toEntity(acc, acc.id, contextGoal);
+            return goal;
+        }))
+    }
+
+    async delete(id: string, contextGoal: ITokenUser): Promise<void> {
+        let goal = await this.goalRepository.findOneById(id);
+        if(goal) await this.goalRepository.deleteEntity(goal);
+        else throw new Error(`Goal with id ${id} not found`);
+    }
+
+    async deleteMany(ids: string[], contextGoal: ITokenUser): Promise<void> {
+        let goals = await this.goalRepository.where({where:{id: In(ids)}});
+        
+        if(goals.length !== ids.length) throw new Error(`Some goal with provided ids not found`);
+
+        await this.goalRepository.deleteMany(goals);
+    }
+}

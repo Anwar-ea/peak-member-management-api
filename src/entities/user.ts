@@ -1,8 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, RelationId } from "typeorm";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { IUserRequest, IUserResponse, UserStatus } from "../models";
 import { Role } from "./role";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
+import { randomUUID } from "crypto";
+import { Account } from "./account";
 
 @Entity('User')
 export class User extends AccountEntityBase {
@@ -25,50 +27,17 @@ export class User extends AccountEntityBase {
     @Column({ name: 'LastName', type: 'nvarchar' })
     lastName!: string;
 
-    @Column({ name: 'Age', type: 'int' })
-    age!: number;
-
     @Column({ name: 'DateOfBirth', type: 'datetime' })
     dateOfBirth!: Date;
-
-    @Column({ name: 'PhoneNo', type: 'nvarchar' })
-    phoneNo!: string;
-
-    @Column({ name: 'Address', type: 'nvarchar' })
-    address!: string;
-
-    @Column({ name: 'TemporaryAddress', type: 'nvarchar', nullable: true })
-    temporaryAddress?: string;
-
-    @Column({ name: 'Country', type: 'nvarchar' })
-    country!: string;
-
-    @Column({ name: 'State', type: 'nvarchar' })
-    state!: string;
-
-    @Column({ name: 'City', type: 'nvarchar' })
-    city!: string;
-
-    @Column({ name: 'ZipCode', type: 'int', nullable: true })
-    zipCode?: number;
-
-    @Column({ name: 'Street', type: 'nvarchar' })
-    street!: string;
-
-    @Column({ name: 'Longitude', type: 'decimal', nullable: true })
-    longitude?: number;
-
-    @Column({ name: 'Latitude', type: 'decimal', nullable: true })
-    latitude?: number;
 
     @Column({ name: 'Status', type: 'int', default: UserStatus.Offline })
     status!: UserStatus;
 
-    @Column({ name: 'LastLogin', type: 'datetime' })
-    lastLogin!: Date;
+    @Column({ name: 'LastLogin', type: 'datetime', nullable: true})
+    lastLogin?: Date;
 
-    @Column({ name: 'LastOnline', type: 'datetime' })
-    lastOnline!: Date;
+    @Column({ name: 'LastOnline', type: 'datetime', nullable: true })
+    lastOnline?: Date;
 
     @RelationId((user: User) => user.role)
     roleId!: string;
@@ -85,18 +54,7 @@ export class User extends AccountEntityBase {
             firstName: entity.firstName,
             middleName: entity.middleName,
             lastName: entity.lastName,
-            age: entity.age,
             dateOfBirth: entity.dateOfBirth,
-            phoneNo: entity.phoneNo,
-            address: entity.address,
-            temporaryAddress: entity.temporaryAddress,
-            country: entity.country,
-            state: entity.state,
-            city: entity.city,
-            zipCode: entity.zipCode,
-            street: entity.street,
-            longitude: entity.longitude,
-            latitude: entity.latitude,
             status: entity.status,
             lastLogin: entity.lastLogin,
             lastOnline: entity.lastOnline,
@@ -105,33 +63,39 @@ export class User extends AccountEntityBase {
     }
 
     
-    toEntity = (requestEntity: IUserRequest, contextUser?: ITokenUser): User => {
+    toEntity = (requestEntity: IUserRequest, id?: string, contextUser?: ITokenUser): User => {
         this.userName = requestEntity.userName;
         this.email = requestEntity.email;
         this.firstName = requestEntity.firstName;
         this.middleName = requestEntity.middleName;
         this.lastName = requestEntity.lastName;
-        this.age = requestEntity.age;
         this.dateOfBirth = requestEntity.dateOfBirth;
-        this.phoneNo = requestEntity.phoneNo;
-        this.address = requestEntity.address;
-        this.temporaryAddress = requestEntity.temporaryAddress;
-        this.country = requestEntity.country;
-        this.state = requestEntity.state;
-        this.city = requestEntity.city;
-        this.zipCode = requestEntity.zipCode;
-        this.street = requestEntity.street;
         this.roleId = requestEntity.roleId;
 
-        if(contextUser){
+        if(contextUser && !id){
             this.accountId = contextUser.accountId;
             this.createdBy = contextUser.name;
             this.createdAt = new Date();
+            let account = new Account();
+            account.id = contextUser.accountId;
+            this.account = account;
             this.createdById = contextUser.id;
             this.active = true;
             this.deleted = false;
-            this.lastLogin = new Date();
-            this.lastOnline = new Date();
+            this.id = randomUUID();
+        }
+
+        if(id && contextUser){
+            this.accountId = contextUser.accountId;
+            let account = new Account();
+            account.id = contextUser.accountId;
+            this.account = account;
+            this.id = id;
+            this.modifiedBy = contextUser.name;
+            this.modifiedAt = new Date();
+            this.modifiedById = contextUser.id;
+            this.active = true;
+            this.deleted = false;
         }
 
         return this;

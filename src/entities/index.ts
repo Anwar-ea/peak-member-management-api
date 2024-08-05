@@ -5,4 +5,7 @@ export * from './privilege';
 export * from './module';
 export * from './base-entities/account-entity-base';
 export * from './base-entities/entity-base';
+export * from './goal';
+export * from './milestone';
+export * from './to-do';
  

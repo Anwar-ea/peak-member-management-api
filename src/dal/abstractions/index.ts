@@ -4,3 +4,5 @@ export * from './role-repository';
 export * from './privilege-repository';
 export * from './module-repository';
 export * from './repository-base';
+export * from './goal-repository';
+export * from './todo-repository';

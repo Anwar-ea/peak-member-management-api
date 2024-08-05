@@ -17,7 +17,7 @@ export class RoleService implements IRoleService {
     }
 
     async add(entityRequest: IRoleRequest, contextUser: ITokenUser): Promise<IRoleResponse> {
-        let role = new Role().toEntity(entityRequest, contextUser);
+        let role = new Role().toEntity(entityRequest, undefined, contextUser);
         role.id = randomUUID();
         let response  = await this.roleRepository.addRecord(role);
         if (response) return response;
@@ -26,7 +26,7 @@ export class RoleService implements IRoleService {
 
     async addMany(entitesRequest: IRoleRequest[], contextUser: ITokenUser): Promise<IRoleResponse[]> {
         return this.roleRepository.addMany(entitesRequest.map<Role>(acc => {
-            let role = new Role().toEntity(acc, contextUser);
+            let role = new Role().toEntity(acc, undefined, contextUser);
             role.id = randomUUID();
             return role;
         }))
@@ -42,21 +42,13 @@ export class RoleService implements IRoleService {
     }
 
     async update(id: string, entityRequest: IRoleRequest, contextUser: ITokenUser): Promise<IRoleResponse> {
-        let role = new Role().toEntity(entityRequest, contextUser);
-        role.modifiedAt = new Date();
-        role.modifiedById = contextUser.id;
-        role.modifiedBy = contextUser.name;
-        role.id = id;
+        let role = new Role().toEntity(entityRequest, id, contextUser);
         return await this.roleRepository.updateRecord(role);
     }
 
     async updateMany(entitesRequest: (IRoleRequest & { id: string; })[], contextUser: ITokenUser): Promise<IRoleResponse[]> {
         return this.roleRepository.updateMany(entitesRequest.map<Role>(acc => {
-            let role = new Role().toEntity(acc, contextUser);
-            role.modifiedAt = new Date();
-            role.modifiedById = contextUser.id;
-            role.modifiedBy = contextUser.name;
-            role.id = acc.id;
+            let role = new Role().toEntity(acc, acc.id, contextUser);
             return role;
         }))
     }

@@ -2,6 +2,7 @@ import { Column, Entity } from "typeorm";
 import { EntityBase } from "./base-entities/entity-base";
 import { IAccountRequest, IAccountResponse } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
+import { randomUUID } from "crypto";
 
 @Entity('Account')
 export class Account extends EntityBase {
@@ -64,7 +65,7 @@ export class Account extends EntityBase {
         }
     }
 
-    toEntity = (requestEntity: IAccountRequest, contextUser?: ITokenUser): Account => {
+    toEntity = (requestEntity: IAccountRequest, id?: string, contextUser?: ITokenUser): Account => {
         this.name = requestEntity.name;
         this.code = requestEntity.code;
         this.phoneNo = requestEntity.phoneNo;
@@ -78,10 +79,20 @@ export class Account extends EntityBase {
         this.street = requestEntity.street;
         this.longitude = requestEntity.longitude;
         this.latitude = requestEntity.latitude;
-        if(contextUser){
+        if(contextUser && !id){
             this.createdBy = contextUser.name;
             this.createdAt = new Date();
             this.createdById = contextUser.id;
+            this.active = true;
+            this.deleted = false;
+            this.id = randomUUID();
+        }
+
+        if(id && contextUser){
+            this.id = id;
+            this.modifiedBy = contextUser.name;
+            this.modifiedAt = new Date();
+            this.modifiedById = contextUser.id;
             this.active = true;
             this.deleted = false;
         }

@@ -14,17 +14,6 @@ export interface IUserRequest {
     firstName: string;
     middleName?: string;
     lastName: string;
-    age: number;
     dateOfBirth: Date;
-    phoneNo: string;
-    address: string;
-    temporaryAddress?: string;
-    country: string;
-    state: string;
-    city: string;
-    zipCode?: number;
-    street: string;
-    longitude?: number;
-    latitude?: number;
     roleId: string;
 }

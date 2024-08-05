@@ -10,7 +10,7 @@ export abstract class AccountEntityBase extends EntityBase {
     accountId!: string;
 
     
-    @ManyToOne(() => Account)
+    @ManyToOne(() => Account, {nullable: false})
     @JoinColumn({name: 'AccountId', referencedColumnName: 'id'})
     account!: Account
 

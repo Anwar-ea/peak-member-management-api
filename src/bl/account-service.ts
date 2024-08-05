@@ -23,19 +23,8 @@ export class AccountService implements IAccountService {
         if(entityRequest.defaultUser){
             let userRequest: IUserRequest = {
                 ...entityRequest.defaultUser,
-                age: 0,
                 dateOfBirth: new Date(),
-                phoneNo: account.phoneNo,
-                longitude: account.longitude,
-                latitude: account.latitude,
                 roleId: '0CE02D11-A3E6-444B-BD89-B4C5A75ECD05',
-                address: account.address,
-                temporaryAddress: account.temporaryAddress,
-                country: account.country,
-                state: account.state,
-                city: account.city,
-                zipCode: account.zipCode,
-                street: account.street                
             }
             let user = new User().toEntity(userRequest);
             user.createdAt = new Date();
@@ -56,7 +45,7 @@ export class AccountService implements IAccountService {
     }
 
     async add(entityRequest: IAccountRequest, contextUser?: ITokenUser): Promise<IAccountResponse> {
-        let account = new Account().toEntity(entityRequest, contextUser);
+        let account = new Account().toEntity(entityRequest, undefined, contextUser);
         account.id = randomUUID();
         let response  = await this.accountRepository.addRecord(account);
         if (response) return response;
@@ -65,7 +54,7 @@ export class AccountService implements IAccountService {
 
     async addMany(entitesRequest: IAccountRequest[], contextUser: ITokenUser): Promise<IAccountResponse[]> {
         return this.accountRepository.addMany(entitesRequest.map<Account>(acc => {
-            let account = new Account().toEntity(acc, contextUser);
+            let account = new Account().toEntity(acc, undefined, contextUser);
             account.id = randomUUID();
             return account;
         }))
@@ -90,7 +79,7 @@ export class AccountService implements IAccountService {
 
     async updateMany(entitesRequest: (IAccountRequest & { id: string; })[], contextUser: ITokenUser): Promise<IAccountResponse[]> {
         return this.accountRepository.updateMany(entitesRequest.map<Account>(acc => {
-            let account = new Account().toEntity(acc, contextUser);
+            let account = new Account().toEntity(acc, acc.id, contextUser);
             account.modifiedAt = new Date();
             account.modifiedById = contextUser.id;
             account.modifiedBy = contextUser.name;

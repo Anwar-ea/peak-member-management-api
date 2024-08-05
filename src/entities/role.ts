@@ -5,6 +5,7 @@ import { IRoleRequest, IRoleResponse } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { EntityBase } from "./base-entities/entity-base";
 import { Account } from "./account";
+import { randomUUID } from "crypto";
 
 @Entity('Role')
 export class Role extends EntityBase {
@@ -33,16 +34,35 @@ export class Role extends EntityBase {
         }    
     }
 
-    toEntity = (entityRequest: IRoleRequest, contextUser?: ITokenUser): Role => {
+    toEntity = (entityRequest: IRoleRequest, id?: string, contextUser?: ITokenUser): Role => {
         this.name = entityRequest.name;
         this.code = entityRequest.code;
-        if(contextUser){
+        if(contextUser && !id){
             this.createdBy = contextUser.name;
             this.createdAt = new Date();
+            this.accountId  = contextUser.accountId;
+            let account = new Account();
+            account.id = contextUser.accountId;
+            this.account = account;
             this.createdById = contextUser.id;
             this.active = true;
             this.deleted = false;
+            this.id = randomUUID();
         }
+        
+        if(id && contextUser){
+            this.accountId = contextUser.accountId;
+            let account = new Account();
+            account.id = contextUser.accountId;
+            this.account = account;
+            this.id = id;
+            this.modifiedBy = contextUser.name;
+            this.modifiedAt = new Date();
+            this.modifiedById = contextUser.id;
+            this.active = true;
+            this.deleted = false;
+        }
+
         return this;
     }
 

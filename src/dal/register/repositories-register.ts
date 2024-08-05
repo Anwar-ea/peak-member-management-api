@@ -4,11 +4,15 @@ import { ModuleRepository } from "../module-repository";
 import { PrivilegeRepository } from "../privilage-repository";
 import { RoleRepository } from "../role-repository";
 import { UserRepository } from "../user-repository";
+import { ToDoRepository } from "../todo-repository";
+import { GoalRepository } from "../goal-repository";
 
 export const registerRepositories = (container: DependencyContainer) => {
     container.register<AccountRepository>('AccountRepository', AccountRepository);
     container.register<UserRepository>('UserRepository', UserRepository);
     container.register<ModuleRepository>('ModuleRepository', ModuleRepository);
     container.register<PrivilegeRepository>('PrivilegeRepository', PrivilegeRepository);
-    container.register<RoleRepository>('RoleRepository', RoleRepository, );
+    container.register<RoleRepository>('RoleRepository', RoleRepository );
+    container.register<ToDoRepository>('ToDoRepository', ToDoRepository );
+    container.register<GoalRepository>('GoalRepository', GoalRepository );
 }

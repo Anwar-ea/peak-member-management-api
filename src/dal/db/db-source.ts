@@ -1,6 +1,6 @@
 import { DataSource, Equal } from "typeorm";
 import msnodesqlv8 from 'mssql'
-import { Account, Privilege, Role, User, Module } from "../../entities";
+import { Account, Privilege, Role, User, Module, Goal, Milestone, ToDo } from "../../entities";
 import { config } from "dotenv";
 import { AddDefaultData } from "../../utility/default-data";
 
@@ -12,7 +12,7 @@ export const dataSource = new DataSource({
     username: process.env.DB_userId ?? "",
     password: process.env.DB_Password ?? "",
     migrations: [],
-    entities: [Account, User,  Role, Privilege, Module],
+    entities: [Account, User,  Role, Privilege, Module, Goal, Milestone, ToDo],
     synchronize: true,
     options: {
         encrypt: true,
