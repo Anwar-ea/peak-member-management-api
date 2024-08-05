@@ -1,0 +1,6 @@
+export * from './account-repository';
+export * from './user-repository';
+export * from './role-repository';
+export * from './privilege-repository';
+export * from './module-repository';
+export * from './repository-base';

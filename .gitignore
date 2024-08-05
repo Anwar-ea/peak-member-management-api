@@ -1,0 +1,8 @@
+# node_modules ignored as it packs dependencies
+node_modules
+
+# build files and folders to ignore
+dist
+
+# environment files to ignore
+.env
