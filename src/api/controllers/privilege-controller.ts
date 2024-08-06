@@ -14,7 +14,7 @@ export class PrivilegeController extends ControllerBase {
         this.middleware = authorize  as preHandlerHookHandler;
         this.endPoints = [
             {
-                method: 'GET',
+                method: 'POST',
                 path: CommonRoutes.getAll,
                 handler: this.getAll as RouteHandlerMethod
             },

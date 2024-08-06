@@ -20,7 +20,7 @@ export class ToDo extends AccountEntityBase {
     @RelationId((toDo: ToDo) => toDo.user)
     userId!: string;
 
-    @ManyToOne(() => User, (user) => user, {nullable: false})
+    @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})
     @JoinColumn({ name: 'UserId', referencedColumnName: 'id' })
     user!: User
     

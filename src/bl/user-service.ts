@@ -56,7 +56,7 @@ export class UserService implements IUserService {
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<User>): Promise<IDataSourceResponse<IUserResponse>> {
-        return await this.userRepository.get(fetchRequest, contextUser.accountId);
+        return await this.userRepository.get(fetchRequest);
     }
 
     async getById(id: string, contextUser: ITokenUser): Promise<IUserResponse | null> {

@@ -3,6 +3,7 @@ import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { Goal } from "./goal";
 import { IMilestoneRequest, IMilestoneResponse, ITokenUser } from "../models";
 import { Account } from "./account";
+import { randomUUID } from "crypto";
 
 @Entity('Milestone')
 export class Milestone extends AccountEntityBase {
@@ -47,6 +48,7 @@ export class Milestone extends AccountEntityBase {
             account.id = contextUser.accountId;
             this.account = account;
             this.deleted = false;
+            this.id = randomUUID();
         }
 
         if(entityRequest.goalId) {

@@ -28,12 +28,12 @@ export class Goal extends AccountEntityBase {
     @RelationId((goal: Goal) => goal.accountable)
     accountableId!: string;
 
-    @ManyToOne(() => User, (user) => user, {nullable: false})
+    @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})
     @JoinColumn({ name: 'AccountableId', referencedColumnName: 'id' })
     accountable!: User
 
         
-    @OneToMany(() => Milestone, (milestone) => milestone.goal, {cascade: true, onDelete: 'CASCADE'})
+    @OneToMany(() => Milestone, (milestone) => milestone.goal, {cascade: true, onDelete: 'CASCADE', eager: true})
     milestones!: Array<Milestone>;
 
     toResponse(entity: Goal): IGoalResponse {
@@ -72,7 +72,7 @@ export class Goal extends AccountEntityBase {
             this.deleted = false;
             this.id = randomUUID();
         }
-
+        
         if(id && contextUser){
             this.id = id;
             this.modifiedBy = contextUser.name;
@@ -85,6 +85,11 @@ export class Goal extends AccountEntityBase {
             this.account = account;
             this.deleted = false;
         }
+
+        this.milestones = entityRequest.milestones.map(milestone => {
+            let ms = new Milestone().toEntity({...milestone, goalId: this.id}, contextUser);
+            return ms;
+        });
 
         return this;
     }

@@ -30,7 +30,7 @@ export class ToDoService implements IToDoService {
     }
 
     async get(contextToDo: ITokenUser, fetchRequest: IFetchRequest<ToDo>): Promise<IDataSourceResponse<IToDoResponse>> {
-        return await this.toDoRepository.get(fetchRequest, contextToDo.accountId);
+        return await this.toDoRepository.get(fetchRequest);
     }
 
     async getById(id: string, contextToDo: ITokenUser): Promise<IToDoResponse | null> {

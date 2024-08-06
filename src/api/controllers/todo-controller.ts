@@ -20,7 +20,7 @@ export class ToDoController extends ControllerBase {
                 handler: this.add as RouteHandlerMethod
             },
             {
-                method: 'GET',
+                method: 'POST',
                 path: CommonRoutes.getAll,
                 handler: this.getAll as RouteHandlerMethod
             },

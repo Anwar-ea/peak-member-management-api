@@ -1,5 +1,5 @@
 import { FindOneOptions } from "typeorm";
-import { Goal } from "../entities";
+import { Goal, Milestone } from "../entities";
 import { Actions, IDataSourceResponse, IFetchRequest, IFilter, IGoalResponse } from "../models";
 import { IGoalRepository } from "./abstractions";
 import { GenericRepository } from "./generics/repository";
@@ -27,7 +27,11 @@ export class GoalRepository extends GenericRepository<Goal, IGoalResponse> imple
 
     updateMany = async (entites: Array<Goal>): Promise<Array<IGoalResponse>> => await super.invokeDbOperationsRangeWithResponse(entites, Actions.Update);
 
-    deleteEntity = async (entity: Goal): Promise<void> => { await super.invokeDbOperationsWithResponse(entity, Actions.Delete); }
+    deleteEntity = async (entity: Goal): Promise<void> => {
+        const milestoneRepository = dataSource.getRepository(Milestone);
+        await milestoneRepository.delete({goal: {id:entity.id}}) 
+        await super.invokeDbOperationsWithResponse(entity, Actions.Delete); 
+    }
 
     deleteMany = async (entites: Array<Goal>): Promise<void> => { await super.invokeDbOperationsRangeWithResponse(entites, Actions.Delete); }
 

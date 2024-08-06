@@ -13,10 +13,10 @@ export const buildQuery = <T extends AccountEntityBase | EntityBase>(fetchReques
             sortOptions = { ...sortOptions, [sortRequest.field]: sortRequest.direction === SortOrder.Ascending ? "asc" : "desc" }
         }
     }
-
+    
     query.where = queryOptionsMapper(fetchRequest.queryOptionsRequest?.filtersRequest ?? [], getOnlyActive, dontGetDeleted, accountId);
     query.order = sortOptions;
-
+    query.relations = fetchRequest.queryOptionsRequest?.includes ?? [];
     if (pagedRequest) {
         query.skip = (pagedRequest.pageNo - 1) * pagedRequest.pageSize;
         query.take = pagedRequest.pageSize;

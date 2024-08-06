@@ -30,7 +30,8 @@ export class GoalService implements IGoalService {
     }
 
     async get(contextGoal: ITokenUser, fetchRequest: IFetchRequest<Goal>): Promise<IDataSourceResponse<IGoalResponse>> {
-        return await this.goalRepository.get(fetchRequest, contextGoal.accountId);
+        // fetchRequest.queryOptionsRequest = fetchRequest.queryOptionsRequest ? {...fetchRequest.queryOptionsRequest, includes:['User', 'MileStone']} :{includes:['User', 'MileStone']};
+        return await this.goalRepository.get(fetchRequest);
     }
 
     async getById(id: string, contextGoal: ITokenUser): Promise<IGoalResponse | null> {
