@@ -1,8 +1,11 @@
 # node_modules ignored as it packs dependencies
 node_modules
 
+package-lock.json
+
 # build files and folders to ignore
 dist
 
 # environment files to ignore
 .env
+

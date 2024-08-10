@@ -5,9 +5,10 @@ import { Role } from "./role";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { randomUUID } from "crypto";
 import { Account } from "./account";
+import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('User')
-export class User extends AccountEntityBase {
+export class User extends AccountEntityBase implements IToResponseBase<User, IUserResponse> {
 
     @Column({ name: 'UserName', unique: true, type: 'nvarchar' })
     userName!: string;

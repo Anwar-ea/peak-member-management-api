@@ -3,9 +3,10 @@ import { EntityBase } from "./base-entities/entity-base";
 import { Module } from "./module";
 import { Role } from "./role";
 import { IPrivilegeResponse } from "../models";
+import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('Privilage')
-export class Privilege extends EntityBase {
+export class Privilege extends EntityBase implements IToResponseBase<Privilege, IPrivilegeResponse> {
 
     @Column({name: 'Name', type: 'nvarchar', unique: true})
     name!: string;

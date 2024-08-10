@@ -3,9 +3,10 @@ import { EntityBase } from "./base-entities/entity-base";
 import { IAccountRequest, IAccountResponse } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { randomUUID } from "crypto";
+import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('Account')
-export class Account extends EntityBase {
+export class Account extends EntityBase implements IToResponseBase<Account, IAccountResponse> {
 
     @Column({ name: 'Name', type: 'nvarchar', unique: true })
     name!: string;

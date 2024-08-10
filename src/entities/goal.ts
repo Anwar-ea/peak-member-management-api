@@ -6,9 +6,10 @@ import { Milestone } from "./milestone";
 import { IGoalResponse } from "../models/inerfaces/response/goal-response";
 import { Account } from "./account";
 import { randomUUID } from "crypto";
+import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('Goal')
-export class Goal extends AccountEntityBase {
+export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGoalResponse> {
     
     @Column({name: 'Title', type: 'nvarchar'})
     title!: string;

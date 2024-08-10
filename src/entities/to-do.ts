@@ -4,9 +4,10 @@ import { User } from "./user";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { Account } from "./account";
 import { randomUUID } from "crypto";
+import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('ToDo')
-export class ToDo extends AccountEntityBase {
+export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, IToDoResponse> {
     
     @Column({name: 'Todo', type: 'nvarchar'})
     todo!: string;
@@ -16,6 +17,9 @@ export class ToDo extends AccountEntityBase {
 
     @Column({name: 'DueDate', type: 'datetime'})
     dueDate!: Date;
+
+    @Column({name: 'Completed', type: 'bit'})
+    completed!: boolean;
 
     @RelationId((toDo: ToDo) => toDo.user)
     userId!: string;
@@ -29,6 +33,7 @@ export class ToDo extends AccountEntityBase {
             ...super.toAccountResponseBase(entity),
             todo: entity.todo,
             details: entity.details,
+            completed: entity.completed,
             dueDate: entity.dueDate,
             userId: entity.userId,
             user: entity.user.toResponse(entity.user)
@@ -48,6 +53,7 @@ export class ToDo extends AccountEntityBase {
             this.createdAt = new Date();
             this.createdById = contextUser.id;
             this.active = true;
+            this.completed = false;
             this.accountId = contextUser.accountId;
             let account = new Account();
             account.id = contextUser.accountId;

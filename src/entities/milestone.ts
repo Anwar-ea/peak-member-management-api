@@ -4,9 +4,10 @@ import { Goal } from "./goal";
 import { IMilestoneRequest, IMilestoneResponse, ITokenUser } from "../models";
 import { Account } from "./account";
 import { randomUUID } from "crypto";
+import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('Milestone')
-export class Milestone extends AccountEntityBase {
+export class Milestone extends AccountEntityBase implements IToResponseBase<Milestone, IMilestoneResponse>  {
     @Column({name: 'Details', type: 'nvarchar'})
     details!: string;
 
@@ -23,7 +24,7 @@ export class Milestone extends AccountEntityBase {
     @JoinColumn({name: 'GoalId', referencedColumnName: 'id'})
     goal!: Goal;
     
-    toResponse(milestone: Milestone): IMilestoneResponse{
+    toResponse(milestone: Milestone): IMilestoneResponse {
         return {
             ...super.toAccountResponseBase(milestone),
             details: milestone.details,

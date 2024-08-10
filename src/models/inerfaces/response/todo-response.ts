@@ -5,6 +5,7 @@ export interface IToDoResponse extends IAccountResponseBase {
     todo: string;
     details: string;
     userId: string;
+    completed: boolean;
     dueDate: Date;
     user?: IUserResponse
 }

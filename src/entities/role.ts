@@ -6,9 +6,10 @@ import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { EntityBase } from "./base-entities/entity-base";
 import { Account } from "./account";
 import { randomUUID } from "crypto";
+import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('Role')
-export class Role extends EntityBase {
+export class Role extends EntityBase implements IToResponseBase<Role, IRoleResponse> {
     @Column({name: 'Name', nullable: false, type: 'nvarchar'})
     name!: string;
 

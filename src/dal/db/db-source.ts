@@ -11,6 +11,7 @@ export const dataSource = new DataSource({
     database: process.env.DB_DataBase ?? "",
     username: process.env.DB_userId ?? "",
     password: process.env.DB_Password ?? "",
+    port: process.env.DB_Port ? parseInt(process.env.DB_Port) : 1433,
     migrations: [],
     entities: [Account, User,  Role, Privilege, Module, Goal, Milestone, ToDo],
     synchronize: true,
