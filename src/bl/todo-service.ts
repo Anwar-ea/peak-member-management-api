@@ -5,6 +5,7 @@ import { IDataSourceResponse, IFetchRequest, IFilter, IToDoRequest, IToDoRespons
 import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { ToDo } from "../entities";
+import { assignIn } from "lodash";
 
 @injectable()
 export class ToDoService implements IToDoService {
@@ -40,6 +41,15 @@ export class ToDoService implements IToDoService {
     async update(id: string, entityRequest: IToDoRequest, contextToDo: ITokenUser): Promise<IToDoResponse> {
         let toDo = new ToDo().toEntity(entityRequest, id, contextToDo);
         return await this.toDoRepository.updateRecord(toDo);
+    }
+    
+    async partialUpdate(id: string, partialEntity: Partial<IToDoRequest>, contextUser: ITokenUser): Promise<IToDoResponse> {
+        let entity: Partial<ToDo> = {
+            modifiedAt: new Date(),
+            modifiedBy: contextUser.name,
+            modifiedById: contextUser.id
+        }
+        return await this.toDoRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
 
     async updateMany(entitesRequest: (IToDoRequest & { id: string; })[], contextToDo: ITokenUser): Promise<IToDoResponse[]> {

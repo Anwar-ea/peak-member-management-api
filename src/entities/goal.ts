@@ -7,6 +7,7 @@ import { IGoalResponse } from "../models/inerfaces/response/goal-response";
 import { Account } from "./account";
 import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
+import { Vision } from "./vision";
 
 @Entity('Goal')
 export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGoalResponse> {
@@ -33,7 +34,14 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     @JoinColumn({ name: 'AccountableId', referencedColumnName: 'id' })
     accountable!: User
 
-        
+    
+    @RelationId((goal: Goal) => goal.vision)
+    visionId?: string;
+
+    @ManyToOne(() => Vision, (vision) => vision, {nullable: true, eager: true})
+    @JoinColumn({ name: 'VisionId', referencedColumnName: 'id' })
+    vision?: Vision
+    
     @OneToMany(() => Milestone, (milestone) => milestone.goal, {cascade: true, onDelete: 'CASCADE', eager: true})
     milestones!: Array<Milestone>;
 

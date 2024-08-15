@@ -28,6 +28,9 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     @Column({ name: 'LastName', type: 'nvarchar' })
     lastName!: string;
 
+    @Column({ name: 'PictureUrl', type: 'nvarchar', nullable: true })
+    pictureUrl?: string;
+
     @Column({ name: 'DateOfBirth', type: 'datetime' })
     dateOfBirth!: Date;
 
@@ -55,6 +58,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             firstName: entity.firstName,
             middleName: entity.middleName,
             lastName: entity.lastName,
+            pictureUrl: entity.pictureUrl,
             dateOfBirth: entity.dateOfBirth,
             status: entity.status,
             lastLogin: entity.lastLogin,
@@ -72,6 +76,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
         this.lastName = requestEntity.lastName;
         this.dateOfBirth = requestEntity.dateOfBirth;
         this.roleId = requestEntity.roleId;
+        this.pictureUrl = requestEntity.pictureUrl;
 
         if(contextUser && !id){
             this.accountId = contextUser.accountId;

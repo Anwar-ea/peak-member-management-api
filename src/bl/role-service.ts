@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { Role } from "../entities";
 import { log } from "console";
+import { assignIn } from "lodash";
 
 @injectable()
 export class RoleService implements IRoleService {
@@ -44,6 +45,15 @@ export class RoleService implements IRoleService {
     async update(id: string, entityRequest: IRoleRequest, contextUser: ITokenUser): Promise<IRoleResponse> {
         let role = new Role().toEntity(entityRequest, id, contextUser);
         return await this.roleRepository.updateRecord(role);
+    }
+
+    async partialUpdate(id: string, partialEntity: Partial<IRoleRequest>, contextUser: ITokenUser): Promise<IRoleResponse> {
+        let entity: Partial<Role> = {
+            modifiedAt: new Date(),
+            modifiedBy: contextUser.name,
+            modifiedById: contextUser.id
+        }
+        return await this.roleRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
 
     async updateMany(entitesRequest: (IRoleRequest & { id: string; })[], contextUser: ITokenUser): Promise<IRoleResponse[]> {

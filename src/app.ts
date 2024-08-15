@@ -7,21 +7,24 @@ import { fastify } from "fastify";
 import { fastifyRegisters } from "./utility";
 import { ExtendedRequest } from "./models/inerfaces/extended-Request";
 import { log, error } from "console";
+import fastifymultipart from "@fastify/multipart";
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8060;
 
 console.log("hello world");
 
 const app = fastify({ logger: true });
+app.register(fastifymultipart);
 initializeSocket(app.server);
 fastifyRegisters(app);
 
 // Create a standard HTTP server
 // const httpServer = createServer(app.server);
 
-app.get;
 
-app.get("/throw", (req, res) => {
+app.post("/throw", async (req, res) => {
   let request = req as ExtendedRequest;
+  let data = await req.file()
+  let file = data ? data.file : undefined;
   log(request.user);
   throw new Error("test error");
 });

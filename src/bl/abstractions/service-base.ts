@@ -11,4 +11,5 @@ export interface IServiceBase<TRequest, TResponse, TQuery = TRequest> {
     updateMany(entitesRequest: Array<TRequest & {id: string}>, contextUser: ITokenUser): Promise<Array<TResponse>>;
     delete(id: string, contextUser: ITokenUser): Promise<void>;
     deleteMany(ids: Array<string>, contextUser: ITokenUser): Promise<void>;
+    partialUpdate(id: string, partialEntity: Partial<TRequest>,contextUser: ITokenUser): Promise<TResponse>;
 }

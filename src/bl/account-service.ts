@@ -7,10 +7,13 @@ import { Account, User } from "../entities";
 import { randomUUID } from "crypto";
 import { EmptyGuid } from "../constants/guid";
 import { In } from "typeorm";
+import { assignIn } from "lodash";
+
 
 @injectable()
 export class AccountService implements IAccountService {
     constructor(@inject('AccountRepository') private readonly accountRepository: IAccountRepository, @inject('UserRepository') private readonly userRepository: IUserRepository){}
+ 
 
     async addNewAccount(entityRequest: IAccountRequest): Promise<IAccountResponse> {
         let account = new Account().toEntity(entityRequest);
@@ -75,6 +78,17 @@ export class AccountService implements IAccountService {
         account.modifiedBy = contextUser.name;
         account.id = id;
         return await this.accountRepository.updateRecord(account);
+    }
+
+    async partialUpdate(id: string, partialEntity: Partial<Omit<IAccountRequest, 'defaultUser'>>, contextUser: ITokenUser): Promise<IAccountResponse> {
+
+        let entity: Partial<Account> = {
+            modifiedAt: new Date(),
+            modifiedById: contextUser.id,
+            modifiedBy: contextUser.name
+        };
+        
+        return await this.accountRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
 
     async updateMany(entitesRequest: (IAccountRequest & { id: string; })[], contextUser: ITokenUser): Promise<IAccountResponse[]> {
