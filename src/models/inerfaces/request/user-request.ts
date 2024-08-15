@@ -5,6 +5,7 @@ export interface IDefaultUserRequest {
     firstName: string;
     lastName: string;
     dateOfBirth: Date;
+    pictureUrl?: string;
 }
 
 export interface IUserRequest {
@@ -16,4 +17,5 @@ export interface IUserRequest {
     lastName: string;
     dateOfBirth: Date;
     roleId: string;
+    pictureUrl?: string;
 }

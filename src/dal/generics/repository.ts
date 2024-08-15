@@ -5,6 +5,7 @@ import { injectable } from 'tsyringe';
 import { AccountEntityBase } from '../../entities/base-entities/account-entity-base';
 import { buildQuery, queryOptionsMapper, setSaurceDataResponse } from '../../utility';
 import { IToResponseBase } from '../../entities/abstractions/to-response-base';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 @injectable()
 export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) & IToResponseBase<TEntity, TResponse>, TResponse>  {
@@ -101,6 +102,17 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         const entities = await this.repository.find(query);
         const totalRecords = await this.entityCount(query.where);
         return setSaurceDataResponse<TEntity, TResponse>(entities, totalRecords, fetchRequest?.pagedListRequest?.pageSize, fetchRequest?.pagedListRequest?.pageNo);
+    }
+
+    async partialUpdate(id: string, partialEntity: QueryDeepPartialEntity<TEntity>): Promise<TResponse> {
+        try {
+            const result = await this.repository.update(id, partialEntity);
+            let updatedRecord = await this.findOneById(id); 
+            if(result.affected !== 1 || !updatedRecord) throw new Error(`An error occurred while updating`);
+            return updatedRecord.toResponse(updatedRecord);
+        } catch (error) {
+            throw new Error(`An error occurred while updating`);
+        }
     }
 
     async invokeDbOperations(entity: TEntity, action: Actions): Promise<TEntity> {

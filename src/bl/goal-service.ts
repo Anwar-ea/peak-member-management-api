@@ -5,6 +5,7 @@ import { IDataSourceResponse, IFetchRequest, IFilter, IGoalRequest, IGoalRespons
 import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { Goal } from "../entities";
+import { assignIn } from "lodash";
 
 @injectable()
 export class GoalService implements IGoalService {
@@ -41,6 +42,15 @@ export class GoalService implements IGoalService {
     async update(id: string, entityRequest: IGoalRequest, contextGoal: ITokenUser): Promise<IGoalResponse> {
         let goal = new Goal().toEntity(entityRequest, id, contextGoal);
         return await this.goalRepository.updateRecord(goal);
+    }
+        
+    async partialUpdate(id: string, partialEntity: Partial<IGoalRequest>, contextUser: ITokenUser): Promise<IGoalResponse> {
+        let entity: Partial<Goal> = {
+            modifiedAt: new Date(),
+            modifiedBy: contextUser.name,
+            modifiedById: contextUser.id
+        }
+        return await this.goalRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
 
     async updateMany(entitesRequest: (IGoalRequest & { id: string; })[], contextGoal: ITokenUser): Promise<IGoalResponse[]> {

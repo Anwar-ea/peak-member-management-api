@@ -9,6 +9,7 @@ export interface IRepositoryBase<TEntity, TResponse> {
     getOne(filtersRequest: Array<IFilter<TEntity, keyof TEntity>>): Promise<TResponse | null>;
     getById(id: string): Promise<TResponse | null>;
     updateRecord(entity: TEntity): Promise<TResponse>;
+    partialUpdate(id: string, partialEntity: Partial<TEntity>): Promise<TResponse>;
     updateMany(entites: Array<TEntity>): Promise<Array<TResponse>>;
     deleteEntity(id: TEntity): Promise<void>;
     deleteMany(ids: Array<TEntity>): Promise<void>;

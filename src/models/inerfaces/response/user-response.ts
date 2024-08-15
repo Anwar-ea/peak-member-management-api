@@ -13,5 +13,6 @@ export interface IUserResponse extends IAccountResponseBase {
     lastLogin?: Date;
     lastOnline?: Date;
     roleId: string;
-    role?: IRoleResponse
+    role?: IRoleResponse;
+    pictureUrl?: string;
 }

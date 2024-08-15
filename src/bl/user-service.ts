@@ -8,6 +8,7 @@ import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { compareHash, encrypt, signJwt } from "../utility";
 import { FastifyError } from 'fastify'
+import { assignIn } from "lodash";
 
 @injectable()
 export class UserService implements IUserService {
@@ -66,6 +67,21 @@ export class UserService implements IUserService {
     async update(id: string, entityRequest: IUserRequest, contextUser: ITokenUser): Promise<IUserResponse> {
         let user = new User().toEntity(entityRequest, id, contextUser);
         return await this.userRepository.updateRecord(user);
+    }
+
+    async partialUpdate(id: string, entityRequest: Partial<IUserRequest>, contextUser: ITokenUser): Promise<IUserResponse> {
+        let entity: Partial<User> = {
+            modifiedAt: new Date(),
+            modifiedBy: contextUser.name,
+            modifiedById: contextUser.id,
+        };
+
+        return await this.userRepository.partialUpdate(id, assignIn(entity, entityRequest));
+    }
+
+    async resetPassword(id: string, password: string, contextUser: ITokenUser): Promise<IUserResponse> {
+        let updatedEntity = this.partialUpdate(id, {password}, contextUser);
+        return updatedEntity;
     }
 
     async updateMany(entitesRequest: (IUserRequest & { id: string; })[], contextUser: ITokenUser): Promise<IUserResponse[]> {
