@@ -34,6 +34,12 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     @Column({ name: 'DateOfBirth', type: 'datetime' })
     dateOfBirth!: Date;
 
+    @Column({ name: 'Firm', type: 'nvarchar', nullable: true })
+    firm?: string;
+
+    @Column({ name: 'Position', type: 'nvarchar', nullable: true })
+    position?: string;
+
     @Column({ name: 'Status', type: 'int', default: UserStatus.Offline })
     status!: UserStatus;
 
@@ -63,7 +69,9 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             status: entity.status,
             lastLogin: entity.lastLogin,
             lastOnline: entity.lastOnline,
-            roleId: entity.roleId
+            roleId: entity.roleId,
+            firm: entity.firm,
+            position: entity.position
         }    
     }
 
@@ -77,6 +85,8 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
         this.dateOfBirth = requestEntity.dateOfBirth;
         this.roleId = requestEntity.roleId;
         this.pictureUrl = requestEntity.pictureUrl;
+        this.firm = requestEntity.firm;
+        this.position = requestEntity.position;
 
         if(contextUser && !id){
             this.accountId = contextUser.accountId;

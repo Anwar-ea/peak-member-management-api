@@ -14,7 +14,7 @@ export class ModuleController extends ControllerBase {
         this.middleware = authorize as preHandlerHookHandler;
         this.endPoints = [
             {
-                method: 'GET',
+                method: 'POST',
                 path: CommonRoutes.getAll,
                 handler: this.getAll as RouteHandlerMethod
             },
@@ -24,7 +24,7 @@ export class ModuleController extends ControllerBase {
                 handler: this.getById as RouteHandlerMethod
             },
             {
-                method: 'GET',
+                method: 'POST',
                 path: CommonRoutes.getOneByQuery,
                 handler: this.getOneByQuery as RouteHandlerMethod
             }

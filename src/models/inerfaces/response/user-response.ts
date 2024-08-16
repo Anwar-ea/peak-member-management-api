@@ -15,4 +15,6 @@ export interface IUserResponse extends IAccountResponseBase {
     roleId: string;
     role?: IRoleResponse;
     pictureUrl?: string;
+    firm?: string;
+    position?: string;
 }

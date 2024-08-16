@@ -31,7 +31,7 @@ export class UserController extends ControllerBase {
                 handler: this.getById as RouteHandlerMethod
             },
             {
-                method: 'GET',
+                method: 'POST',
                 path: CommonRoutes.getOneByQuery,
                 middlewares: [authorize as preHandlerHookHandler],
                 handler: this.getOneByQuery as RouteHandlerMethod

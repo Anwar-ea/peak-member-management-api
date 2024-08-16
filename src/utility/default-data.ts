@@ -1,18 +1,24 @@
 import { DataSource } from "typeorm";
-import { Account, Role, User } from "../entities";
+import { Account, Module, Privilege, Role, User } from "../entities";
 import { randomUUID } from "crypto";
 import { EmptyGuid } from "../constants";
-import { UserStatus } from "../models";
 import { encrypt } from "./bcrypt-utility";
+import { Modules } from "../constants/modules";
+import { toCamelCase } from "./string-utility";
+import { Privileges } from "../constants/privileges";
+import { log } from "console";
 
 export const AddDefaultData = async (dataSource: DataSource) => {
 
     let accountRepo = dataSource.getRepository(Account);
     let userRepo = dataSource.getRepository(User);
-    let roleRepo = dataSource.getRepository(Role)
+    let roleRepo = dataSource.getRepository(Role);
+    let moduleRepo = dataSource.getRepository(Module);
+    let privilageRepo = dataSource.getRepository(Privilege);
     
     let accountCount = await accountRepo.count();
     let roleCount = await roleRepo.count();
+    let moduleCount = await moduleRepo.count();
 
     let account: Account = new Account().toEntity({
         name: "Default",
@@ -55,10 +61,34 @@ export const AddDefaultData = async (dataSource: DataSource) => {
     user.passwordHash = await encrypt("asdf@123");
 
     if(!roleCount) await roleRepo.save(role);
+
     if(!accountCount){
         await accountRepo.save(account);
         await userRepo.save({...user,account: account});
     }
 
+    if(!moduleCount) {
+      for (const module of Modules) {
+        let moduleEntity = new Module().newInstanceToAdd(module, toCamelCase(module.replaceAll(" ", "")), [])
+
+        let modulePrivilages: Array<Privilege> = [];
+        for (const privilege of Privileges) {
+          let privilageName = `${privilege} ${module}`;
+          let privilageCode = `${privilege}${module.replaceAll(" ", "")}`;
+          modulePrivilages.push(
+            new Privilege().newInstanceToAdd(
+              `${privilageName}`,
+              toCamelCase(privilageCode),
+              moduleEntity
+            )
+          );
+        }
+        moduleEntity.privilages = modulePrivilages;
+        await moduleRepo.save(moduleEntity)
+        await privilageRepo.save(modulePrivilages);
+      }
+    }
+
 
 }
+

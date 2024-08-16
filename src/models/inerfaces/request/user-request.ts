@@ -18,4 +18,6 @@ export interface IUserRequest {
     dateOfBirth: Date;
     roleId: string;
     pictureUrl?: string;
+    firm?: string;
+    position?: string;
 }

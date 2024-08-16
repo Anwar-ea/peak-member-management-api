@@ -1,0 +1,1 @@
+export const Modules = ["Users", "Roles", "To-Dos", "Goals", "Bussiness Plan", "Score Card", "Reports", "Revenue"] as const;

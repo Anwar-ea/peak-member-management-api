@@ -34,11 +34,11 @@ export class BusinessPlan extends AccountEntityBase {
     @JoinColumn({ name: 'MarketingStrategyId', referencedColumnName: 'id' })
     marketingStrategy!: MarketingStrategy;
 
-    @OneToOne(() => Vision, { nullable: false, eager: true, onDelete: "CASCADE" })
+    @OneToOne(() => Vision, { nullable: false, eager: true })
     @JoinColumn({ name: 'ThreeYearVisionId', referencedColumnName: 'id' })
     threeYearVision!: Vision;
 
-    @OneToOne(() => Vision, { nullable: false, eager: true, onDelete: "CASCADE" })
+    @OneToOne(() => Vision, { nullable: false, eager: true })
     @JoinColumn({ name: 'OneYearVisionId', referencedColumnName: 'id' })
     oneYearVision!: Vision;
 }

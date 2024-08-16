@@ -96,7 +96,7 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
 
     async getPagedData(fetchRequest: IFetchRequest<TEntity>, getOnlyActive: boolean = false, dontGetDeleted: boolean = true, accountId?: string): Promise<IDataSourceResponse<TResponse>> {
         
-        if (fetchRequest.pagedListRequest) fetchRequest.pagedListRequest = new PagedRequest();
+        if (!fetchRequest.pagedListRequest) fetchRequest.pagedListRequest = new PagedRequest();
         
         const query = buildQuery(fetchRequest, getOnlyActive, dontGetDeleted, accountId);
         const entities = await this.repository.find(query);
