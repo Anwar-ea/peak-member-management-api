@@ -3,4 +3,5 @@ export interface IToDoRequest {
     details: string;
     userId: string;
     dueDate: Date;
+    completed: boolean;
 }

@@ -51,7 +51,7 @@ const queryMapper = <T>(filterRequest: IFilter<T, keyof T>): FindOptionsWhere<T>
             whereClause = { [filterRequest.field as string]: Not(filterRequest.value) } as FindOptionsWhere<T>;
             break;
         case FilterMatchModes.Like:
-            whereClause = { [filterRequest.field as string]: filterRequest.ignoreCase ? ILike(`%${filterRequest.value}%`) : Like(`%${filterRequest.value}%`) } as FindOptionsWhere<T>;
+            whereClause = { [filterRequest.field as string]: (filterRequest.ignoreCase ? ILike(`%${filterRequest.value}%`) : Like(`%${filterRequest.value}%`)) } as FindOptionsWhere<T>;
             break;
         case FilterMatchModes.Any:
             whereClause = { [filterRequest.field as string]: Any<T[keyof T]>(filterRequest.values as Array<any>) } as FindOptionsWhere<T>;

@@ -6,7 +6,7 @@
   "main": "src/app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc -p ./tsconfig.json & node ./dist/app.js",
+    "start": "node ./dist/app.js",
     "build": "tsc -p ./tsconfig.json",
     "dev": "nodemon --exec ts-node ./src/app.ts",
     "typeorm": "typeorm-ts-node-commonjs",

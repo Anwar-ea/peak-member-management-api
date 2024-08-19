@@ -45,6 +45,7 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
         this.details = entityRequest.details;
         this.dueDate = entityRequest.dueDate;
         this.userId = entityRequest.userId;
+        this.completed = entityRequest.completed;
         let user = new User();
         user.id = entityRequest.userId;
         this.user = user;

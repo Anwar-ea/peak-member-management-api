@@ -40,6 +40,16 @@ export class ToDoController extends ControllerBase {
                 handler: this.update as RouteHandlerMethod
             },
             {
+                method: 'PUT',
+                path: `complete/:id`,
+                handler: this.complete as RouteHandlerMethod
+            },
+            {
+                method: 'PUT',
+                path: `incomplete/:id`,
+                handler: this.incomplete as RouteHandlerMethod
+            },
+            {
                 method: 'DELETE',
                 path: `${CommonRoutes.delete}/:id`,
                 handler: this.delete as RouteHandlerMethod
@@ -94,6 +104,22 @@ export class ToDoController extends ControllerBase {
 
         if (request.user) {
           res.send(await this.toDoService.update(req.params.id, req.body, request.user));
+        }  
+    }
+
+    private complete = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
+        let request = req as ExtendedRequest;
+
+        if (request.user) {
+          res.send(await this.toDoService.partialUpdate(req.params.id, {completed: true}, request.user));
+        }  
+    }
+
+    private incomplete = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
+        let request = req as ExtendedRequest;
+
+        if (request.user) {
+          res.send(await this.toDoService.partialUpdate(req.params.id, {completed: false}, request.user));
         }  
     }
 }

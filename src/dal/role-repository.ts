@@ -17,7 +17,7 @@ export class RoleRepository extends GenericRepository<Role, IRoleResponse> imple
 
     addMany = async (entites: Array<Role>): Promise<Array<IRoleResponse>> => await super.invokeDbOperationsRangeWithResponse(entites, Actions.Add);
 
-    get = async (fetchRequest: IFetchRequest<Role>, accountId?: string): Promise<IDataSourceResponse<IRoleResponse>> => await super.getPagedData(fetchRequest ?? {}, true, true, accountId);
+    get = async (fetchRequest: IFetchRequest<Role>, accountId?: string): Promise<IDataSourceResponse<IRoleResponse>> => await super.getPagedData(fetchRequest ?? {}, true, true, undefined);
 
     getById = async (id: string): Promise<IRoleResponse | null> => await this.findOneByIdWithResponse(id);
 
