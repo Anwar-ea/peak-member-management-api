@@ -27,7 +27,7 @@ export class MarketingStrategy extends AccountEntityBase {
     @RelationId((marketingStrategy: MarketingStrategy) => marketingStrategy.businessPlan)
     marketingStrategyId!: string;
 
-    @OneToOne(() => BusinessPlan)
+    @OneToOne(() => BusinessPlan, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'BusinessPlanId', referencedColumnName: "id"})
     businessPlan!: BusinessPlan;
 }

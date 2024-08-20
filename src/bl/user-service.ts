@@ -41,8 +41,6 @@ export class UserService implements IUserService {
         let user = new User().toEntity(entityRequest, undefined, contextUser);
         user.passwordHash = await encrypt(entityRequest.password);
         user.status = UserStatus.Online;
-
-        user.id = randomUUID();
         let response  = await this.userRepository.addRecord(user);
         if (response) return response;
         else throw new Error(`Error adding ${entityRequest}`);

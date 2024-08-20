@@ -42,7 +42,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     @JoinColumn({ name: 'VisionId', referencedColumnName: 'id' })
     vision?: Vision
     
-    @OneToMany(() => Milestone, (milestone) => milestone.goal, { cascade: true, onDelete: 'CASCADE', eager: true, orphanedRowAction: 'delete'})
+    @OneToMany(() => Milestone, (milestone) => milestone.goal, {eager: true, cascade: true, orphanedRowAction: 'delete'})
     milestones!: Array<Milestone>;
 
     toResponse(entity: Goal): IGoalResponse {

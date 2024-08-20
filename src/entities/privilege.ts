@@ -19,7 +19,7 @@ export class Privilege extends EntityBase implements IToResponseBase<Privilege, 
     @RelationId((privilage: Privilege) => privilage.module)
     moduleId!: string;
 
-    @ManyToOne(() => Module, (module) => module.privilages)
+    @ManyToOne(() => Module, (module) => module.privilages, {onDelete: 'CASCADE'})
     @JoinColumn({name: 'ModuleId', referencedColumnName: 'id'})
     module!: Module;
 

@@ -16,7 +16,7 @@ export class Vision extends AccountEntityBase {
     @Column({name: "Profit", type: 'decimal', precision: 18, scale: 2 })
     profit!: number;
 
-    @ManyToOne(() => BusinessPlan, { nullable: true })
+    @ManyToOne(() => BusinessPlan, {cascade: true ,nullable: true, onDelete: 'CASCADE', orphanedRowAction: 'delete'})
     businessPlan!: BusinessPlan;
 
     @OneToMany(() => Goal, (goal) => goal.vision, { cascade: true, onDelete: "SET NULL" })

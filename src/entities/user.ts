@@ -52,7 +52,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     @RelationId((user: User) => user.role)
     roleId!: string;
 
-    @OneToOne(() => Role, (role) => role)
+    @OneToOne(() => Role, (role) => role, {cascade: true})
     @JoinColumn({ name: 'RoleId', referencedColumnName: 'id' })
     role!: Role
 
@@ -93,6 +93,8 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             this.createdBy = contextUser.name;
             this.createdAt = new Date();
             let account = new Account();
+            this.role = new Role();
+            this.role.id = this.roleId;
             account.id = contextUser.accountId;
             this.account = account;
             this.createdById = contextUser.id;

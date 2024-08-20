@@ -30,15 +30,15 @@ export class BusinessPlan extends AccountEntityBase {
     @RelationId((businessPlan: BusinessPlan) => businessPlan.marketingStrategy)
     marketingStrategyId!: string;
 
-    @OneToOne(() => MarketingStrategy, { nullable: false, eager: true, onDelete: "CASCADE" })
+    @OneToOne(() => MarketingStrategy, { nullable: false, eager: true, cascade: true, onDelete: "CASCADE" })
     @JoinColumn({ name: 'MarketingStrategyId', referencedColumnName: 'id' })
     marketingStrategy!: MarketingStrategy;
 
-    @OneToOne(() => Vision, { nullable: false, eager: true })
+    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true})
     @JoinColumn({ name: 'ThreeYearVisionId', referencedColumnName: 'id' })
     threeYearVision!: Vision;
 
-    @OneToOne(() => Vision, { nullable: false, eager: true })
+    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true })
     @JoinColumn({ name: 'OneYearVisionId', referencedColumnName: 'id' })
     oneYearVision!: Vision;
 }

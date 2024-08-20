@@ -15,7 +15,7 @@ export const dataSource = new DataSource({
     port: process.env.DB_Port ? parseInt(process.env.DB_Port) : 1433,
     migrations: ["src/dal/migrations/**/*.ts"],
     entities: [Account, User,  Role, Privilege, Module, Goal, Milestone, ToDo, Vision, BusinessPlan, MarketingStrategy, Measurable],
-    synchronize: true,
+    synchronize: false,
     options: {
         encrypt: true,
         trustServerCertificate: true

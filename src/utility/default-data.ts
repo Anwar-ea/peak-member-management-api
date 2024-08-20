@@ -37,7 +37,7 @@ export const AddDefaultData = async (dataSource: DataSource) => {
     }, undefined,{name: "Admin", id: EmptyGuid, accountId:'', privileges: []});
     account.id = randomUUID();
     let role: Role = new Role().toEntity(
-      { name: "Account Admin", code: "accountAdmin" }, undefined,
+      { name: "Account Admin", code: "accountAdmin", privilegeIds:[] }, undefined,
       { name: "Admin", id: EmptyGuid, accountId: "", privileges: [] }
     );
     role.id = randomUUID();
@@ -60,11 +60,11 @@ export const AddDefaultData = async (dataSource: DataSource) => {
 
     user.passwordHash = await encrypt("asdf@123");
 
-    if(!roleCount) await roleRepo.save(role);
+    if(!roleCount) await roleRepo.insert(role);
 
     if(!accountCount){
-        await accountRepo.save(account);
-        await userRepo.save({...user,account: account});
+        await accountRepo.insert(account);
+        await userRepo.insert({...user,account: account});
     }
 
     if(!moduleCount) {

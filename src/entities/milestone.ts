@@ -20,7 +20,7 @@ export class Milestone extends AccountEntityBase implements IToResponseBase<Mile
     @RelationId((milestone: Milestone) => milestone.goal)
     goalId!: string;
 
-    @ManyToOne(() => Goal, (goal) => goal, {nullable: false})
+    @ManyToOne(() => Goal, (goal) => goal, {nullable: false, onDelete: 'CASCADE', orphanedRowAction: 'delete'})
     @JoinColumn({name: 'GoalId', referencedColumnName: 'id'})
     goal!: Goal;
     
@@ -35,10 +35,11 @@ export class Milestone extends AccountEntityBase implements IToResponseBase<Mile
     }
 
     
-    toEntity = (entityRequest: IMilestoneRequest & {goalId?: string}, contextUser?: ITokenUser): Milestone => {
+    toEntity = (entityRequest: IMilestoneRequest & {goalId: string}, contextUser?: ITokenUser): Milestone => {
         this.details = entityRequest.details;
         this.dueDate = entityRequest.dueDate;
         this.completed = entityRequest.completed;
+        this.goalId = entityRequest.goalId;
         if(contextUser){
             this.createdBy = contextUser.name;
             this.createdAt = new Date();
@@ -52,12 +53,9 @@ export class Milestone extends AccountEntityBase implements IToResponseBase<Mile
             this.id = randomUUID();
         }
 
-        if(entityRequest.goalId) {
-            this.goalId = entityRequest.goalId;
             let goal = new Goal();
             goal.id = entityRequest.goalId;
             this.goal = goal;
-        }
 
         return this;
     }

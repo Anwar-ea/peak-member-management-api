@@ -19,11 +19,11 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
     @RelationId((entity: AccountEntityBase) => entity.account)
     accountId?: string;
 
-    @ManyToOne(() => Account, {nullable: true})
+    @ManyToOne(() => Account, {nullable: true, onDelete: 'CASCADE'})
     @JoinColumn({name: 'AccountId', referencedColumnName: 'id'})
     account!: Account | undefined
     
-    @ManyToMany(() => Privilege, (privilege) => privilege.roles)
+    @ManyToMany(() => Privilege, (privilege) => privilege.roles, {cascade: true, eager: true})
     @JoinTable({name: 'Role_Privilage', joinColumn: {name: 'RoleId', referencedColumnName: 'id'}, inverseJoinColumn: {name: 'PrivilegeId', referencedColumnName: 'id'}})
     privileges!: Array<Privilege>;
     
@@ -32,6 +32,7 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
             ...super.toResponseBase(entity),
             name: entity.name,
             code: entity.code,
+            privilages: entity.privileges.map(prv => prv.toResponse(prv))
         }    
     }
 
@@ -63,6 +64,12 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
             this.active = true;
             this.deleted = false;
         }
+
+        this.privileges = entityRequest.privilegeIds.map(prv => {
+            let privilege = new Privilege();
+            privilege.id = prv;
+            return privilege;
+        });
 
         return this;
     }
