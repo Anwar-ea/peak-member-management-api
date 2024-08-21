@@ -29,7 +29,7 @@ export class MarketingStrategy extends AccountEntityBase implements IToResponseB
     @RelationId((marketingStrategy: MarketingStrategy) => marketingStrategy.businessPlan)
     businessPlanId!: string;
 
-    @OneToOne(() => BusinessPlan, {onDelete: 'CASCADE'})
+    @OneToOne(() => BusinessPlan, {cascade: true, onDelete: 'CASCADE'})
     @JoinColumn({name: 'BusinessPlanId', referencedColumnName: "id"})
     businessPlan!: BusinessPlan;
 

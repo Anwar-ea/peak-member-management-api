@@ -21,7 +21,7 @@ export class Vision extends AccountEntityBase implements IToResponseBase<Vision,
     @RelationId((vision: Vision) => vision.businessPlan)
     businessPlanId!: string;
 
-    @OneToOne(() => BusinessPlan, {cascade: true ,nullable: false, onDelete: 'CASCADE', orphanedRowAction: 'delete'})
+    @OneToOne(() => BusinessPlan, {cascade: true ,nullable: false})
     businessPlan?: BusinessPlan;
 
     @OneToMany(() => Goal, (goal) => goal.vision, { cascade: true, onDelete: "SET NULL" })

@@ -1,4 +1,4 @@
-import { DataSource, Equal } from "typeorm";
+import { DataSource } from "typeorm";
 import msnodesqlv8 from 'mssql'
 import { Account, Privilege, Role, User, Module, Goal, Milestone, ToDo, BusinessPlan, MarketingStrategy, Measurable, Vision } from "../../entities";
 import { config } from "dotenv";

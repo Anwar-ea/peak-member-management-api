@@ -7,7 +7,7 @@ import { RoleController } from '../role-controller';
 import { ToDoController } from '../todo-controller';
 import { GoalController } from '../goal-controller';
 import { BusinessPlanController } from '../businessPlan-controller';
-import { MeasurableController } from '../measurAble-controller';
+import { MeasurableController } from '../measurable-controller';
 
 export const registerControllers = (container: DependencyContainer) => {
     container.register<AccountController>('AccountController', AccountController);

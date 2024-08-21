@@ -32,7 +32,7 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
     @RelationId((businessPlan: BusinessPlan) => businessPlan.marketingStrategy)
     marketingStrategyId!: string;
 
-    @OneToOne(() => MarketingStrategy, { nullable: false, eager: true, cascade: true, onDelete: "CASCADE" })
+    @OneToOne(() => MarketingStrategy, { nullable: false, eager: true, cascade: true})
     @JoinColumn({ name: 'MarketingStrategyId', referencedColumnName: 'id' })
     marketingStrategy!: MarketingStrategy;
 
@@ -40,7 +40,7 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
     @JoinColumn({ name: 'ThreeYearVisionId', referencedColumnName: 'id' })
     threeYearVision!: Vision;
 
-    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true })
+    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true})
     @JoinColumn({ name: 'OneYearVisionId', referencedColumnName: 'id' })
     oneYearVision!: Vision;
 

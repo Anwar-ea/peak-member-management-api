@@ -1,11 +1,9 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from "typeorm";
 import { GoalStatus, GoalType, IGoalRequest, IModuleResponse, ITokenUser } from "../models";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { User } from "./user";
 import { Milestone } from "./milestone";
 import { IGoalResponse } from "../models/inerfaces/response/goal-response";
-import { Account } from "./account";
-import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
 import { Vision } from "./vision";
 
@@ -38,7 +36,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     @RelationId((goal: Goal) => goal.vision)
     visionId?: string;
 
-    @ManyToOne(() => Vision, (vision) => vision, {nullable: true, eager: true})
+    @ManyToOne(() => Vision, (vision) => vision, {nullable: true})
     @JoinColumn({ name: 'VisionId', referencedColumnName: 'id' })
     vision?: Vision
     
