@@ -6,6 +6,8 @@ import { RoleRepository } from "../role-repository";
 import { UserRepository } from "../user-repository";
 import { ToDoRepository } from "../todo-repository";
 import { GoalRepository } from "../goal-repository";
+import { MeasurableRepository } from "../measureable-repository";
+import { BusinessPlanRepository } from "../businessPlan-repository";
 
 export const registerRepositories = (container: DependencyContainer) => {
     container.register<AccountRepository>('AccountRepository', AccountRepository);
@@ -15,4 +17,6 @@ export const registerRepositories = (container: DependencyContainer) => {
     container.register<RoleRepository>('RoleRepository', RoleRepository );
     container.register<ToDoRepository>('ToDoRepository', ToDoRepository );
     container.register<GoalRepository>('GoalRepository', GoalRepository );
+    container.register<MeasurableRepository>('MeasurableRepository', MeasurableRepository );
+    container.register<BusinessPlanRepository>('BusinessPlanRepository', BusinessPlanRepository );
 }

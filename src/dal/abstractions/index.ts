@@ -6,3 +6,5 @@ export * from './module-repository';
 export * from './repository-base';
 export * from './goal-repository';
 export * from './todo-repository';
+export * from './businessPlan-repository';
+export * from './measurable-repository';

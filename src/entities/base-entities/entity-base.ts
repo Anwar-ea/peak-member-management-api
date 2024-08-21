@@ -1,5 +1,8 @@
 import { Column, PrimaryColumn } from "typeorm";
 import { IResponseBase } from "../../models/inerfaces/response/response-base";
+import { ITokenUser } from "../../models";
+import { EmptyGuid } from "../../constants";
+import { randomUUID } from "crypto";
 
 export abstract class EntityBase {
     @PrimaryColumn({name: 'Id',type: 'uuid'})
@@ -28,6 +31,23 @@ export abstract class EntityBase {
 
     @Column({name: 'Deleted', type: 'bit', default: 0})
     deleted!: boolean; 
+
+    protected toBaseEntiy(contextUser: ITokenUser, update: boolean = false): EntityBase {
+            this.active = true;
+            this.deleted = false;
+        if(!update){
+            this.id = randomUUID();
+            this.createdAt = new Date();
+            this.createdBy = contextUser.name;
+            this.createdById = contextUser.id;
+        }else {
+            this.modifiedAt = new Date();
+            this.modifiedBy = contextUser.name;
+            this.modifiedById = contextUser.id;
+        }
+
+        return this;
+    }
     
     protected toResponseBase<T extends EntityBase>(entity: T): IResponseBase {
         return {

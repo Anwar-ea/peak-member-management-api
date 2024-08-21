@@ -7,3 +7,7 @@ export * from './dataSource-response';
 export * from './todo-response';
 export * from './milestone-response';
 export * from './goal-response';
+export * from './measurable-response';
+export * from './marketingStrategy-response';
+export * from './businessPlan-response';
+export * from './vision-response';

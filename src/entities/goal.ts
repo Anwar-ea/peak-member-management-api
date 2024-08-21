@@ -60,7 +60,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     }
 
     
-    toEntity = (entityRequest: IGoalRequest , id?: string, contextUser?: ITokenUser): Goal => {
+    toEntity = (entityRequest: IGoalRequest & {visionId?: string} , id?: string, contextUser?: ITokenUser): Goal => {
         this.title = entityRequest.title;
         this.details = entityRequest.details;
         this.dueDate = entityRequest.dueDate;
@@ -70,29 +70,17 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
         this.accountable = user;
 
         if(contextUser && !id){
-            this.createdBy = contextUser.name;
-            this.createdAt = new Date();
-            this.createdById = contextUser.id;
-            this.active = true;
-            this.accountId = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.deleted = false;
-            this.id = randomUUID();
+            super.toAccountEntity(contextUser)
         }
         
         if(id && contextUser){
-            this.id = id;
-            this.modifiedBy = contextUser.name;
-            this.modifiedAt = new Date();
-            this.modifiedById = contextUser.id;
-            this.active = true;
-            this.accountId = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.deleted = false;
+            super.toAccountEntity(contextUser, true)
+        }
+
+        if(entityRequest.visionId){
+            this.visionId = entityRequest.visionId;
+            this.vision = new Vision();
+            this.vision.id = entityRequest.visionId;
         }
 
         this.milestones = entityRequest.milestones.map(milestone => {

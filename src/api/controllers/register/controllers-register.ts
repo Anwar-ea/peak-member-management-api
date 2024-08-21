@@ -6,6 +6,8 @@ import { PrivilegeController } from '../privilege-controller';
 import { RoleController } from '../role-controller';
 import { ToDoController } from '../todo-controller';
 import { GoalController } from '../goal-controller';
+import { BusinessPlanController } from '../businessPlan-controller';
+import { MeasurableController } from '../measurAble-controller';
 
 export const registerControllers = (container: DependencyContainer) => {
     container.register<AccountController>('AccountController', AccountController);
@@ -15,6 +17,8 @@ export const registerControllers = (container: DependencyContainer) => {
     container.register<ToDoController>('ToDoController', ToDoController);
     container.register<GoalController>('GoalController', GoalController);
     container.register<RoleController>('RoleController', RoleController, );
+    container.register<BusinessPlanController>('BusinessPlanController', BusinessPlanController, );
+    container.register<MeasurableController>('MeasurableController', MeasurableController, );
     return {
         accountController: container.resolve(AccountController),
         userController: container.resolve(UserController),
@@ -23,6 +27,8 @@ export const registerControllers = (container: DependencyContainer) => {
         roleController: container.resolve(RoleController),
         toDoController: container.resolve(ToDoController),
         goalController: container.resolve(GoalController),
+        businessPlanController: container.resolve(BusinessPlanController),
+        measurableController: container.resolve(MeasurableController),
     }
     // Add more controllers here
 

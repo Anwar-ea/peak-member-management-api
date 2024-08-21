@@ -5,3 +5,5 @@ export * from './abstractions/user-service';
 export * from './abstractions/role-service';
 export * from './abstractions/privilege-service';
 export * from './abstractions/module-service';
+export * from './abstractions/measurable-service';
+export * from './abstractions/businessPlan-service';

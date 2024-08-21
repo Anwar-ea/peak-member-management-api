@@ -6,6 +6,8 @@ import { RoleService } from "../role-service";
 import { UserService } from "../user-service";
 import { GoalService } from "../goal-service";
 import { ToDoService } from "../todo-service";
+import { BusinessPlanService } from "../businessPlan-service";
+import { MeasurableService } from "../measurable-service";
 
 export const registerServices = (container: DependencyContainer) => {
     container.register<AccountService>('AccountService', AccountService);
@@ -15,4 +17,6 @@ export const registerServices = (container: DependencyContainer) => {
     container.register<RoleService>('RoleService', RoleService);
     container.register<GoalService>('GoalService', GoalService);
     container.register<ToDoService>('ToDoService', ToDoService);
+    container.register<BusinessPlanService>('BusinessPlanService', BusinessPlanService);
+    container.register<MeasurableService>('MeasurableService', MeasurableService);
 }
