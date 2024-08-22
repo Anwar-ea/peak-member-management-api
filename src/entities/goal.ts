@@ -73,6 +73,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
         
         if(id && contextUser){
             super.toAccountEntity(contextUser, true)
+            this.id = id;
         }
 
         if(entityRequest.visionId){
