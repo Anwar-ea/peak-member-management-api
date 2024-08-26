@@ -47,7 +47,7 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
     @RelationId((measurable: Measurable) => measurable.vision)
     visionId?: string;
 
-    @ManyToOne(() => Vision, (vision) => vision, {nullable: true, eager: true})
+    @ManyToOne(() => Vision, (vision) => vision, {nullable: true})
     @JoinColumn({ name: 'VisionId', referencedColumnName: 'id' })
     vision?: Vision
 
