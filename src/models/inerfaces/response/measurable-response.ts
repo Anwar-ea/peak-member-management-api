@@ -1,4 +1,5 @@
 import { IAccountResponseBase } from "./response-base";
+import { IUserResponse } from "./user-response";
 import { IVisionResponse } from "./vision-response";
 
 export interface IMeasurableResponse extends IAccountResponseBase {
@@ -13,6 +14,7 @@ export interface IMeasurableResponse extends IAccountResponseBase {
     cumulativeStartDate?: Date;
     formula?: string;
     accountableId: string;
+    accountable: IUserResponse;
     visionId?: string;
     vision?: IVisionResponse;
 }
