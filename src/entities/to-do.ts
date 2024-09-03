@@ -9,16 +9,16 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 @Entity('ToDo')
 export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, IToDoResponse> {
     
-    @Column({name: 'Todo', type: 'nvarchar'})
+    @Column({name: 'Todo', type: 'text'})
     todo!: string;
 
-    @Column({name: 'Details', type: 'nvarchar'})
+    @Column({name: 'Details', type: 'text'})
     details!: string;
 
-    @Column({name: 'DueDate', type: 'datetime'})
+    @Column({name: 'DueDate', type: 'timestamp'})
     dueDate!: Date;
 
-    @Column({name: 'Completed', type: 'bit'})
+    @Column({name: 'Completed', type: 'boolean'})
     completed!: boolean;
 
     @RelationId((toDo: ToDo) => toDo.user)

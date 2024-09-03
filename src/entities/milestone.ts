@@ -8,13 +8,13 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('Milestone')
 export class Milestone extends AccountEntityBase implements IToResponseBase<Milestone, IMilestoneResponse>  {
-    @Column({name: 'Details', type: 'nvarchar'})
+    @Column({name: 'Details', type: 'text'})
     details!: string;
 
-    @Column({name: 'DueDate', type: 'datetime'})
+    @Column({name: 'DueDate', type: 'timestamp'})
     dueDate!: Date;
 
-    @Column({name: 'Completed', type: 'bit', default: false})
+    @Column({name: 'Completed', type: 'boolean', default: false})
     completed!: boolean;
 
     @RelationId((milestone: Milestone) => milestone.goal)

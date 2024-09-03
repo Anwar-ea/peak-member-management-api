@@ -10,10 +10,10 @@ import { EmptyGuid } from "../constants";
 @Entity('Privilage')
 export class Privilege extends EntityBase implements IToResponseBase<Privilege, IPrivilegeResponse> {
 
-    @Column({name: 'Name', type: 'nvarchar', unique: true})
+    @Column({name: 'Name', type: 'text', unique: true})
     name!: string;
 
-    @Column({name: 'Code', type: 'nvarchar', unique: true})
+    @Column({name: 'Code', type: 'text', unique: true})
     code!: string;
 
     @RelationId((privilage: Privilege) => privilage.module)

@@ -10,43 +10,43 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 @Entity('User')
 export class User extends AccountEntityBase implements IToResponseBase<User, IUserResponse> {
 
-    @Column({ name: 'UserName', unique: true, type: 'nvarchar' })
+    @Column({ name: 'UserName', unique: true, type: 'text' })
     userName!: string;
 
-    @Column({ name: 'Email', type: 'nvarchar', unique: true })
+    @Column({ name: 'Email', type: 'text', unique: true })
     email!: string;
 
-    @Column({ name: 'PasswordHash', type: 'nvarchar'})
+    @Column({ name: 'PasswordHash', type: 'text'})
     passwordHash!: string;
 
-    @Column({ name: 'FirstName', type: 'nvarchar' })
+    @Column({ name: 'FirstName', type: 'text' })
     firstName!: string;
 
-    @Column({ name: 'MiddleName', type: 'nvarchar', nullable: true })
+    @Column({ name: 'MiddleName', type: 'text', nullable: true })
     middleName?: string;
 
-    @Column({ name: 'LastName', type: 'nvarchar' })
+    @Column({ name: 'LastName', type: 'text' })
     lastName!: string;
 
-    @Column({ name: 'PictureUrl', type: 'nvarchar', nullable: true })
+    @Column({ name: 'PictureUrl', type: 'text', nullable: true })
     pictureUrl?: string;
 
-    @Column({ name: 'DateOfBirth', type: 'datetime' })
+    @Column({ name: 'DateOfBirth', type: 'timestamp' })
     dateOfBirth!: Date;
 
-    @Column({ name: 'Firm', type: 'nvarchar', nullable: true })
+    @Column({ name: 'Firm', type: 'text', nullable: true })
     firm?: string;
 
-    @Column({ name: 'Position', type: 'nvarchar', nullable: true })
+    @Column({ name: 'Position', type: 'text', nullable: true })
     position?: string;
 
     @Column({ name: 'Status', type: 'int', default: UserStatus.Offline })
     status!: UserStatus;
 
-    @Column({ name: 'LastLogin', type: 'datetime', nullable: true})
+    @Column({ name: 'LastLogin', type: 'timestamp', nullable: true})
     lastLogin?: Date;
 
-    @Column({ name: 'LastOnline', type: 'datetime', nullable: true })
+    @Column({ name: 'LastOnline', type: 'timestamp', nullable: true })
     lastOnline?: Date;
 
     @RelationId((user: User) => user.role)

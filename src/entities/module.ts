@@ -9,10 +9,10 @@ import { EmptyGuid } from "../constants";
 @Entity('Module')
 export class Module extends EntityBase implements IToResponseBase<Module, IModuleResponse>  {
     
-    @Column({name: 'Name', type: 'nvarchar', unique: true})
+    @Column({name: 'Name', type: 'text', unique: true})
     name!: string;
 
-    @Column({name: 'Code', type: 'nvarchar', unique: true})
+    @Column({name: 'Code', type: 'text', unique: true})
     code!: string;
 
     @OneToMany(() => Privilege, (privilege) => privilege.module, {eager: true, onDelete: "CASCADE"})

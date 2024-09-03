@@ -1,13 +1,13 @@
 import { DataSource } from "typeorm";
-import msnodesqlv8 from 'mssql'
+import pg from 'pg'
 import { Account, Privilege, Role, User, Module, Goal, Milestone, ToDo, BusinessPlan, MarketingStrategy, Measurable, Vision } from "../../entities";
 import { config } from "dotenv";
 config();
 import { AddDefaultData } from "../../utility/default-data";
 
 export const dataSource = new DataSource({
-    driver: msnodesqlv8,
-    type: 'mssql',
+    driver: pg,
+    type: 'postgres',
     host: process.env.DB_Server ?? "",
     database: process.env.DB_DataBase ?? "",
     username: process.env.DB_userId ?? "",
@@ -15,11 +15,7 @@ export const dataSource = new DataSource({
     port: process.env.DB_Port ? parseInt(process.env.DB_Port) : 1433,
     migrations: ["src/dal/migrations/**/*.ts"],
     entities: [Account, User,  Role, Privilege, Module, Goal, Milestone, ToDo, Vision, BusinessPlan, MarketingStrategy, Measurable],
-    synchronize: false,
-    options: {
-        encrypt: true,
-        trustServerCertificate: true
-    }
+    synchronize: true,
 });
 
 

@@ -10,10 +10,10 @@ import { Vision } from "./vision";
 @Entity('Goal')
 export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGoalResponse> {
     
-    @Column({name: 'Title', type: 'nvarchar'})
+    @Column({name: 'Title', type: 'text'})
     title!: string;
 
-    @Column({name: 'Details', type: 'nvarchar'})
+    @Column({name: 'Details', type: 'text'})
     details!: string;
 
     @Column({name: 'Status', type: 'int', default: GoalStatus.OnTrack})
@@ -22,7 +22,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     @Column({name: 'Type', type: 'int', default: GoalType.Individual})
     type!: GoalType;
 
-    @Column({name: 'DueDate', type: 'datetime'})
+    @Column({name: 'DueDate', type: 'timestamp'})
     dueDate!: Date;
 
     @RelationId((goal: Goal) => goal.accountable)
@@ -36,7 +36,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     @RelationId((goal: Goal) => goal.vision)
     visionId?: string;
 
-    @ManyToOne(() => Vision, (vision) => vision, {nullable: true})
+    @ManyToOne(() => Vision, (vision) => vision, {nullable: true, onDelete: 'SET NULL'})
     @JoinColumn({ name: 'VisionId', referencedColumnName: 'id' })
     vision?: Vision
     

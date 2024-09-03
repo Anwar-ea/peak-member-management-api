@@ -9,7 +9,7 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 @Entity("Vision")
 export class Vision extends AccountEntityBase implements IToResponseBase<Vision, IVisionResponse>{
 
-    @Column({ name: "FutureDate", type: 'datetime' })
+    @Column({ name: "FutureDate", type: 'timestamp' })
     futureDate!: Date;
 
     @Column({ name: "Revenue", type: 'decimal', precision: 18, scale: 2 })
@@ -21,7 +21,7 @@ export class Vision extends AccountEntityBase implements IToResponseBase<Vision,
     @RelationId((vision: Vision) => vision.businessPlan)
     businessPlanId!: string;
 
-    @OneToOne(() => BusinessPlan, {cascade: true ,nullable: false})
+    @OneToOne(() => BusinessPlan, {cascade: true ,nullable: false, onDelete: 'CASCADE'})
     businessPlan?: BusinessPlan;
 
     @OneToMany(() => Goal, (goal) => goal.vision, { cascade: true, onDelete: "SET NULL" })

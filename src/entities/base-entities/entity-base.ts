@@ -8,28 +8,28 @@ export abstract class EntityBase {
     @PrimaryColumn({name: 'Id',type: 'uuid'})
     id!: string;
 
-    @Column({name: 'CreatedAt', type: 'datetime'})
+    @Column({name: 'CreatedAt', type: 'timestamp'})
     createdAt!: Date;
 
-    @Column({name: 'Active', type: 'bit', default: 1})
+    @Column({name: 'Active', type: 'boolean', default: 1})
     active!: boolean;
 
-    @Column({name: 'CreatedBy', type: 'nvarchar'})
+    @Column({name: 'CreatedBy', type: 'text'})
     createdBy!: string;
 
     @Column({name: 'CreatedById', type: 'uuid'})
     createdById!: string;
 
-    @Column({name: 'ModifiedAt', type: 'datetime', default: null, nullable: true})
+    @Column({name: 'ModifiedAt', type: 'timestamp', default: null, nullable: true})
     modifiedAt?: Date;
 
-    @Column({name: 'ModifiedBy', type: 'nvarchar', default: null, nullable: true})
+    @Column({name: 'ModifiedBy', type: 'text', default: null, nullable: true})
     modifiedBy?: string;
 
     @Column({name: 'ModifiedById', type: 'uuid', default: null, nullable: true})
     modifiedById?: string;
 
-    @Column({name: 'Deleted', type: 'bit', default: 0})
+    @Column({name: 'Deleted', type: 'boolean', default: 0})
     deleted!: boolean; 
 
     protected toBaseEntiy(contextUser: ITokenUser, update: boolean = false): EntityBase {

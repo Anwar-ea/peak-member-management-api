@@ -14,13 +14,13 @@ import { IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser } from '../mode
 @Entity("BusinessPlan")
 export class BusinessPlan extends AccountEntityBase implements IToResponseBase<BusinessPlan, IBusinessPlanResponse> {
 
-    @Column({name: "CoreValues", type: "nvarchar", length: 'MAX' })
+    @Column({name: "CoreValues", type: "text" })
     coreValues!: string[];
 
-    @Column({name:"Purpose", type: 'nvarchar', length: "MAX" })
+    @Column({name:"Purpose", type: 'text' })
     purpose!: string;
 
-    @Column({ name: "Niche", type: 'nvarchar', length: "MAX" })
+    @Column({ name: "Niche", type: 'text' })
     niche!: string;
 
     @RelationId((businessPlan: BusinessPlan) => businessPlan.threeYearVision)
@@ -32,15 +32,15 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
     @RelationId((businessPlan: BusinessPlan) => businessPlan.marketingStrategy)
     marketingStrategyId!: string;
 
-    @OneToOne(() => MarketingStrategy, { nullable: false, eager: true, cascade: true})
+    @OneToOne(() => MarketingStrategy, { nullable: false, eager: true, cascade: true, onDelete: 'CASCADE'})
     @JoinColumn({ name: 'MarketingStrategyId', referencedColumnName: 'id' })
     marketingStrategy!: MarketingStrategy;
 
-    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true})
+    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true, onDelete: 'CASCADE'})
     @JoinColumn({ name: 'ThreeYearVisionId', referencedColumnName: 'id' })
     threeYearVision!: Vision;
 
-    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true})
+    @OneToOne(() => Vision, { nullable: false, eager: true, cascade: true, onDelete: 'CASCADE'})
     @JoinColumn({ name: 'OneYearVisionId', referencedColumnName: 'id' })
     oneYearVision!: Vision;
 

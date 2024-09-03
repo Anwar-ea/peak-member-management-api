@@ -10,10 +10,10 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 
 @Entity('Role')
 export class Role extends EntityBase implements IToResponseBase<Role, IRoleResponse> {
-    @Column({name: 'Name', nullable: false, type: 'nvarchar'})
+    @Column({name: 'Name', nullable: false, type: 'text'})
     name!: string;
 
-    @Column({name: 'Code', nullable: false, type: 'nvarchar'})
+    @Column({name: 'Code', nullable: false, type: 'text'})
     code!: string;
 
     @RelationId((entity: AccountEntityBase) => entity.account)

@@ -8,37 +8,37 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 @Entity('Account')
 export class Account extends EntityBase implements IToResponseBase<Account, IAccountResponse> {
 
-    @Column({ name: 'Name', type: 'nvarchar', unique: true })
+    @Column({ name: 'Name', type: 'text', unique: true })
     name!: string;
 
-    @Column({ name: 'Code', type: 'nvarchar', unique: true })
+    @Column({ name: 'Code', type: 'text', unique: true })
     code!: string;
 
-    @Column({ name: 'PhoneNo', type: 'nvarchar' })
+    @Column({ name: 'PhoneNo', type: 'text' })
     phoneNo!: string;
 
-    @Column({ name: 'Email', type: 'nvarchar', unique: true })
+    @Column({ name: 'Email', type: 'text', unique: true })
     email!: string;
 
-    @Column({ name: 'Address', type: 'nvarchar' })
+    @Column({ name: 'Address', type: 'text' })
     address!: string;
 
-    @Column({ name: 'TemporaryAddress', type: 'nvarchar', nullable: true })
+    @Column({ name: 'TemporaryAddress', type: 'text', nullable: true })
     temporaryAddress?: string;
 
     @Column({ name: 'ZipCode', type: 'int' })
     zipCode!: number;
 
-    @Column({ name: 'Country', type: 'nvarchar' })
+    @Column({ name: 'Country', type: 'text' })
     country!: string;
 
-    @Column({ name: 'State', type: 'nvarchar' })
+    @Column({ name: 'State', type: 'text' })
     state!: string;
 
-    @Column({ name: 'City', type: 'nvarchar' })
+    @Column({ name: 'City', type: 'text' })
     city!: string;
 
-    @Column({ name: 'Street', type: 'nvarchar' })
+    @Column({ name: 'Street', type: 'text' })
     street!: string;
 
     @Column({ name: 'Longitude', type: 'decimal' })

@@ -7,10 +7,10 @@ import { IMeasurableRequest, IMeasurableResponse, ITokenUser } from "../models";
 
 @Entity("Measurable")
 export class Measurable extends AccountEntityBase implements IToResponseBase<Measurable, IMeasurableResponse> {
-    @Column({name: "Name", type: "nvarchar", length: "max"})
+    @Column({name: "Name", type: "text"})
     name!: string
     
-    @Column({name: "Unit", type: "nvarchar", length: "max"})
+    @Column({name: "Unit", type: "text"})
     unit!: string
 
     @Column({name: "Goal", type: "int"})
@@ -19,22 +19,22 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
     @Column({name: "GoalMetric", type: "decimal"})
     goalMetric!: number
 
-    @Column({name: "ShowAverage", type: "bit", default: false})
+    @Column({name: "ShowAverage", type: "boolean", default: false})
     showAverage!: boolean
 
-    @Column({name: "ShowCumulative", type: "bit", default: false})
+    @Column({name: "ShowCumulative", type: "boolean", default: false})
     showCumulative!: boolean
 
-    @Column({name: "ApplyFormula", type: "bit", default: false})
+    @Column({name: "ApplyFormula", type: "boolean", default: false})
     applyFormula!: boolean
 
-    @Column({name: "AverageStartDate", type: "datetime", nullable: true})
+    @Column({name: "AverageStartDate", type: "timestamp", nullable: true})
     averageStartDate?: Date
 
-    @Column({name: "CumulativeStartDate", type: "datetime", nullable: true})
+    @Column({name: "CumulativeStartDate", type: "timestamp", nullable: true})
     cumulativeStartDate?: Date
 
-    @Column({name: "Formula", type: "nvarchar", length: "max", nullable: true})
+    @Column({name: "Formula", type: "text", nullable: true})
     formula?: string
 
     @RelationId((measurable: Measurable) => measurable.accountable)

@@ -7,22 +7,22 @@ import { IBusinessPlanRequest, IMarketingStrategyRequest, IMarketingStrategyResp
 @Entity("MarketingStrategy")
 export class MarketingStrategy extends AccountEntityBase implements IToResponseBase<MarketingStrategy, IMarketingStrategyResponse> {
 
-    @Column({name: "TargtMarket" ,type: 'nvarchar', length: "MAX" })
+    @Column({name: "TargtMarket" ,type: 'text' })
     targetMarket!: string;
 
-    @Column({ name: "WhoTheyAre", type: 'nvarchar', length: "MAX" })
+    @Column({ name: "WhoTheyAre", type: 'text' })
     whoTheyAre!: string;
 
-    @Column({ name: "WhereTheyAre",type: 'nvarchar', length: "MAX" })
+    @Column({ name: "WhereTheyAre",type: 'text' })
     whereTheyAre!: string;
 
-    @Column({ name: "WhatTheyAre",type: 'nvarchar', length: "MAX" })
+    @Column({ name: "WhatTheyAre",type: 'text' })
     whatTheyAre!: string;
 
-    @Column({ name: "ProvenProcess", type: 'nvarchar', length: "MAX" })
+    @Column({ name: "ProvenProcess", type: 'text' })
     provenProcess!: string;
 
-    @Column({ name: "Guarantee", type: 'nvarchar', length: "MAX" })
+    @Column({ name: "Guarantee", type: 'text' })
     guarantee!: string;
 
         
