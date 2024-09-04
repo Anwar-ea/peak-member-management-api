@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, RelationId } from "typeorm";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { IUserRequest, IUserResponse, UserStatus } from "../models";
 import { Role } from "./role";
@@ -52,7 +52,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     @RelationId((user: User) => user.role)
     roleId!: string;
 
-    @OneToOne(() => Role, (role) => role, {cascade: true})
+    @ManyToOne(() => Role, (role) => role, {cascade: true, nullable: false})
     @JoinColumn({ name: 'RoleId', referencedColumnName: 'id' })
     role!: Role
 
@@ -108,6 +108,8 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             let account = new Account();
             account.id = contextUser.accountId;
             this.account = account;
+            this.role = new Role();
+            this.role.id = this.roleId;
             this.id = id;
             this.modifiedBy = contextUser.name;
             this.modifiedAt = new Date();

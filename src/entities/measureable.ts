@@ -100,6 +100,7 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
             formula: entity.formula,
             accountableId: entity.accountableId,
             visionId: entity.visionId,
+            accountable: entity.accountable,
             vision: entity.vision ? entity.vision.toResponse(entity.vision) : undefined,
         };
     };

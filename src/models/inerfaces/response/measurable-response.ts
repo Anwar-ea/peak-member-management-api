@@ -1,4 +1,5 @@
 import { IAccountResponseBase } from "./response-base";
+import { IUserResponse } from "./user-response";
 import { IVisionResponse } from "./vision-response";
 
 export interface IMeasurableResponse extends IAccountResponseBase {
@@ -15,4 +16,5 @@ export interface IMeasurableResponse extends IAccountResponseBase {
     accountableId: string;
     visionId?: string;
     vision?: IVisionResponse;
+    accountable?: IUserResponse
 }
