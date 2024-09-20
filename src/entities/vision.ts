@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany, RelationId, OneToOne } from "typeorm";
+import { Entity, Column, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { BusinessPlan } from "./businessPlan";
 import { Goal } from "./goal";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
@@ -18,7 +18,7 @@ export class Vision extends AccountEntityBase implements IToResponseBase<Vision,
     @Column({name: "Profit", type: 'decimal', precision: 18, scale: 2 })
     profit!: number;
 
-    @RelationId((vision: Vision) => vision.businessPlan)
+    @Column({name: "BusinessPlanId", nullable: false})
     businessPlanId!: string;
 
     @OneToOne(() => BusinessPlan, {cascade: true ,nullable: false, onDelete: 'CASCADE'})

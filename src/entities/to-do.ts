@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { IToDoRequest, IToDoResponse, ITokenUser } from "../models";
 import { User } from "./user";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
@@ -21,7 +21,7 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
     @Column({name: 'Completed', type: 'boolean'})
     completed!: boolean;
 
-    @RelationId((toDo: ToDo) => toDo.user)
+    @Column({name: "UserId"})
     userId!: string;
 
     @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})

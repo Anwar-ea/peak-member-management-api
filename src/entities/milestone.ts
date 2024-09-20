@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { Goal } from "./goal";
 import { IMilestoneRequest, IMilestoneResponse, ITokenUser } from "../models";
@@ -17,7 +17,7 @@ export class Milestone extends AccountEntityBase implements IToResponseBase<Mile
     @Column({name: 'Completed', type: 'boolean', default: false})
     completed!: boolean;
 
-    @RelationId((milestone: Milestone) => milestone.goal)
+    @Column({name: "GoalId", nullable: false})
     goalId!: string;
 
     @ManyToOne(() => Goal, (goal) => goal, {nullable: false, onDelete: 'CASCADE', orphanedRowAction: 'delete'})

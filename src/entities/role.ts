@@ -1,6 +1,5 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from "typeorm";
 import { Privilege } from "./privilege";
-import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { IRoleRequest, IRoleResponse } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { EntityBase } from "./base-entities/entity-base";
@@ -17,7 +16,7 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
     @Column({name: 'Code', nullable: false, type: 'text'})
     code!: string;
 
-    @RelationId((entity: AccountEntityBase) => entity.account)
+    @Column({name: "AccountId", nullable: true})
     accountId?: string;
 
     @ManyToOne(() => Account, {nullable: true, onDelete: 'CASCADE'})

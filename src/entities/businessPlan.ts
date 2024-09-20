@@ -3,7 +3,6 @@ import {
     Column,
     OneToOne,
     JoinColumn,
-    RelationId,
 } from 'typeorm';
 import { MarketingStrategy } from './marketingStrategy';
 import { Vision } from './vision';
@@ -23,13 +22,13 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
     @Column({ name: "Niche", type: 'text' })
     niche!: string;
 
-    @RelationId((businessPlan: BusinessPlan) => businessPlan.threeYearVision)
+    @Column({name: "ThreeYearVisionId", nullable: false})
     threeYearVisionId!: string;
     
-    @RelationId((businessPlan: BusinessPlan) => businessPlan.oneYearVision)
+    @Column({name: "OneYearVisionId", nullable: false})
     oneYearVisionId!: string;
     
-    @RelationId((businessPlan: BusinessPlan) => businessPlan.marketingStrategy)
+    @Column({name: "MarketingStrategyId", nullable: false})
     marketingStrategyId!: string;
 
     @OneToOne(() => MarketingStrategy, { nullable: false, eager: true, cascade: true, onDelete: 'CASCADE'})

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne } from "typeorm";
 import { EntityBase } from "./base-entities/entity-base";
 import { Module } from "./module";
 import { Role } from "./role";
@@ -16,7 +16,7 @@ export class Privilege extends EntityBase implements IToResponseBase<Privilege, 
     @Column({name: 'Code', type: 'text', unique: true})
     code!: string;
 
-    @RelationId((privilage: Privilege) => privilage.module)
+    @Column({name: "ModuleId", nullable: false})
     moduleId!: string;
 
     @ManyToOne(() => Module, (module) => module.privilages, {onDelete: 'CASCADE'})

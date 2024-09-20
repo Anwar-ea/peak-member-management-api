@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { User } from "./user";
 import { Vision } from "./vision";
@@ -37,14 +37,14 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
     @Column({name: "Formula", type: "text", nullable: true})
     formula?: string
 
-    @RelationId((measurable: Measurable) => measurable.accountable)
+    @Column({name: "AccountableId", nullable: false})
     accountableId!: string;
 
     @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})
     @JoinColumn({ name: 'AccountableId', referencedColumnName: 'id' })
     accountable!: User
 
-    @RelationId((measurable: Measurable) => measurable.vision)
+    @Column({name: "VisionId", nullable: true})
     visionId?: string;
 
     @ManyToOne(() => Vision, (vision) => vision, {nullable: true})

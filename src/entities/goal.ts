@@ -1,5 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from "typeorm";
-import { GoalStatus, GoalType, IGoalRequest, IModuleResponse, ITokenUser } from "../models";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { GoalStatus, GoalType, IGoalRequest, ITokenUser } from "../models";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { User } from "./user";
 import { Milestone } from "./milestone";
@@ -25,15 +25,14 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     @Column({name: 'DueDate', type: 'timestamp'})
     dueDate!: Date;
 
-    @RelationId((goal: Goal) => goal.accountable)
+    @Column({name: "AccountableId", nullable: false})
     accountableId!: string;
 
     @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})
     @JoinColumn({ name: 'AccountableId', referencedColumnName: 'id' })
     accountable!: User
 
-    
-    @RelationId((goal: Goal) => goal.vision)
+    @Column({name: "VisionId", nullable: true})
     visionId?: string;
 
     @ManyToOne(() => Vision, (vision) => vision, {nullable: true, onDelete: 'SET NULL'})

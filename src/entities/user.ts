@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { IUserRequest, IUserResponse, UserStatus } from "../models";
 import { Role } from "./role";
@@ -49,7 +49,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     @Column({ name: 'LastOnline', type: 'timestamp', nullable: true })
     lastOnline?: Date;
 
-    @RelationId((user: User) => user.role)
+    @Column({name: "RoleId"})
     roleId!: string;
 
     @ManyToOne(() => Role, (role) => role, {cascade: true, nullable: false})

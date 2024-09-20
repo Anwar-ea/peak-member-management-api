@@ -1,8 +1,8 @@
-import { Entity, Column, OneToOne, JoinColumn, RelationId } from "typeorm";
+import { Entity, Column, OneToOne, JoinColumn } from "typeorm";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { BusinessPlan } from "./businessPlan";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { IBusinessPlanRequest, IMarketingStrategyRequest, IMarketingStrategyResponse, ITokenUser } from "../models";
+import {  IMarketingStrategyRequest, IMarketingStrategyResponse, ITokenUser } from "../models";
 
 @Entity("MarketingStrategy")
 export class MarketingStrategy extends AccountEntityBase implements IToResponseBase<MarketingStrategy, IMarketingStrategyResponse> {
@@ -26,7 +26,7 @@ export class MarketingStrategy extends AccountEntityBase implements IToResponseB
     guarantee!: string;
 
         
-    @RelationId((marketingStrategy: MarketingStrategy) => marketingStrategy.businessPlan)
+    @Column({name: "BusinessPlanId", nullable: false})
     businessPlanId!: string;
 
     @OneToOne(() => BusinessPlan, {cascade: true, onDelete: 'CASCADE'})

@@ -1,11 +1,11 @@
-import { JoinColumn, ManyToOne, RelationId } from "typeorm";
+import { Column, JoinColumn, ManyToOne } from "typeorm";
 import { EntityBase } from "./entity-base";
 import { Account } from "../account";
 import { IAccountResponseBase } from "../../models/inerfaces/response/response-base";
 import { ITokenUser } from "../../models";
 
 export abstract class AccountEntityBase extends EntityBase {
-  @RelationId((entity: AccountEntityBase) => entity.account)
+  @Column({name: "AccountId", nullable: false})
   accountId!: string;
 
   @ManyToOne(() => Account, { nullable: false })
