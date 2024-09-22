@@ -10,7 +10,7 @@ import { injectable } from "tsyringe";
 export class GoalRepository extends GenericRepository<Goal, IGoalResponse> implements IGoalRepository {
 
     constructor () {
-        super(dataSource.getRepository(Goal));
+        super(dataSource.getMongoRepository(Goal));
     }
 
     getOne = async (filtersRequest: Array<IFilter<Goal, keyof Goal>>): Promise<IGoalResponse | null> => await super.getOneByQueryWithResponse(filtersRequest)

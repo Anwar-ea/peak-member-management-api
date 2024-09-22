@@ -1,46 +1,19 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { GoalStatus, GoalType, IGoalRequest, ITokenUser } from "../models";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { User } from "./user";
-import { Milestone } from "./milestone";
 import { IGoalResponse } from "../models/inerfaces/response/goal-response";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { Vision } from "./vision";
+import { Types } from "mongoose";
 
-@Entity('Goal')
 export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGoalResponse> {
-    
-    @Column({name: 'Title', type: 'text'})
     title!: string;
-
-    @Column({name: 'Details', type: 'text'})
     details!: string;
-
-    @Column({name: 'Status', type: 'int', default: GoalStatus.OnTrack})
     status!: GoalStatus;
-
-    @Column({name: 'Type', type: 'int', default: GoalType.Individual})
     type!: GoalType;
-
-    @Column({name: 'DueDate', type: 'timestamp'})
     dueDate!: Date;
-
-    @Column({name: "AccountableId", nullable: false})
-    accountableId!: string;
-
-    @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})
-    @JoinColumn({ name: 'AccountableId', referencedColumnName: 'id' })
-    accountable!: User
-
-    @Column({name: "VisionId", nullable: true})
-    visionId?: string;
-
-    @ManyToOne(() => Vision, (vision) => vision, {nullable: true, onDelete: 'SET NULL'})
-    @JoinColumn({ name: 'VisionId', referencedColumnName: 'id' })
-    vision?: Vision
-    
-    @OneToMany(() => Milestone, (milestone) => milestone.goal, {eager: true, cascade: true, orphanedRowAction: 'delete'})
-    milestones!: Array<Milestone>;
+    accountableId!: Types.ObjectId;
+    accountable?: User
+    milestones!: Array<IMilestone>;
 
     toResponse(entity: Goal): IGoalResponse {
         return {
@@ -50,42 +23,34 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
             status: entity.status,
             type: entity.type,
             dueDate: entity.dueDate,
-            accountable: entity.accountable.toResponse(entity.accountable),
-            accountableId: entity.accountableId,
-            milestones: entity.milestones.map(m => m.toResponse(m))
+            accountable: entity.accountable ? entity.accountable.toResponse(entity.accountable) : undefined,
+            accountableId: entity.accountableId.toString(),
+            milestones: entity.milestones
         }
     }
 
     
-    toEntity = (entityRequest: IGoalRequest & {visionId?: string} , id?: string, contextUser?: ITokenUser): Goal => {
+    toEntity = (entityRequest: IGoalRequest, id?: string, contextUser?: ITokenUser): Goal => {
         this.title = entityRequest.title;
         this.details = entityRequest.details;
         this.dueDate = entityRequest.dueDate;
-        this.accountableId = entityRequest.accountableId;
-        let user = new User();
-        user.id = entityRequest.accountableId;
-        this.accountable = user;
+        this.accountableId = new Types.ObjectId(entityRequest.accountableId);
 
         if(contextUser && !id){
             super.toAccountEntity(contextUser)
         }
         
         if(id && contextUser){
-            super.toAccountEntity(contextUser, true)
-            this.id = id;
+            super.toAccountEntity(contextUser, id)
         }
 
-        if(entityRequest.visionId){
-            this.visionId = entityRequest.visionId;
-            this.vision = new Vision();
-            this.vision.id = entityRequest.visionId;
-        }
-
-        this.milestones = entityRequest.milestones.map(milestone => {
-            let ms = new Milestone().toEntity({...milestone, goalId: this.id}, contextUser);
-            return ms;
-        });
-
+        this.milestones = entityRequest.milestones;
         return this;
     }
 }
+
+export interface IMilestone {
+    details: string;
+    dueDate: Date;
+    completed: boolean;
+} 

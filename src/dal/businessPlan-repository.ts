@@ -10,7 +10,7 @@ import { injectable } from "tsyringe";
 export class BusinessPlanRepository extends GenericRepository<BusinessPlan, IBusinessPlanResponse> implements IBusinessPlanRepository {
 
     constructor () {
-        super(dataSource.getRepository(BusinessPlan));
+        super(dataSource.getMongoRepository(BusinessPlan));
     }
 
     getOne = async (filtersRequest: Array<IFilter<BusinessPlan, keyof BusinessPlan>>): Promise<IBusinessPlanResponse | null> => await super.getOneByQueryWithResponse(filtersRequest)

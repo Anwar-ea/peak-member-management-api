@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { Measurable } from "../entities";
 import { assignIn } from "lodash";
+import { Types } from "mongoose";
 
 @injectable()
 export class MeasurableService implements IMeasurableService {
@@ -25,7 +26,6 @@ export class MeasurableService implements IMeasurableService {
     async addMany(entitesRequest: IMeasurableRequest[], contextMeasurable: ITokenUser): Promise<IMeasurableResponse[]> {
         return this.measurableRepository.addMany(entitesRequest.map<Measurable>(acc => {
             let measurable = new Measurable().toEntity(acc, undefined, contextMeasurable);
-            measurable.id = randomUUID();
             return measurable;
         }))
     }
@@ -48,7 +48,7 @@ export class MeasurableService implements IMeasurableService {
         let entity: Partial<Measurable> = {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
-            modifiedById: contextUser.id
+            modifiedById: new Types.ObjectId(contextUser.id)
         }
         return await this.measurableRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
@@ -67,7 +67,7 @@ export class MeasurableService implements IMeasurableService {
     }
 
     async deleteMany(ids: string[], contextMeasurable: ITokenUser): Promise<void> {
-        let measurables = await this.measurableRepository.where({where:{id: In(ids)}});
+        let measurables = await this.measurableRepository.where({where:{_id: In(ids)}});
         
         if(measurables.length !== ids.length) throw new Error(`Some measurable with provided ids not found`);
 

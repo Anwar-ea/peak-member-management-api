@@ -7,14 +7,15 @@ import { Modules } from "../constants/modules";
 import { toCamelCase } from "./string-utility";
 import { Privileges } from "../constants/privileges";
 import { log } from "console";
+import { Types } from "mongoose";
 
 export const AddDefaultData = async (dataSource: DataSource) => {
 
-    let accountRepo = dataSource.getRepository(Account);
-    let userRepo = dataSource.getRepository(User);
-    let roleRepo = dataSource.getRepository(Role);
-    let moduleRepo = dataSource.getRepository(Module);
-    let privilageRepo = dataSource.getRepository(Privilege);
+    let accountRepo = dataSource.getMongoRepository(Account);
+    let userRepo = dataSource.getMongoRepository(User);
+    let roleRepo = dataSource.getMongoRepository(Role);
+    let moduleRepo = dataSource.getMongoRepository(Module);
+    let privilageRepo = dataSource.getMongoRepository(Privilege);
     
     let accountCount = await accountRepo.count();
     let roleCount = await roleRepo.count();
@@ -35,12 +36,12 @@ export const AddDefaultData = async (dataSource: DataSource) => {
         longitude: 0,
         latitude: 1
     }, undefined,{name: "Admin", id: EmptyGuid, accountId:'', privileges: []});
-    account.id = randomUUID();
+    account._id = new Types.ObjectId();
     let role: Role = new Role().toEntity(
       { name: "Account Admin", code: "accountAdmin", privilegeIds:[] }, undefined,
       { name: "Admin", id: EmptyGuid, accountId: "", privileges: [] }
     );
-    role.id = randomUUID();
+    role._id = new Types.ObjectId();
     role.privileges = [];
     role.accountId = undefined;
     role.account = undefined;
@@ -53,7 +54,7 @@ export const AddDefaultData = async (dataSource: DataSource) => {
         lastName: "User",
         dateOfBirth: new Date(),
         password: "asdf@123",
-        roleId: role.id,
+        roleId: role._id.toString(),
       }, undefined,
       { name: "Admin", id: EmptyGuid, accountId: EmptyGuid, privileges: [] }
     );
@@ -78,14 +79,13 @@ export const AddDefaultData = async (dataSource: DataSource) => {
           modulePrivilages.push(
             new Privilege().newInstanceToAdd(
               `${privilageName}`,
-              toCamelCase(privilageCode),
-              moduleEntity
+              toCamelCase(privilageCode)
             )
           );
         }
         moduleEntity.privilages = modulePrivilages;
-        await moduleRepo.save(moduleEntity)
-        await privilageRepo.save(modulePrivilages);
+        await moduleRepo.insert(moduleEntity)
+        await privilageRepo.insertMany(modulePrivilages);
       }
     }
 

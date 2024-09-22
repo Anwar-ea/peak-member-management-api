@@ -9,7 +9,7 @@ import { dataSource } from "./db/db-source";
 @injectable()
 export class UserRepository extends GenericRepository<User,IUserResponse> implements IUserRepository {
     constructor(){
-        super(dataSource.getRepository(User));
+        super(dataSource.getMongoRepository(User));
     }
     getOne = async (filtersRequest: Array<IFilter<User, keyof User>>): Promise<IUserResponse | null> => await super.getOneByQueryWithResponse(filtersRequest)
 

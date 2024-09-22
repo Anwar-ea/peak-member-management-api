@@ -9,6 +9,7 @@ import { In } from "typeorm";
 import { compareHash, encrypt, signJwt } from "../utility";
 import { FastifyError } from 'fastify'
 import { assignIn } from "lodash";
+import { Types } from "mongoose";
 
 @injectable()
 export class UserService implements IUserService {
@@ -26,7 +27,7 @@ export class UserService implements IUserService {
         if (match) {
             user.lastLogin = new Date();
             await this.userRepository.updateRecord(user);
-            return {...user.toResponse(user), token: signJwt({id: user.id, name: `${user.firstName} ${user.lastName}`, accountId: user.accountId, privileges: []})};
+            return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []})};
         }
         else {
             throw new Error('Invalid username or password',  error);
@@ -49,7 +50,6 @@ export class UserService implements IUserService {
     async addMany(entitesRequest: IUserRequest[], contextUser: ITokenUser): Promise<IUserResponse[]> {
         return this.userRepository.addMany(entitesRequest.map<User>(acc => {
             let user = new User().toEntity(acc, undefined, contextUser);
-            user.id = randomUUID();
             return user;
         }))
     }
@@ -71,7 +71,7 @@ export class UserService implements IUserService {
         let entity: Partial<User> = {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
-            modifiedById: contextUser.id,
+            modifiedById: new Types.ObjectId(contextUser.id),
         };
 
         return await this.userRepository.partialUpdate(id, assignIn(entity, entityRequest));
@@ -96,7 +96,7 @@ export class UserService implements IUserService {
     }
 
     async deleteMany(ids: string[], contextUser: ITokenUser): Promise<void> {
-        let users = await this.userRepository.where({where:{id: In(ids)}});
+        let users = await this.userRepository.where({where:{_id: In(ids)}});
         
         if(users.length !== ids.length) throw new Error(`Some user with provided ids not found`);
 

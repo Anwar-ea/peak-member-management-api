@@ -5,7 +5,4 @@ import { IRoleResponse } from "./role-response";
 export interface IPrivilegeResponse extends IResponseBase {
     name: string;
     code: string;
-    moduleId: string;
-    module?: IModuleResponse;
-    roles?: Array<IRoleResponse>;
 }

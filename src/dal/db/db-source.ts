@@ -1,27 +1,11 @@
-import { DataSource } from "typeorm";
-import pg from 'pg'
-import { Account, Privilege, Role, User, Module, Goal, Milestone, ToDo, BusinessPlan, MarketingStrategy, Measurable, Vision } from "../../entities";
 import { config } from "dotenv";
-config();
+import { connect } from "mongoose";
 import { AddDefaultData } from "../../utility/default-data";
+config();
 
-export const dataSource = new DataSource({
-    driver: pg,
-    type: 'postgres',
-    host: process.env.DB_Server ?? "",
-    database: process.env.DB_DataBase ?? "",
-    username: process.env.DB_userId ?? "",
-    password: process.env.DB_Password ?? "",
-    port: process.env.DB_Port ? parseInt(process.env.DB_Port) : 1433,
-    migrations: ["src/dal/migrations/**/*.ts"],
-    entities: [Account, User,  Role, Privilege, Module, Goal, Milestone, ToDo, Vision, BusinessPlan, MarketingStrategy, Measurable],
-    synchronize: true,
-});
-
-
-dataSource.initialize()
+connect("mongodb://localhost:27017/", {dbName: process.env.DB_DataBase})
 .then(async (x) => {
-    await AddDefaultData(dataSource)
+    // await AddDefaultData(dataSource)
     console.log("Database Connected successfully")
 })
 .catch((err) =>  console.log("Error conneting to database", err));

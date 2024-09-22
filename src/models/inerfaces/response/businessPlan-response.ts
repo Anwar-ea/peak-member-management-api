@@ -6,10 +6,7 @@ export interface IBusinessPlanResponse extends IAccountResponseBase {
     coreValues: string[];
     purpose: string;
     niche: string;
-    threeYearVisionId: string;
-    oneYearVisionId: string;
-    marketingStrategyId: string;
-    marketingStrategy?: IMarketingStrategyResponse;
+    marketingStrategies?: Array<IMarketingStrategyResponse>;
     threeYearVision?: IVisionResponse;
     oneYearVision?: IVisionResponse;
 }

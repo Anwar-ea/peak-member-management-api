@@ -5,7 +5,7 @@ export interface IBusinessPlanRequest {
     coreValues: string[];
     purpose: string;
     niche: string;
-    marketingStrategy: IMarketingStrategyRequest;
+    marketingStrategies: Array<IMarketingStrategyRequest>;
     threeYearVision: IVisionRequest;
     oneYearVision: IVisionRequest;
 }

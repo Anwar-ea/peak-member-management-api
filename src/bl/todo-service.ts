@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { ToDo } from "../entities";
 import { assignIn } from "lodash";
+import { Types } from "mongoose";
 
 @injectable()
 export class ToDoService implements IToDoService {
@@ -25,7 +26,6 @@ export class ToDoService implements IToDoService {
     async addMany(entitesRequest: IToDoRequest[], contextToDo: ITokenUser): Promise<IToDoResponse[]> {
         return this.toDoRepository.addMany(entitesRequest.map<ToDo>(acc => {
             let toDo = new ToDo().toEntity(acc, undefined, contextToDo);
-            toDo.id = randomUUID();
             return toDo;
         }))
     }
@@ -47,7 +47,7 @@ export class ToDoService implements IToDoService {
         let entity: Partial<ToDo> = {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
-            modifiedById: contextUser.id
+            modifiedById: new Types.ObjectId(contextUser.id)
         }
         return await this.toDoRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
@@ -66,7 +66,7 @@ export class ToDoService implements IToDoService {
     }
 
     async deleteMany(ids: string[], contextToDo: ITokenUser): Promise<void> {
-        let toDos = await this.toDoRepository.where({where:{id: In(ids)}});
+        let toDos = await this.toDoRepository.where({where:{_id: In(ids)}});
         
         if(toDos.length !== ids.length) throw new Error(`Some toDo with provided ids not found`);
 

@@ -1,50 +1,21 @@
-import { Column, Entity } from "typeorm";
 import { EntityBase } from "./base-entities/entity-base";
 import { IAccountRequest, IAccountResponse } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
-import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
 
-@Entity('Account')
 export class Account extends EntityBase implements IToResponseBase<Account, IAccountResponse> {
-
-    @Column({ name: 'Name', type: 'text', unique: true })
     name!: string;
-
-    @Column({ name: 'Code', type: 'text', unique: true })
     code!: string;
-
-    @Column({ name: 'PhoneNo', type: 'text' })
     phoneNo!: string;
-
-    @Column({ name: 'Email', type: 'text', unique: true })
     email!: string;
-
-    @Column({ name: 'Address', type: 'text' })
     address!: string;
-
-    @Column({ name: 'TemporaryAddress', type: 'text', nullable: true })
     temporaryAddress?: string;
-
-    @Column({ name: 'ZipCode', type: 'int' })
     zipCode!: number;
-
-    @Column({ name: 'Country', type: 'text' })
     country!: string;
-
-    @Column({ name: 'State', type: 'text' })
     state!: string;
-
-    @Column({ name: 'City', type: 'text' })
     city!: string;
-
-    @Column({ name: 'Street', type: 'text' })
     street!: string;
-
-    @Column({ name: 'Longitude', type: 'decimal' })
     longitude!: number;
-
-    @Column({ name: 'Latitude', type: 'decimal' })
     latitude!: number;
 
     toResponse(entity: Account): IAccountResponse {
@@ -80,22 +51,13 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
         this.street = requestEntity.street;
         this.longitude = requestEntity.longitude;
         this.latitude = requestEntity.latitude;
+        
         if(contextUser && !id){
-            this.createdBy = contextUser.name;
-            this.createdAt = new Date();
-            this.createdById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
-            this.id = randomUUID();
+            this.toBaseEntiy(contextUser);
         }
 
         if(id && contextUser){
-            this.id = id;
-            this.modifiedBy = contextUser.name;
-            this.modifiedAt = new Date();
-            this.modifiedById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
+            this.toBaseEntiy(contextUser, id);
         }
         return this;
     }

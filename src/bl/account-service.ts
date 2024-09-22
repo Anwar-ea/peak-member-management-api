@@ -8,6 +8,7 @@ import { randomUUID } from "crypto";
 import { EmptyGuid } from "../constants/guid";
 import { In } from "typeorm";
 import { assignIn } from "lodash";
+import { Types } from "mongoose";
 
 
 @injectable()
@@ -20,9 +21,9 @@ export class AccountService implements IAccountService {
         account.createdAt = new Date();
         account.active = true;
         account.deleted = false;
-        account.createdById = EmptyGuid;
+        account.createdById = new Types.ObjectId(EmptyGuid);
         account.createdBy = 'Admin';
-        account.id = randomUUID();
+        account._id = new Types.ObjectId();
         if(entityRequest.defaultUser){
             let userRequest: IUserRequest = {
                 ...entityRequest.defaultUser,
@@ -33,9 +34,9 @@ export class AccountService implements IAccountService {
             user.createdAt = new Date();
             user.active = true;
             user.deleted = false;
-            user.createdById = EmptyGuid;
+            user.createdById = new Types.ObjectId(EmptyGuid);
             user.createdBy = 'Admin';
-            user.id = randomUUID();
+            user._id = new Types.ObjectId();
 
         }
         let response  = await this.accountRepository.addRecord(account);
@@ -49,7 +50,6 @@ export class AccountService implements IAccountService {
 
     async add(entityRequest: IAccountRequest, contextUser?: ITokenUser): Promise<IAccountResponse> {
         let account = new Account().toEntity(entityRequest, undefined, contextUser);
-        account.id = randomUUID();
         let response  = await this.accountRepository.addRecord(account);
         if (response) return response;
         else throw new Error(`Error adding ${entityRequest}`);
@@ -58,7 +58,6 @@ export class AccountService implements IAccountService {
     async addMany(entitesRequest: IAccountRequest[], contextUser: ITokenUser): Promise<IAccountResponse[]> {
         return this.accountRepository.addMany(entitesRequest.map<Account>(acc => {
             let account = new Account().toEntity(acc, undefined, contextUser);
-            account.id = randomUUID();
             return account;
         }))
     }
@@ -74,9 +73,9 @@ export class AccountService implements IAccountService {
     async update(id: string, entityRequest: IAccountRequest, contextUser: ITokenUser): Promise<IAccountResponse> {
         let account = new Account().toEntity(entityRequest);
         account.modifiedAt = new Date();
-        account.modifiedById = contextUser.id;
+        account.modifiedById = new Types.ObjectId(contextUser.id);
         account.modifiedBy = contextUser.name;
-        account.id = id;
+        account._id = new Types.ObjectId(id);
         return await this.accountRepository.updateRecord(account);
     }
 
@@ -84,7 +83,7 @@ export class AccountService implements IAccountService {
 
         let entity: Partial<Account> = {
             modifiedAt: new Date(),
-            modifiedById: contextUser.id,
+            modifiedById: new Types.ObjectId(contextUser.id),
             modifiedBy: contextUser.name
         };
         
@@ -94,10 +93,6 @@ export class AccountService implements IAccountService {
     async updateMany(entitesRequest: (IAccountRequest & { id: string; })[], contextUser: ITokenUser): Promise<IAccountResponse[]> {
         return this.accountRepository.updateMany(entitesRequest.map<Account>(acc => {
             let account = new Account().toEntity(acc, acc.id, contextUser);
-            account.modifiedAt = new Date();
-            account.modifiedById = contextUser.id;
-            account.modifiedBy = contextUser.name;
-            account.id = acc.id;
             return account;
         }))
     }
@@ -109,7 +104,7 @@ export class AccountService implements IAccountService {
     }
 
     async deleteMany(ids: string[], contextUser: ITokenUser): Promise<void> {
-        let accounts = await this.accountRepository.where({where:{id: In(ids)}});
+        let accounts = await this.accountRepository.where({where:{_id: In(ids)}});
         
         if(accounts.length !== ids.length) throw new Error(`Some account with provided ids not found`);
 

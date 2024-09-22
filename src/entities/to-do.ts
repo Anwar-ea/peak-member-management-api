@@ -1,32 +1,18 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { IToDoRequest, IToDoResponse, ITokenUser } from "../models";
 import { User } from "./user";
 import { AccountEntityBase } from "./base-entities/account-entity-base";
 import { Account } from "./account";
 import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
+import { Types } from "mongoose";
 
-@Entity('ToDo')
 export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, IToDoResponse> {
-    
-    @Column({name: 'Todo', type: 'text'})
     todo!: string;
-
-    @Column({name: 'Details', type: 'text'})
     details!: string;
-
-    @Column({name: 'DueDate', type: 'timestamp'})
     dueDate!: Date;
-
-    @Column({name: 'Completed', type: 'boolean'})
     completed!: boolean;
-
-    @Column({name: "UserId"})
-    userId!: string;
-
-    @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})
-    @JoinColumn({ name: 'UserId', referencedColumnName: 'id' })
-    user!: User
+    userId!: Types.ObjectId;
+    user?: User
     
     toResponse(entity: ToDo): IToDoResponse {
         return {
@@ -35,8 +21,8 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
             details: entity.details,
             completed: entity.completed,
             dueDate: entity.dueDate,
-            userId: entity.userId,
-            user: entity.user.toResponse(entity.user)
+            userId: entity.userId.toString(),
+            user: entity.user ? entity.user.toResponse(entity.user) : undefined,
         }
     }
 
@@ -44,37 +30,17 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
         this.todo = entityRequest.todo;
         this.details = entityRequest.details;
         this.dueDate = entityRequest.dueDate;
-        this.userId = entityRequest.userId;
+        this.userId = new Types.ObjectId(entityRequest.userId);
         this.completed = entityRequest.completed;
-        let user = new User();
-        user.id = entityRequest.userId;
-        this.user = user;
+
         if(contextUser && !id){
-            this.createdBy = contextUser.name;
-            this.createdAt = new Date();
-            this.createdById = contextUser.id;
-            this.active = true;
-            this.completed = false;
-            this.accountId = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.deleted = false;
-            this.id = randomUUID();
+            this.toAccountEntity(contextUser)
         }
 
         if(id && contextUser){
-            this.accountId = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.id = id;
-            this.modifiedBy = contextUser.name;
-            this.modifiedAt = new Date();
-            this.modifiedById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
+            this.toAccountEntity(contextUser, id)
         }
+        
         return this;
     }
 }

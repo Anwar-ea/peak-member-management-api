@@ -7,35 +7,23 @@ import { Account } from "./account";
 import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
 import { User } from "./user";
+import { Types } from "mongoose";
 
 @Entity('Role')
 export class Role extends EntityBase implements IToResponseBase<Role, IRoleResponse> {
-    @Column({name: 'Name', nullable: false, type: 'text'})
     name!: string;
-
-    @Column({name: 'Code', nullable: false, type: 'text'})
     code!: string;
-
-    @Column({name: "AccountId", nullable: true})
-    accountId?: string;
-
-    @ManyToOne(() => Account, {nullable: true, onDelete: 'CASCADE'})
-    @JoinColumn({name: 'AccountId', referencedColumnName: 'id'})
-    account!: Account | undefined
-    
-    @ManyToMany(() => Privilege, (privilege) => privilege.roles, {cascade: true, eager: true})
-    @JoinTable({name: 'Role_Privilage', joinColumn: {name: 'RoleId', referencedColumnName: 'id'}, inverseJoinColumn: {name: 'PrivilegeId', referencedColumnName: 'id'}})
-    privileges!: Array<Privilege>;
-
-    @OneToMany(() => User, (user: User) => user.role)
-    users!: Array<User>;
+    privilegeIds!: Array<Types.ObjectId>;
+    accountId?: Types.ObjectId;
+    account?: Account | undefined
+    privileges?: Array<Privilege>;
     
     toResponse(entity: Role): IRoleResponse {
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
             code: entity.code,
-            privilages: entity.privileges.map(prv => prv.toResponse(prv))
+            privilages: entity.privileges ? entity.privileges.map(prv => prv.toResponse(prv)) : undefined
         }    
     }
 
@@ -45,34 +33,24 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
         if(contextUser && !id){
             this.createdBy = contextUser.name;
             this.createdAt = new Date();
-            this.accountId  = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.createdById = contextUser.id;
+            this.accountId  = contextUser.accountId ? new Types.ObjectId(contextUser.accountId) : undefined;
+            this.createdById = new Types.ObjectId(contextUser.id);
             this.active = true;
             this.deleted = false;
-            this.id = randomUUID();
+            this._id = new Types.ObjectId();
         }
         
         if(id && contextUser){
-            this.accountId = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.id = id;
+            this.accountId = contextUser.accountId ? new Types.ObjectId(contextUser.accountId) : undefined;
+            this._id = new Types.ObjectId(id);
             this.modifiedBy = contextUser.name;
             this.modifiedAt = new Date();
-            this.modifiedById = contextUser.id;
+            this.modifiedById = new Types.ObjectId(contextUser.id);
             this.active = true;
             this.deleted = false;
         }
 
-        this.privileges = entityRequest.privilegeIds.map(prv => {
-            let privilege = new Privilege();
-            privilege.id = prv;
-            return privilege;
-        });
+        this.privilegeIds = entityRequest.privilegeIds.map(prv => new Types.ObjectId(prv));
 
         return this;
     }

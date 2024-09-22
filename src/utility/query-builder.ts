@@ -2,6 +2,7 @@ import { Any, ArrayContains, Between, Equal, FindManyOptions, FindOptionsOrder, 
 import { AccountEntityBase, EntityBase } from "../entities";
 import { IFetchRequest, IFilter } from "../models";
 import { FilterMatchModes, FilterOperators, SortOrder } from "../models";
+import { Types } from "mongoose";
 
 export const buildQuery = <T extends AccountEntityBase | EntityBase>(fetchRequest: IFetchRequest<T>, getOnlyActive: boolean = false, dontGetDeleted: boolean = true, accountId?: string): FindManyOptions<T> => {
     let query: FindManyOptions<T> = {}
@@ -73,7 +74,7 @@ export const queryOptionsMapper = <T extends AccountEntityBase | EntityBase>(fil
     let defaultWhereClause: FindOptionsWhere<T> = {};
 
     if (accountId) {
-        const whereClause: FindOptionsWhere<AccountEntityBase> = { accountId };
+        const whereClause: FindOptionsWhere<AccountEntityBase> = { accountId: new Types.ObjectId(accountId) };
         defaultWhereClause = { ...defaultWhereClause, ...(whereClause as FindOptionsWhere<T>) };
     }
 

@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { BusinessPlan } from "../entities";
 import { assignIn } from "lodash";
+import { Types } from "mongoose";
 
 @injectable()
 export class BusinessPlanService implements IBusinessPlanService {
@@ -25,7 +26,6 @@ export class BusinessPlanService implements IBusinessPlanService {
     async addMany(entitesRequest: IBusinessPlanRequest[], contextBusinessPlan: ITokenUser): Promise<IBusinessPlanResponse[]> {
         return this.businessPlanRepository.addMany(entitesRequest.map<BusinessPlan>(acc => {
             let businessPlan = new BusinessPlan().toEntity(acc, undefined, contextBusinessPlan);
-            businessPlan.id = randomUUID();
             return businessPlan;
         }))
     }
@@ -48,7 +48,7 @@ export class BusinessPlanService implements IBusinessPlanService {
         let entity: Partial<BusinessPlan> = {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
-            modifiedById: contextUser.id
+            modifiedById: new Types.ObjectId(contextUser.id)
         }
         return await this.businessPlanRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
@@ -67,7 +67,7 @@ export class BusinessPlanService implements IBusinessPlanService {
     }
 
     async deleteMany(ids: string[], contextBusinessPlan: ITokenUser): Promise<void> {
-        let businessPlans = await this.businessPlanRepository.where({where:{id: In(ids)}});
+        let businessPlans = await this.businessPlanRepository.where({where:{_id: In(ids)}});
         
         if(businessPlans.length !== ids.length) throw new Error(`Some businessPlan with provided ids not found`);
 

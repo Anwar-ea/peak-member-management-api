@@ -9,7 +9,7 @@ import { dataSource } from "./db/db-source";
 export class PrivilegeRepository extends GenericRepository<Privilege, IPrivilegeResponse> implements IPrivilegeRepository {
 
     constructor(){
-        super(dataSource.getRepository(Privilege));
+        super(dataSource.getMongoRepository(Privilege));
     }
     getOne = async (filtersRequest: Array<IFilter<Privilege, keyof Privilege>>): Promise<IPrivilegeResponse | null> => await super.getOneByQueryWithResponse(filtersRequest);
 

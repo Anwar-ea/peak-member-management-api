@@ -10,7 +10,7 @@ import { injectable } from "tsyringe";
 export class ToDoRepository extends GenericRepository<ToDo, IToDoResponse> implements IToDoRepository {
 
     constructor () {
-        super(dataSource.getRepository(ToDo));
+        super(dataSource.getMongoRepository(ToDo));
     }
 
     getOne = async (filtersRequest: Array<IFilter<ToDo, keyof ToDo>>): Promise<IToDoResponse | null> => await super.getOneByQueryWithResponse(filtersRequest)

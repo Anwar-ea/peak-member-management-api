@@ -8,6 +8,7 @@ import { In } from "typeorm";
 import { Role } from "../entities";
 import { log } from "console";
 import { assignIn } from "lodash";
+import { Types } from "mongoose";
 
 @injectable()
 export class RoleService implements IRoleService {
@@ -19,7 +20,6 @@ export class RoleService implements IRoleService {
 
     async add(entityRequest: IRoleRequest, contextUser: ITokenUser): Promise<IRoleResponse> {
         let role = new Role().toEntity(entityRequest, undefined, contextUser);
-        role.id = randomUUID();
         let response  = await this.roleRepository.addRecord(role);
         if (response) return response;
         else throw new Error(`Error adding ${entityRequest}`);
@@ -28,7 +28,6 @@ export class RoleService implements IRoleService {
     async addMany(entitesRequest: IRoleRequest[], contextUser: ITokenUser): Promise<IRoleResponse[]> {
         return this.roleRepository.addMany(entitesRequest.map<Role>(acc => {
             let role = new Role().toEntity(acc, undefined, contextUser);
-            role.id = randomUUID();
             return role;
         }))
     }
@@ -51,7 +50,7 @@ export class RoleService implements IRoleService {
         let entity: Partial<Role> = {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
-            modifiedById: contextUser.id
+            modifiedById: new Types.ObjectId(contextUser.id)
         }
         return await this.roleRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
@@ -70,7 +69,7 @@ export class RoleService implements IRoleService {
     }
 
     async deleteMany(ids: string[], contextUser: ITokenUser): Promise<void> {
-        let roles = await this.roleRepository.where({where:{id: In(ids)}});
+        let roles = await this.roleRepository.where({where:{_id: In(ids)}});
         
         if(roles.length !== ids.length) throw new Error(`Some role with provided ids not found`);
 

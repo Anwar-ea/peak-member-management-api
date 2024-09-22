@@ -9,7 +9,7 @@ import { dataSource } from "./db/db-source";
 @injectable()
 export class AccountRepository extends GenericRepository<Account, IAccountResponse> implements IAccountRepository {
     constructor(){
-        super(dataSource.getRepository(Account));
+        super(dataSource.getMongoRepository(Account));
     }
     getOne = async (filtersRequest: Array<IFilter<Account, keyof Account>>): Promise<IAccountResponse | null> => await super.getOneByQueryWithResponse(filtersRequest)
 
@@ -21,7 +21,7 @@ export class AccountRepository extends GenericRepository<Account, IAccountRespon
 
     getById = async (id: string): Promise<IAccountResponse | null> => await super.findOneByIdWithResponse(id);
 
-    updateRecord = async (entity: Account): Promise<IAccountResponse> => await super.invokeDbOperations(entity, Actions.Update);
+    updateRecord = async (entity: Account): Promise<IAccountResponse> => await super.invokeDbOperationsWithResponse(entity, Actions.Update);
 
     updateMany = async (entites: Array<Account>): Promise<Array<IAccountResponse>> => await super.invokeDbOperationsRangeWithResponse(entites, Actions.Update);
 

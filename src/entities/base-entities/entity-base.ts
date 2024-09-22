@@ -1,49 +1,33 @@
-import { Column, PrimaryColumn } from "typeorm";
 import { IResponseBase } from "../../models/inerfaces/response/response-base";
 import { ITokenUser } from "../../models";
 import { EmptyGuid } from "../../constants";
 import { randomUUID } from "crypto";
+import { ObjectId, Types } from "mongoose";
 
 export abstract class EntityBase {
-    @PrimaryColumn({name: 'Id',type: 'uuid'})
-    id!: string;
-
-    @Column({name: 'CreatedAt', type: 'timestamp'})
+    _id!: Types.ObjectId;
     createdAt!: Date;
-
-    @Column({name: 'Active', type: 'boolean', default: 1})
     active!: boolean;
-
-    @Column({name: 'CreatedBy', type: 'text'})
     createdBy!: string;
-
-    @Column({name: 'CreatedById', type: 'uuid'})
-    createdById!: string;
-
-    @Column({name: 'ModifiedAt', type: 'timestamp', default: null, nullable: true})
+    createdById!: Types.ObjectId;
     modifiedAt?: Date;
-
-    @Column({name: 'ModifiedBy', type: 'text', default: null, nullable: true})
     modifiedBy?: string;
-
-    @Column({name: 'ModifiedById', type: 'uuid', default: null, nullable: true})
-    modifiedById?: string;
-
-    @Column({name: 'Deleted', type: 'boolean', default: 0})
+    modifiedById?: Types.ObjectId;
     deleted!: boolean; 
 
-    protected toBaseEntiy(contextUser: ITokenUser, update: boolean = false): EntityBase {
+    protected toBaseEntiy(contextUser: ITokenUser, id?: string): EntityBase {
             this.active = true;
             this.deleted = false;
-        if(!update){
-            this.id = randomUUID();
+        if(!id){
+            this._id = new Types.ObjectId();
             this.createdAt = new Date();
             this.createdBy = contextUser.name;
-            this.createdById = contextUser.id;
+            this.createdById = new Types.ObjectId(contextUser.id);
         }else {
+            this._id = new Types.ObjectId(id);
             this.modifiedAt = new Date();
             this.modifiedBy = contextUser.name;
-            this.modifiedById = contextUser.id;
+            this.modifiedById = new Types.ObjectId(contextUser.id);
         }
 
         return this;
@@ -51,14 +35,14 @@ export abstract class EntityBase {
     
     protected toResponseBase<T extends EntityBase>(entity: T): IResponseBase {
         return {
-            id: entity.id,
+            id: entity._id.toString(),
             active: entity.active,
             createdAt: entity.createdAt,
             createdBy: entity.createdBy,
-            createdById: entity.createdById,
+            createdById: entity.createdById.toString(),
             modifiedAt: entity.modifiedAt,
             modifiedBy: entity.modifiedBy,
-            modifiedById: entity.modifiedById,
+            modifiedById: entity.modifiedById ? entity.modifiedById?.toString() : undefined
         }
     }
 }

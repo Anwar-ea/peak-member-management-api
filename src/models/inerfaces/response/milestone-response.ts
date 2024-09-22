@@ -1,8 +1,7 @@
 import { IAccountResponseBase } from "./response-base";
 
-export interface IMilestoneResponse extends IAccountResponseBase {
+export interface IMilestoneResponse {
     details: string;
     dueDate: Date;
     completed: boolean;
-    goalId: string;
 }

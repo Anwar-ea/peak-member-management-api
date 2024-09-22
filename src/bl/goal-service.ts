@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { Goal } from "../entities";
 import { assignIn } from "lodash";
+import { Types } from "mongoose";
 
 @injectable()
 export class GoalService implements IGoalService {
@@ -25,7 +26,6 @@ export class GoalService implements IGoalService {
     async addMany(entitesRequest: IGoalRequest[], contextGoal: ITokenUser): Promise<IGoalResponse[]> {
         return this.goalRepository.addMany(entitesRequest.map<Goal>(acc => {
             let goal = new Goal().toEntity(acc, undefined, contextGoal);
-            goal.id = randomUUID();
             return goal;
         }))
     }
@@ -48,7 +48,7 @@ export class GoalService implements IGoalService {
         let entity: Partial<Goal> = {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
-            modifiedById: contextUser.id
+            modifiedById: new Types.ObjectId(contextUser.id)
         }
         return await this.goalRepository.partialUpdate(id, assignIn(entity, partialEntity));
     }
@@ -67,7 +67,7 @@ export class GoalService implements IGoalService {
     }
 
     async deleteMany(ids: string[], contextGoal: ITokenUser): Promise<void> {
-        let goals = await this.goalRepository.where({where:{id: In(ids)}});
+        let goals = await this.goalRepository.where({where:{_id: In(ids)}});
         
         if(goals.length !== ids.length) throw new Error(`Some goal with provided ids not found`);
 

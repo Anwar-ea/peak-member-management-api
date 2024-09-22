@@ -11,5 +11,5 @@ export interface IGoalResponse extends IAccountResponseBase {
     dueDate: Date;
     accountableId: string;
     milestones: Array<IMilestoneResponse>;
-    accountable: IUserResponse
+    accountable?: IUserResponse
 }

@@ -1,4 +1,4 @@
-import { Repository, SelectQueryBuilder, FindOptionsWhere, QueryRunner, FindOneOptions, FindManyOptions, Equal } from 'typeorm';
+import { Repository, SelectQueryBuilder, FindOptionsWhere, QueryRunner, FindOneOptions, FindManyOptions, Equal, MongoRepository } from 'typeorm';
 import { EntityBase } from '../../entities/base-entities/entity-base';
 import { Actions, IDataSourceResponse, IFetchRequest, IFilter, PagedRequest } from '../../models';
 import { injectable } from 'tsyringe';
@@ -10,7 +10,7 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 @injectable()
 export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) & IToResponseBase<TEntity, TResponse>, TResponse>  {
     
-    constructor(private readonly repository: Repository<TEntity>){
+    constructor(private readonly repository: MongoRepository<TEntity>){
 
     }
 
@@ -81,11 +81,11 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
     }
 
     async findOneById(id: string): Promise<TEntity | null> {
-        return await this.repository.findOneBy({ id: id as any });
+        return await this.repository.findOneBy({ _id: id as any });
     }
 
     async findOneByIdWithResponse(id: string): Promise<TResponse | null> {
-        let entity = await this.repository.findOneBy({ id: id as any });
+        let entity = await this.repository.findOneBy({ _id: id as any });
         return entity ? entity.toResponse(entity) : null;
     }
 
