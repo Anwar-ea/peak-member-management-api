@@ -15,10 +15,10 @@ export class PrivilegeService implements IPrivilegeService {
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<Privilege>): Promise<IDataSourceResponse<IPrivilegeResponse>> {
-        return await this.privilegeRepository.get(fetchRequest ?? {}, contextUser.accountId);
+        return await this.privilegeRepository.getPagedData(fetchRequest ?? {}, true, true);
     }
 
     async getById(id: string, contextUser: ITokenUser): Promise<IPrivilegeResponse | null> {
-        return await this.privilegeRepository.getById(id);
+        return await this.privilegeRepository.findOneByIdWithResponse(id);
     }
 }

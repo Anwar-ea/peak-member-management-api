@@ -1,11 +1,10 @@
-import { FindManyOptions } from "typeorm";
 import { Module } from "../../entities";
 import { IDataSourceResponse, IFetchRequest, IFilter, IModuleResponse } from "../../models";
-import { IRepositoryBase } from "./repository-base";
+import { HydratedDocument, ProjectionType, RootFilterQuery } from "mongoose";
 
 export interface IModuleRepository {
-    get(options: IFetchRequest<Module>, accountId?: string): Promise<IDataSourceResponse<IModuleResponse>>;
-    where(options: FindManyOptions<Module>): Promise<Array<Module>>;
-    getOne(filtersRequest: Array<IFilter<Module, keyof Module>>): Promise<IModuleResponse | null>;
-    getById(id: string): Promise<IModuleResponse | null>;
+    findOneByIdWithResponse(id: string): Promise<IModuleResponse | null>;
+    getOneByQueryWithResponse(options: Array<IFilter<Module, keyof Module>>, getOnlyActive: boolean, dontGetDeleted: boolean, accountId?: string): Promise<IModuleResponse | null>;
+    find(options?: RootFilterQuery<Module>, projection?: ProjectionType<Module>): Promise<Array<HydratedDocument<Module>>>;
+    getPagedData(fetchRequest: IFetchRequest<Module>, getOnlyActive: boolean, dontGetDeleted: boolean, accountId?: string): Promise<IDataSourceResponse<IModuleResponse>>;
 }

@@ -1,62 +1,30 @@
-import { Column, Entity, JoinColumn, OneToOne, RelationId } from "typeorm";
-import { AccountEntityBase } from "./base-entities/account-entity-base";
-import { IUserRequest, IUserResponse, UserStatus } from "../models";
+import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
+import { IUserRequest, IUserResponse, ResponseInput, UserStatus } from "../models";
 import { Role } from "./role";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
-import { randomUUID } from "crypto";
-import { Account } from "./account";
 import { IToResponseBase } from "./abstractions/to-response-base";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
-@Entity('User')
 export class User extends AccountEntityBase implements IToResponseBase<User, IUserResponse> {
-
-    @Column({ name: 'UserName', unique: true, type: 'nvarchar' })
     userName!: string;
-
-    @Column({ name: 'Email', type: 'nvarchar', unique: true })
     email!: string;
-
-    @Column({ name: 'PasswordHash', type: 'nvarchar'})
     passwordHash!: string;
-
-    @Column({ name: 'FirstName', type: 'nvarchar' })
     firstName!: string;
-
-    @Column({ name: 'MiddleName', type: 'nvarchar', nullable: true })
     middleName?: string;
-
-    @Column({ name: 'LastName', type: 'nvarchar' })
     lastName!: string;
-
-    @Column({ name: 'PictureUrl', type: 'nvarchar', nullable: true })
     pictureUrl?: string;
-
-    @Column({ name: 'DateOfBirth', type: 'datetime' })
     dateOfBirth!: Date;
-
-    @Column({ name: 'Firm', type: 'nvarchar', nullable: true })
     firm?: string;
-
-    @Column({ name: 'Position', type: 'nvarchar', nullable: true })
     position?: string;
-
-    @Column({ name: 'Status', type: 'int', default: UserStatus.Offline })
     status!: UserStatus;
-
-    @Column({ name: 'LastLogin', type: 'datetime', nullable: true})
     lastLogin?: Date;
-
-    @Column({ name: 'LastOnline', type: 'datetime', nullable: true })
     lastOnline?: Date;
+    roleId!: Types.ObjectId;
+    role?: Role
 
-    @RelationId((user: User) => user.role)
-    roleId!: string;
-
-    @OneToOne(() => Role, (role) => role, {cascade: true})
-    @JoinColumn({ name: 'RoleId', referencedColumnName: 'id' })
-    role!: Role
-
-    toResponse(entity: User): IUserResponse {
+    toResponse(entity?: ResponseInput<User>): IUserResponse {
+        if (!entity) entity = this;
         return {
             ...super.toAccountResponseBase(entity),
             userName: entity.userName,
@@ -69,12 +37,15 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             status: entity.status,
             lastLogin: entity.lastLogin,
             lastOnline: entity.lastOnline,
-            roleId: entity.roleId,
+            roleId: entity.roleId.toString(),
             firm: entity.firm,
             position: entity.position
         }    
     }
 
+    toInstance(): User {
+        return documentToEntityMapper<User>(new User, this)
+    };
     
     toEntity = (requestEntity: IUserRequest, id?: string, contextUser?: ITokenUser): User => {
         this.userName = requestEntity.userName;
@@ -83,40 +54,51 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
         this.middleName = requestEntity.middleName;
         this.lastName = requestEntity.lastName;
         this.dateOfBirth = requestEntity.dateOfBirth;
-        this.roleId = requestEntity.roleId;
+        this.roleId = new Types.ObjectId(requestEntity.roleId);
         this.pictureUrl = requestEntity.pictureUrl;
         this.firm = requestEntity.firm;
         this.position = requestEntity.position;
 
         if(contextUser && !id){
-            this.accountId = contextUser.accountId;
-            this.createdBy = contextUser.name;
-            this.createdAt = new Date();
-            let account = new Account();
-            this.role = new Role();
-            this.role.id = this.roleId;
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.createdById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
-            this.id = randomUUID();
+            this.toAccountEntity(contextUser)
         }
 
         if(id && contextUser){
-            this.accountId = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.id = id;
-            this.modifiedBy = contextUser.name;
-            this.modifiedAt = new Date();
-            this.modifiedById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
+            this.toAccountEntity(contextUser, id)
         }
 
         return this;
     }
 
 }
+
+export const userSchema = new Schema<User>({
+    userName: { type: String, required: true },
+    email: { type: String, required: true },
+    passwordHash: { type: String, required: true },
+    firstName: { type: String, required: true },
+    middleName: { type: String },
+    lastName: { type: String, required: true },
+    pictureUrl: { type: String },
+    dateOfBirth: { type: Date, required: true },
+    firm: { type: String },
+    position: { type: String },
+    status: { type: Number, default: 1 },
+    lastLogin: { type: Date },
+    lastOnline: { type: Date },
+    roleId: { type: Schema.Types.ObjectId, ref: 'Role' },
+});
+userSchema.add(accountEntityBaseSchema);
+// Create a virtual populate for the role
+userSchema.virtual('role', {
+    ref: 'Role',
+    localField: 'roleId',
+    foreignField: '_id',
+    justOne: true,
+});
+
+// Load the User class into the schema
+userSchema.loadClass(User);
+
+// Create the User model using the modelCreator function
+export const userModel = modelCreator<User, IUserResponse>('User', userSchema);

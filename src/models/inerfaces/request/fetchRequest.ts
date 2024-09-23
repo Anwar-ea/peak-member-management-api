@@ -49,7 +49,7 @@ export interface IFilter<T, K extends keyof T> {
     /**
      * Holds the name of the column filter is going to be applied on.
      */
-    field: K;
+    field: K | string;
 
     /**
      * Holds the mode of the filter equal, not equal, less than or greater than etc.

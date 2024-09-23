@@ -1,19 +1,25 @@
-import { FindManyOptions, FindOneOptions } from "typeorm";
 import { IDataSourceResponse, IFetchRequest, IFilter } from "../../models";
+import { HydratedDocument, ProjectionType, RootFilterQuery, UpdateWriteOpResult } from "mongoose";
 
 export interface IRepositoryBase<TEntity, TResponse> {
-    addRecord(entity: TEntity): Promise<TResponse | null>;
-    addMany(entites: Array<TEntity>): Promise<Array<TResponse>>;
-    get(options: IFetchRequest<TEntity>, accountId?: string): Promise<IDataSourceResponse<TResponse>>;
-    where(options: FindManyOptions<TEntity>): Promise<Array<TEntity>>;
-    getOne(filtersRequest: Array<IFilter<TEntity, keyof TEntity>>): Promise<TResponse | null>;
-    getById(id: string): Promise<TResponse | null>;
-    updateRecord(entity: TEntity): Promise<TResponse>;
-    partialUpdate(id: string, partialEntity: Partial<TEntity>): Promise<TResponse>;
-    updateMany(entites: Array<TEntity>): Promise<Array<TResponse>>;
-    deleteEntity(id: TEntity): Promise<void>;
-    deleteMany(ids: Array<TEntity>): Promise<void>;
-    findeOne(options: FindOneOptions<TEntity>): Promise<TResponse | null>;
+    count(filter?: RootFilterQuery<TEntity>): Promise<number>;
+    findOne(options: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity> | null): Promise<TEntity | null>;
+    firstOrDefaultWithResponse(options: RootFilterQuery<TEntity>): Promise<TResponse | null>;
+    getOneByQuery(options: Array<IFilter<TEntity, keyof TEntity>>, getOnlyActive: boolean, dontGetDeleted: boolean, accountId?: string): Promise<HydratedDocument<TEntity> | null>;
+    getOneByQueryWithResponse(options: Array<IFilter<TEntity, keyof TEntity>>, getOnlyActive: boolean, dontGetDeleted: boolean, accountId?: string): Promise<TResponse | null>;
+    find(options?: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity>): Promise<Array<HydratedDocument<TEntity>>>;
+    findWithResponse(options?: RootFilterQuery<TEntity>): Promise<Array<TResponse>>;
+    getAccountRecords(accountId: string, options?: RootFilterQuery<TEntity>): Promise<Array<TEntity>>;
+    singleOrDefault(options?: RootFilterQuery<TEntity>): Promise<TEntity | null>;
+    singleOrDefaultWithResponse(options?: RootFilterQuery<TEntity>): Promise<TResponse | null>;
     findOneById(id: string): Promise<TEntity | null>;
-    getOneByQuery(options: Array<IFilter<TEntity, keyof TEntity>>): Promise<TEntity | null>
+    findOneByIdWithResponse(id: string): Promise<TResponse | null>;
+    max(): Promise<TEntity | null>;
+    getPagedData(fetchRequest: IFetchRequest<TEntity>, getOnlyActive: boolean, dontGetDeleted: boolean, accountId?: string): Promise<IDataSourceResponse<TResponse>>;
+    update(id: string, partialEntity: Partial<TEntity>): Promise<TResponse>;
+    add(entity: TEntity): Promise<TEntity>;
+    addRange(entities: TEntity[]): Promise<Array<HydratedDocument<TEntity>>>;
+    updateRange(entities: Partial<TEntity>[], filter: RootFilterQuery<TEntity>): Promise<UpdateWriteOpResult>;
+    delete(id: string): Promise<TEntity | undefined>;
+    deleteRange(entities: RootFilterQuery<TEntity>): Promise<TEntity[]>;
 }

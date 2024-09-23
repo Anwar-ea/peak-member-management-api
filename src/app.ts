@@ -10,7 +10,6 @@ import { log, error } from "console";
 import fastifymultipart from "@fastify/multipart";
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8060;
 
-console.log("hello world");
 
 const app = fastify({ logger: true });
 app.register(fastifymultipart);

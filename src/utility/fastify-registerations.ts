@@ -19,6 +19,6 @@ export const fastifyRegisters = async (fastify: FastifyInstance) => {
         Object.values(controllers).forEach((controller) => {
             controller.getRouter(fi);
         })
-        done()
+        done();
     }, {prefix: '/api'});
 }

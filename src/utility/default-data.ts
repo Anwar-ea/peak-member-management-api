@@ -1,24 +1,22 @@
-import { DataSource } from "typeorm";
-import { Account, Module, Privilege, Role, User } from "../entities";
-import { randomUUID } from "crypto";
+import { Account, accountModel, Module, moduleModel, Privilege, PrivilegeModel, Role, roleModel, User, userModel } from "../entities";
 import { EmptyGuid } from "../constants";
 import { encrypt } from "./bcrypt-utility";
 import { Modules } from "../constants/modules";
 import { toCamelCase } from "./string-utility";
 import { Privileges } from "../constants/privileges";
-import { log } from "console";
+import { Types } from "mongoose";
 
-export const AddDefaultData = async (dataSource: DataSource) => {
+export const AddDefaultData = async () => {
 
-    let accountRepo = dataSource.getRepository(Account);
-    let userRepo = dataSource.getRepository(User);
-    let roleRepo = dataSource.getRepository(Role);
-    let moduleRepo = dataSource.getRepository(Module);
-    let privilageRepo = dataSource.getRepository(Privilege);
+    let accountRepo = accountModel;
+    let userRepo = userModel;
+    let roleRepo = roleModel;
+    let moduleRepo = moduleModel;
+    let privilageRepo = PrivilegeModel;
     
-    let accountCount = await accountRepo.count();
-    let roleCount = await roleRepo.count();
-    let moduleCount = await moduleRepo.count();
+    let accountCount = await accountRepo.countDocuments();
+    let roleCount = await roleRepo.countDocuments();
+    let moduleCount = await moduleRepo.countDocuments();
 
     let account: Account = new Account().toEntity({
         name: "Default",
@@ -34,13 +32,13 @@ export const AddDefaultData = async (dataSource: DataSource) => {
         street: "N/A",
         longitude: 0,
         latitude: 1
-    }, undefined,{name: "Admin", id: EmptyGuid, accountId:'', privileges: []});
-    account.id = randomUUID();
+    }, undefined,{name: "Admin", id: '', accountId:'', privileges: []});
+    account._id = new Types.ObjectId();
     let role: Role = new Role().toEntity(
       { name: "Account Admin", code: "accountAdmin", privilegeIds:[] }, undefined,
-      { name: "Admin", id: EmptyGuid, accountId: "", privileges: [] }
+      { name: "Admin", id: '', accountId: "", privileges: [] }
     );
-    role.id = randomUUID();
+    role._id = new Types.ObjectId();
     role.privileges = [];
     role.accountId = undefined;
     role.account = undefined;
@@ -53,18 +51,18 @@ export const AddDefaultData = async (dataSource: DataSource) => {
         lastName: "User",
         dateOfBirth: new Date(),
         password: "asdf@123",
-        roleId: role.id,
+        roleId: role._id.toString(),
       }, undefined,
-      { name: "Admin", id: EmptyGuid, accountId: EmptyGuid, privileges: [] }
+      { name: "Admin", id: '', accountId: account._id.toString(), privileges: [] }
     );
 
     user.passwordHash = await encrypt("asdf@123");
 
-    if(!roleCount) await roleRepo.insert(role);
+    if(!roleCount) await (new roleRepo(role)).save();
 
     if(!accountCount){
-        await accountRepo.insert(account);
-        await userRepo.insert({...user,account: account});
+        await (new accountRepo(account)).save();
+        await (new userRepo({...user,account: account})).save();
     }
 
     if(!moduleCount) {
@@ -78,14 +76,14 @@ export const AddDefaultData = async (dataSource: DataSource) => {
           modulePrivilages.push(
             new Privilege().newInstanceToAdd(
               `${privilageName}`,
-              toCamelCase(privilageCode),
-              moduleEntity
+              toCamelCase(privilageCode)
             )
           );
         }
         moduleEntity.privilages = modulePrivilages;
-        await moduleRepo.save(moduleEntity)
-        await privilageRepo.save(modulePrivilages);
+        moduleEntity.privilageIds = modulePrivilages.map(p => p._id)
+        await (new moduleRepo(moduleEntity)).save();
+        await privilageRepo.insertMany(modulePrivilages);
       }
     }
 

@@ -1,77 +1,77 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from "typeorm";
 import { Privilege } from "./privilege";
-import { AccountEntityBase } from "./base-entities/account-entity-base";
-import { IRoleRequest, IRoleResponse } from "../models";
+import { IRoleRequest, IRoleResponse, ResponseInput } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
-import { EntityBase } from "./base-entities/entity-base";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
 import { Account } from "./account";
-import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
-@Entity('Role')
 export class Role extends EntityBase implements IToResponseBase<Role, IRoleResponse> {
-    @Column({name: 'Name', nullable: false, type: 'nvarchar'})
     name!: string;
-
-    @Column({name: 'Code', nullable: false, type: 'nvarchar'})
     code!: string;
-
-    @RelationId((entity: AccountEntityBase) => entity.account)
-    accountId?: string;
-
-    @ManyToOne(() => Account, {nullable: true, onDelete: 'CASCADE'})
-    @JoinColumn({name: 'AccountId', referencedColumnName: 'id'})
-    account!: Account | undefined
+    privilegeIds!: Array<Types.ObjectId>;
+    accountId?: Types.ObjectId;
+    account?: Account | undefined
+    privileges?: Array<Privilege>;
     
-    @ManyToMany(() => Privilege, (privilege) => privilege.roles, {cascade: true, eager: true})
-    @JoinTable({name: 'Role_Privilage', joinColumn: {name: 'RoleId', referencedColumnName: 'id'}, inverseJoinColumn: {name: 'PrivilegeId', referencedColumnName: 'id'}})
-    privileges!: Array<Privilege>;
-    
-    toResponse(entity: Role): IRoleResponse {
+    toResponse(entity?: ResponseInput<Role>): IRoleResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
             code: entity.code,
-            privilages: entity.privileges.map(prv => prv.toResponse(prv))
+            privilages: entity.privileges ? entity.privileges.map(prv => prv.toResponse(prv)) : undefined
         }    
     }
+
+    toInstance(): Role {
+        return documentToEntityMapper<Role>(new Role, this);
+    };
 
     toEntity = (entityRequest: IRoleRequest, id?: string, contextUser?: ITokenUser): Role => {
         this.name = entityRequest.name;
         this.code = entityRequest.code;
         if(contextUser && !id){
-            this.createdBy = contextUser.name;
-            this.createdAt = new Date();
-            this.accountId  = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.createdById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
-            this.id = randomUUID();
+            this.toBaseEntiy(contextUser);
         }
         
         if(id && contextUser){
-            this.accountId = contextUser.accountId;
-            let account = new Account();
-            account.id = contextUser.accountId;
-            this.account = account;
-            this.id = id;
-            this.modifiedBy = contextUser.name;
-            this.modifiedAt = new Date();
-            this.modifiedById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
+            this.accountId = contextUser.accountId ? new Types.ObjectId(contextUser.accountId) : undefined;
+            this.toBaseEntiy(contextUser, id)
         }
 
-        this.privileges = entityRequest.privilegeIds.map(prv => {
-            let privilege = new Privilege();
-            privilege.id = prv;
-            return privilege;
-        });
+        this.privilegeIds = entityRequest.privilegeIds.map(prv => new Types.ObjectId(prv));
 
         return this;
     }
 
 }
+
+export const roleSchema = new Schema<Role>({
+    name: { type: String, required: true },
+    code: { type: String, required: true },
+    privilegeIds: [{ type: Types.ObjectId, ref: 'Privilege' }],
+    accountId: { type: Types.ObjectId, ref: 'Account' },
+});
+
+roleSchema.add(entityBaseSchema)
+
+roleSchema.loadClass(Role);
+roleSchema.virtual('privileges', {
+    ref: 'Privilege',
+    localField: 'privilegeIds',
+    foreignField: '_id',
+    justOne: false,
+});
+roleSchema.virtual('account', {
+    ref: 'Account',
+    localField: 'accountId',
+    foreignField: '_id',
+    justOne: true,
+});
+
+export const roleModel = modelCreator<Role, IRoleResponse>('Role', roleSchema);
+
+
+

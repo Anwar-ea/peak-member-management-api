@@ -14,10 +14,10 @@ export class ModuleService implements IModuleService {
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<Module>): Promise<IDataSourceResponse<IModuleResponse>> {
-        return await this.moduleRepository.get(fetchRequest, contextUser.accountId);
+        return await this.moduleRepository.getPagedData(fetchRequest, true, true);
     }
 
     async getById(id: string, contextUser: ITokenUser): Promise<IModuleResponse | null> {
-        return await this.moduleRepository.getById(id);
+        return await this.moduleRepository.findOneByIdWithResponse(id);
     }
 }

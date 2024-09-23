@@ -1,33 +1,42 @@
-import { JoinColumn, ManyToOne, RelationId } from "typeorm";
-import { EntityBase } from "./entity-base";
+import { EntityBase, entityBaseSchema } from "./entity-base";
 import { Account } from "../account";
 import { IAccountResponseBase } from "../../models/inerfaces/response/response-base";
-import { ITokenUser } from "../../models";
+import { ITokenUser, ResponseInput } from "../../models";
+import { Schema, Types } from "mongoose";
 
 export abstract class AccountEntityBase extends EntityBase {
-  @RelationId((entity: AccountEntityBase) => entity.account)
-  accountId!: string;
+  accountId!: Types.ObjectId;
+  account?: Account;
 
-  @ManyToOne(() => Account, { nullable: false })
-  @JoinColumn({ name: "AccountId", referencedColumnName: "id" })
-  account!: Account;
+  protected toAccountEntity( contextUser: ITokenUser, id?: string): AccountEntityBase {
+    this.accountId = new Types.ObjectId(contextUser.accountId.length ? contextUser.accountId : undefined);
 
-  protected toAccountEntity( contextUser: ITokenUser, update: boolean = false ): AccountEntityBase {
-    this.accountId = contextUser.accountId;
-    this.account = new Account();
-    this.account.id = contextUser.accountId;
-    if (!update) {
+    if (!id) {
       super.toBaseEntiy(contextUser);
     } else {
-      super.toBaseEntiy(contextUser, true);
+      super.toBaseEntiy(contextUser, id);
     }
     return this;
   }
 
-  protected toAccountResponseBase<T extends AccountEntityBase>( entity: T ): IAccountResponseBase {
+  protected toAccountResponseBase<T extends AccountEntityBase>( entity: ResponseInput<T> ): IAccountResponseBase {
     return {
       ...super.toResponseBase(entity),
-      accountId: entity.accountId,
+      accountId: entity.accountId.toString(),
     };
   }
 }
+
+
+export const accountEntityBaseSchema = new Schema<AccountEntityBase>({
+  accountId: { type: Schema.Types.ObjectId, required: true, ref: "Account" },
+});
+accountEntityBaseSchema.add(entityBaseSchema)
+
+accountEntityBaseSchema.loadClass(AccountEntityBase);
+accountEntityBaseSchema.virtual('account', {
+  ref: 'Account',
+  localField: 'accountId',
+  foreignField: '_id',
+  justOne: true
+})

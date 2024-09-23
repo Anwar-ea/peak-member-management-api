@@ -1,53 +1,27 @@
-import { Column, Entity } from "typeorm";
-import { EntityBase } from "./base-entities/entity-base";
-import { IAccountRequest, IAccountResponse } from "../models";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
+import { IAccountRequest, IAccountResponse, ResponseInput } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
-import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
+import { documentToEntityMapper, modelCreator } from "../utility";
+import { Schema } from "mongoose";
 
-@Entity('Account')
 export class Account extends EntityBase implements IToResponseBase<Account, IAccountResponse> {
-
-    @Column({ name: 'Name', type: 'nvarchar', unique: true })
     name!: string;
-
-    @Column({ name: 'Code', type: 'nvarchar', unique: true })
     code!: string;
-
-    @Column({ name: 'PhoneNo', type: 'nvarchar' })
     phoneNo!: string;
-
-    @Column({ name: 'Email', type: 'nvarchar', unique: true })
     email!: string;
-
-    @Column({ name: 'Address', type: 'nvarchar' })
     address!: string;
-
-    @Column({ name: 'TemporaryAddress', type: 'nvarchar', nullable: true })
     temporaryAddress?: string;
-
-    @Column({ name: 'ZipCode', type: 'int' })
     zipCode!: number;
-
-    @Column({ name: 'Country', type: 'nvarchar' })
     country!: string;
-
-    @Column({ name: 'State', type: 'nvarchar' })
     state!: string;
-
-    @Column({ name: 'City', type: 'nvarchar' })
     city!: string;
-
-    @Column({ name: 'Street', type: 'nvarchar' })
     street!: string;
-
-    @Column({ name: 'Longitude', type: 'decimal' })
     longitude!: number;
-
-    @Column({ name: 'Latitude', type: 'decimal' })
     latitude!: number;
 
-    toResponse(entity: Account): IAccountResponse {
+    toResponse(entity?: ResponseInput<Account>): IAccountResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
@@ -66,6 +40,10 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
         }
     }
 
+    toInstance(): Account {
+        return documentToEntityMapper<Account>(new Account(), this)
+    }
+
     toEntity = (requestEntity: IAccountRequest, id?: string, contextUser?: ITokenUser): Account => {
         this.name = requestEntity.name;
         this.code = requestEntity.code;
@@ -80,23 +58,36 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
         this.street = requestEntity.street;
         this.longitude = requestEntity.longitude;
         this.latitude = requestEntity.latitude;
+        
         if(contextUser && !id){
-            this.createdBy = contextUser.name;
-            this.createdAt = new Date();
-            this.createdById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
-            this.id = randomUUID();
+            this.toBaseEntiy(contextUser);
         }
 
         if(id && contextUser){
-            this.id = id;
-            this.modifiedBy = contextUser.name;
-            this.modifiedAt = new Date();
-            this.modifiedById = contextUser.id;
-            this.active = true;
-            this.deleted = false;
+            this.toBaseEntiy(contextUser, id);
         }
         return this;
     }
 }
+
+export const accountSchema = new Schema<Account>({
+    name: { type: String, required: true },
+    code: { type: String, required: true, unique: true },
+    phoneNo: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true},
+    address: { type: String, required: true },
+    temporaryAddress: { type: String },
+    zipCode: { type: Number, required: true },
+    country: { type: String, required: true },
+    state: { type: String, required: true },
+    city: { type: String, required: true },
+    street: { type: String, required: true },
+    longitude: { type: Number, required: true },
+    latitude: { type: Number, required: true },
+});
+
+
+accountSchema.add(entityBaseSchema);
+accountSchema.loadClass(Account);
+
+export const accountModel = modelCreator<Account, IAccountResponse>('Account' ,accountSchema)

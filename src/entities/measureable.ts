@@ -1,55 +1,23 @@
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from "typeorm";
-import { AccountEntityBase } from "./base-entities/account-entity-base";
+import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
 import { User } from "./user";
-import { Vision } from "./vision";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { IMeasurableRequest, IMeasurableResponse, ITokenUser } from "../models";
+import { IMeasurableRequest, IMeasurableResponse, ITokenUser, ResponseInput } from "../models";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
-@Entity("Measurable")
 export class Measurable extends AccountEntityBase implements IToResponseBase<Measurable, IMeasurableResponse> {
-    @Column({name: "Name", type: "nvarchar", length: "max"})
     name!: string
-    
-    @Column({name: "Unit", type: "nvarchar", length: "max"})
     unit!: string
-
-    @Column({name: "Goal", type: "int"})
     goal!: number
-
-    @Column({name: "GoalMetric", type: "decimal"})
     goalMetric!: number
-
-    @Column({name: "ShowAverage", type: "bit", default: false})
     showAverage!: boolean
-
-    @Column({name: "ShowCumulative", type: "bit", default: false})
     showCumulative!: boolean
-
-    @Column({name: "ApplyFormula", type: "bit", default: false})
     applyFormula!: boolean
-
-    @Column({name: "AverageStartDate", type: "datetime", nullable: true})
     averageStartDate?: Date
-
-    @Column({name: "CumulativeStartDate", type: "datetime", nullable: true})
     cumulativeStartDate?: Date
-
-    @Column({name: "Formula", type: "nvarchar", length: "max", nullable: true})
     formula?: string
-
-    @RelationId((measurable: Measurable) => measurable.accountable)
-    accountableId!: string;
-
-    @ManyToOne(() => User, (user) => user, {nullable: false, eager: true})
-    @JoinColumn({ name: 'AccountableId', referencedColumnName: 'id' })
-    accountable!: User
-
-    @RelationId((measurable: Measurable) => measurable.vision)
-    visionId?: string;
-
-    @ManyToOne(() => Vision, (vision) => vision, {nullable: true})
-    @JoinColumn({ name: 'VisionId', referencedColumnName: 'id' })
-    vision?: Vision
+    accountableId!: Types.ObjectId;
+    accountable?: User
 
     toEntity = (entityRequest: IMeasurableRequest & {visionId?: string} , id?: string, contextUser?: ITokenUser): Measurable => {
         this.name = entityRequest.name;
@@ -62,30 +30,25 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
         this.averageStartDate = entityRequest.averageStartDate;
         this.cumulativeStartDate = entityRequest.cumulativeStartDate;
         this.formula = entityRequest.formula;
-        this.accountableId = entityRequest.accountableId;
-        let user = new User();
-        user.id = entityRequest.accountableId;
-        this.accountable = user;
+        this.accountableId = new Types.ObjectId(entityRequest.accountableId);
 
         if(contextUser && !id){
             super.toAccountEntity(contextUser);
         }
         
         if(id && contextUser){
-            this.id = id;
-            super.toAccountEntity(contextUser, true);
-        }
-
-        if(entityRequest.visionId){
-            this.visionId = entityRequest.visionId;
-            this.vision = new Vision();
-            this.vision.id = entityRequest.visionId;
+            super.toAccountEntity(contextUser, id);
         }
 
         return this;
     }
 
-    toResponse(entity: Measurable): IMeasurableResponse {
+    toInstance(): Measurable {
+        return documentToEntityMapper<Measurable>(new Measurable, this);
+    };
+
+    toResponse(entity?: ResponseInput<Measurable>): IMeasurableResponse {
+        if(!entity) entity = this;
         return {
             ...super.toAccountResponseBase(entity),
             name: entity.name,
@@ -98,10 +61,36 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
             averageStartDate: entity.averageStartDate,
             cumulativeStartDate: entity.cumulativeStartDate,
             formula: entity.formula,
-            accountableId: entity.accountableId,
-            visionId: entity.visionId,
-            vision: entity.vision ? entity.vision.toResponse(entity.vision) : undefined,
+            accountableId: entity.accountableId.toString(),
+            accountable: entity.accountable ? entity.accountable.toResponse(entity.accountable) : undefined,
         };
     };
 
 }
+
+export const measurableSchema = new Schema({
+    name: { type: String, required: true },
+    unit: { type: String, required: true },
+    goal: { type: Number, required: true },
+    goalMetric: { type: Number, required: true },
+    showAverage: { type: Boolean, required: true },
+    showCumulative: { type: Boolean, required: true },
+    applyFormula: { type: Boolean, required: true },
+    averageStartDate: { type: Date },
+    cumulativeStartDate: { type: Date },
+    formula: { type: String },
+    accountableId: { type: Schema.Types.ObjectId, ref: "User" },
+  });
+
+measurableSchema.virtual("accountable", {
+  ref: "User",
+  localField: "accountableId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+measurableSchema.add(accountEntityBaseSchema)
+
+measurableSchema.loadClass(Measurable);
+
+export const measurableModel = modelCreator<Measurable, IMeasurableResponse>('Measurable', measurableSchema);

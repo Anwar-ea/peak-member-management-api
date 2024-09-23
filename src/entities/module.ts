@@ -1,37 +1,36 @@
-import { Column, Entity, OneToMany } from "typeorm";
-import { EntityBase } from "./base-entities/entity-base";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
 import { Privilege } from "./privilege";
-import { IModuleResponse } from "../models";
+import { IModuleResponse, ResponseInput } from "../models";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { randomUUID } from "crypto";
 import { EmptyGuid } from "../constants";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
-@Entity('Module')
 export class Module extends EntityBase implements IToResponseBase<Module, IModuleResponse>  {
-    
-    @Column({name: 'Name', type: 'nvarchar', unique: true})
     name!: string;
-
-    @Column({name: 'Code', type: 'nvarchar', unique: true})
     code!: string;
-
-    @OneToMany(() => Privilege, (privilege) => privilege.module, {eager: true, onDelete: "CASCADE"})
+    privilageIds!: Array<Types.ObjectId>;
     privilages?: Array<Privilege>;
 
     newInstanceToAdd(name: string, code: string, privilages: Array<Privilege>): Module {
-        this.id = randomUUID();
+        this._id = new Types.ObjectId();
         this.createdAt = new Date();
         this.createdBy = "Super Admin";
-        this.createdById = EmptyGuid;
+        this.createdById = new Types.ObjectId(undefined);
         this.active = true;
         this.deleted = false;
         this.name = name;
         this.code = code;
-        this.privilages = privilages;
+        this.privilageIds = privilages.map(x => x._id);
         return this;
     }
 
-    toResponse(entity: Module): IModuleResponse {
+    toInstance(): Module {
+        return documentToEntityMapper<Module>(new Module, this);
+    };
+
+    toResponse(entity?: ResponseInput<Module>): IModuleResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
@@ -40,3 +39,21 @@ export class Module extends EntityBase implements IToResponseBase<Module, IModul
         }
     }
 }
+
+export const moduleSchema =  new Schema<Module>({
+    name: { type: String, required: true },
+    code: { type: String, required: true },
+    privilageIds: [{ type: Types.ObjectId, ref: 'Privilege' }],
+});
+
+moduleSchema.loadClass(Module);
+moduleSchema.add(entityBaseSchema);
+
+moduleSchema.virtual('privilages', {
+    ref: 'Privilege',
+    localField: 'privilageIds',
+    foreignField: '_id',
+    justOne: false,
+});
+
+export const moduleModel = modelCreator<Module, IModuleResponse>('Module', moduleSchema);

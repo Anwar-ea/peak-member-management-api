@@ -1,52 +1,46 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, RelationId } from "typeorm";
-import { EntityBase } from "./base-entities/entity-base";
-import { Module } from "./module";
-import { Role } from "./role";
-import { IPrivilegeResponse } from "../models";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
+import { IPrivilegeResponse, ResponseInput } from "../models";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { randomUUID } from "crypto";
 import { EmptyGuid } from "../constants";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
-@Entity('Privilage')
 export class Privilege extends EntityBase implements IToResponseBase<Privilege, IPrivilegeResponse> {
 
-    @Column({name: 'Name', type: 'nvarchar', unique: true})
     name!: string;
-
-    @Column({name: 'Code', type: 'nvarchar', unique: true})
     code!: string;
-
-    @RelationId((privilage: Privilege) => privilage.module)
-    moduleId!: string;
-
-    @ManyToOne(() => Module, (module) => module.privilages, {onDelete: 'CASCADE'})
-    @JoinColumn({name: 'ModuleId', referencedColumnName: 'id'})
-    module!: Module;
-
-    @ManyToMany(() => Role, (role) => role.privileges)
-    @JoinTable({name: 'Role_Privilage', joinColumn: {name: 'PrivilegeId', referencedColumnName: 'id'}, inverseJoinColumn: {name: 'RoleId', referencedColumnName: 'id'}})
-    roles!: Array<Role>;
-
-    newInstanceToAdd(name: string, code: string, module: Module): Privilege {
-        this.id = randomUUID();
+    newInstanceToAdd(name: string, code: string): Privilege {
+        this._id = new Types.ObjectId();
         this.createdAt = new Date();
         this.createdBy = "Super Admin";
-        this.createdById = EmptyGuid;
+        this.createdById = new Types.ObjectId(undefined);
         this.active = true;
         this.deleted = false;
         this.name = name;
         this.code = code;
-        this.module = module;
-        this.roles = [];
         return this;
     }
 
-    toResponse(entity: Privilege): IPrivilegeResponse {
+    toInstance(): Privilege {
+        return documentToEntityMapper<Privilege>(new Privilege, this);
+    };
+
+    toResponse(entity?: ResponseInput<Privilege>): IPrivilegeResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
             code: entity.code,
-            moduleId: entity.moduleId,
         }
     }
 }
+
+export const privilegeSchema = new Schema<Privilege>({
+    name: { type: String, required: true },
+    code: { type: String, required: true },
+});
+privilegeSchema.add(entityBaseSchema)
+
+privilegeSchema.loadClass(Privilege);
+
+export const PrivilegeModel = modelCreator<Privilege, IPrivilegeResponse>('Privilege', privilegeSchema);
