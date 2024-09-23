@@ -2,8 +2,6 @@ import { inject, injectable } from "tsyringe";
 import { IToDoService } from "./abstractions";
 import { IToDoRepository } from "../dal";
 import { IDataSourceResponse, IFetchRequest, IFilter, IToDoRequest, IToDoResponse, ITokenUser } from "../models";
-import { randomUUID } from "crypto";
-import { In } from "typeorm";
 import { ToDo } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";

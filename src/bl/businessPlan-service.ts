@@ -2,8 +2,6 @@ import { inject, injectable } from "tsyringe";
 import { IBusinessPlanService } from "./abstractions";
 import { IBusinessPlanRepository } from "../dal";
 import { IDataSourceResponse, IFetchRequest, IFilter, IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser } from "../models";
-import { randomUUID } from "crypto";
-import { In } from "typeorm";
 import { BusinessPlan } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
