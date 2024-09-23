@@ -124,20 +124,6 @@ const visionSchema = new Schema({
 });
 
 // Virtual populate for goals
-visionSchema.virtual('goals', {
-    ref: 'Goal',
-    localField: 'goalIds',
-    foreignField: '_id',
-    justOne: false,
-});
-
-// Virtual populate for metrics
-visionSchema.virtual('metrics', {
-    ref: 'Measurable',
-    localField: 'metricIds',
-    foreignField: '_id',
-    justOne: false,
-});
 
 // Ensure virtuals are included in JSON output
 visionSchema.set('toJSON', { virtuals: true });
@@ -150,6 +136,34 @@ export const businessPlanSchema =  new Schema<BusinessPlan>({
     threeYearVision: { type: visionSchema, required: true },
     oneYearVision: { type: visionSchema, required: true },
 });
+businessPlanSchema.virtual('threeYearVision.goals', {
+    ref: 'Goal',
+    localField: 'threeYearVision.goalIds',
+    foreignField: '_id',
+    justOne: false,
+});
+// Virtual populate for metrics
+businessPlanSchema.virtual('oneYearVision.metrics', {
+    ref: 'Measurable',
+    localField: 'oneYearVision.metricIds',
+    foreignField: '_id',
+    justOne: false,
+});
+businessPlanSchema.virtual('oneYearVision.goals', {
+    ref: 'Goal',
+    localField: 'oneYearVision.goalIds',
+    foreignField: '_id',
+    justOne: false,
+});
+
+// Virtual populate for metrics
+businessPlanSchema.virtual('threeYearVision.metrics', {
+    ref: 'Measurable',
+    localField: 'threeYearVision.metricIds',
+    foreignField: '_id',
+    justOne: false,
+});
+
 
 businessPlanSchema.add(accountEntityBaseSchema)
 

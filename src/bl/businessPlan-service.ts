@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { IBusinessPlanService } from "./abstractions";
-import { IBusinessPlanRepository } from "../dal";
+import { IBusinessPlanRepository, IGoalRepository, IMeasurableRepository } from "../dal";
 import { IDataSourceResponse, IFetchRequest, IFilter, IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser } from "../models";
 import { BusinessPlan } from "../entities";
 import { assignIn } from "lodash";
@@ -8,7 +8,11 @@ import { Types } from "mongoose";
 
 @injectable()
 export class BusinessPlanService implements IBusinessPlanService {
-    constructor(@inject('BusinessPlanRepository') private readonly businessPlanRepository: IBusinessPlanRepository) { }
+    constructor (
+        @inject('BusinessPlanRepository') private readonly businessPlanRepository: IBusinessPlanRepository, 
+        @inject("MeasurableRepository") private readonly measurableRepository: IMeasurableRepository,
+        @inject("GoalRepository") private readonly goalRepository: IGoalRepository
+    ) { }
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<BusinessPlan, keyof BusinessPlan>>): Promise<IBusinessPlanResponse | null> {
         return await this.businessPlanRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
@@ -17,6 +21,8 @@ export class BusinessPlanService implements IBusinessPlanService {
     async add(entityRequest: IBusinessPlanRequest, contextBusinessPlan?: ITokenUser): Promise<IBusinessPlanResponse> {
         let businessPlan = new BusinessPlan().toEntity(entityRequest, undefined, contextBusinessPlan);
         let response  = await this.businessPlanRepository.add(businessPlan);
+        await this.goalRepository.addRange([...(businessPlan.threeYearVision.goals ?? []), ...(businessPlan.oneYearVision.goals ?? [])])
+        await this.measurableRepository.addRange([...(businessPlan.threeYearVision.metrics ?? []), ...(businessPlan.oneYearVision.metrics ?? [])])
         if (response) return response.toResponse();
         else throw new Error(`Error adding ${entityRequest}`);
     }
