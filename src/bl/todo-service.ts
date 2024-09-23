@@ -10,66 +10,64 @@ import { Types } from "mongoose";
 
 @injectable()
 export class ToDoService implements IToDoService {
-    constructor(@inject('ToDoRepository') private readonly toDoRepository: IToDoRepository) { }
+    constructor(@inject('ToDoRepository') private readonly todoRepository: IToDoRepository) { }
 
-    async getOne(contextToDo: ITokenUser, filtersRequest: Array<IFilter<ToDo, keyof ToDo>>): Promise<IToDoResponse | null> {
-        return await this.toDoRepository.getOne(filtersRequest)
+    async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<ToDo, keyof ToDo>>): Promise<IToDoResponse | null> {
+        return await this.todoRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
     }
 
-    async add(entityRequest: IToDoRequest, contextToDo?: ITokenUser): Promise<IToDoResponse> {
-        let toDo = new ToDo().toEntity(entityRequest, undefined, contextToDo);
-        let response  = await this.toDoRepository.addRecord(toDo);
-        if (response) return response;
+    async add(entityRequest: IToDoRequest, contextUser?: ITokenUser): Promise<IToDoResponse> {
+        let todo = new ToDo().toEntity(entityRequest, undefined, contextUser);
+        let response  = await this.todoRepository.add(todo);
+        if (response) return response.toResponse();
         else throw new Error(`Error adding ${entityRequest}`);
     }
 
-    async addMany(entitesRequest: IToDoRequest[], contextToDo: ITokenUser): Promise<IToDoResponse[]> {
-        return this.toDoRepository.addMany(entitesRequest.map<ToDo>(acc => {
-            let toDo = new ToDo().toEntity(acc, undefined, contextToDo);
-            return toDo;
-        }))
+    async addMany(entitesRequest: IToDoRequest[], contextUser: ITokenUser): Promise<IToDoResponse[]> {
+        return (await this.todoRepository.addRange(entitesRequest.map<ToDo>(acc => {
+            let todo = new ToDo().toEntity(acc, undefined, contextUser);
+            return todo;
+        }))).map(g => g.toResponse())
     }
 
-    async get(contextToDo: ITokenUser, fetchRequest: IFetchRequest<ToDo>): Promise<IDataSourceResponse<IToDoResponse>> {
-        return await this.toDoRepository.get(fetchRequest);
+    async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<ToDo>): Promise<IDataSourceResponse<IToDoResponse>> {
+        // fetchRequest.queryOptionsRequest = fetchRequest.queryOptionsRequest ? {...fetchRequest.queryOptionsRequest, includes:['User', 'MileStone']} :{includes:['User', 'MileStone']};
+        return await this.todoRepository.getPagedData(fetchRequest, true, true, contextUser.accountId);
     }
 
-    async getById(id: string, contextToDo: ITokenUser): Promise<IToDoResponse | null> {
-        return await this.toDoRepository.getById(id);
+    async getById(id: string, contextUser: ITokenUser): Promise<IToDoResponse | null> {
+        return await this.todoRepository.findOneByIdWithResponse(id);
     }
 
-    async update(id: string, entityRequest: IToDoRequest, contextToDo: ITokenUser): Promise<IToDoResponse> {
-        let toDo = new ToDo().toEntity(entityRequest, id, contextToDo);
-        return await this.toDoRepository.updateRecord(toDo);
+    async update(id: string, entityRequest: IToDoRequest, contextUser: ITokenUser): Promise<IToDoResponse> {
+        let todo = new ToDo().toEntity(entityRequest, id, contextUser);
+        return await this.todoRepository.update(id, todo);
     }
-    
+        
     async partialUpdate(id: string, partialEntity: Partial<IToDoRequest>, contextUser: ITokenUser): Promise<IToDoResponse> {
         let entity: Partial<ToDo> = {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
             modifiedById: new Types.ObjectId(contextUser.id)
         }
-        return await this.toDoRepository.partialUpdate(id, assignIn(entity, partialEntity));
+        return await this.todoRepository.update(id, assignIn(entity, partialEntity));
     }
 
-    async updateMany(entitesRequest: (IToDoRequest & { id: string; })[], contextToDo: ITokenUser): Promise<IToDoResponse[]> {
-        return this.toDoRepository.updateMany(entitesRequest.map<ToDo>(acc => {
-            let toDo = new ToDo().toEntity(acc, acc.id, contextToDo);
-            return toDo;
-        }))
+    async updateMany(entitesRequest: (IToDoRequest & { id: string; })[], contextUser: ITokenUser): Promise<any> {
+        return await this.todoRepository.updateRange(entitesRequest.map<ToDo>(acc => {
+            let todo = new ToDo().toEntity(acc, acc.id, contextUser);
+            return todo;
+        }),{})
     }
 
-    async delete(id: string, contextToDo: ITokenUser): Promise<void> {
-        let toDo = await this.toDoRepository.findOneById(id);
-        if(toDo) await this.toDoRepository.deleteEntity(toDo);
-        else throw new Error(`ToDo with id ${id} not found`);
+    async delete(id: string, contextUser: ITokenUser): Promise<void> {
+        await this.todoRepository.delete(id);
     }
 
-    async deleteMany(ids: string[], contextToDo: ITokenUser): Promise<void> {
-        let toDos = await this.toDoRepository.where({where:{_id: In(ids)}});
+    async deleteMany(ids: string[], contextUser: ITokenUser): Promise<void> {
+        let todos = await this.todoRepository.deleteRange({_id: {$in: ids.map(id => new Types.ObjectId(id))}});
         
-        if(toDos.length !== ids.length) throw new Error(`Some toDo with provided ids not found`);
+        if(todos.length !== ids.length) throw new Error(`Some todo with provided ids not found`);
 
-        await this.toDoRepository.deleteMany(toDos);
     }
 }

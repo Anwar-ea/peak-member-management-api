@@ -7,3 +7,5 @@ export * from './pagination-utility';
 export * from './fastify-registerations';
 export * from './cloudinary-utility';
 export * from './string-utility';
+export * from './documentToEntityMapper';
+export * from './model-creator-utility';

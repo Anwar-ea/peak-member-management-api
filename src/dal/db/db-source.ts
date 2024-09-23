@@ -5,7 +5,7 @@ config();
 
 connect("mongodb://localhost:27017/", {dbName: process.env.DB_DataBase})
 .then(async (x) => {
-    // await AddDefaultData(dataSource)
+    await AddDefaultData()
     console.log("Database Connected successfully")
 })
 .catch((err) =>  console.log("Error conneting to database", err));

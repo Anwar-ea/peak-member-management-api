@@ -1,6 +1,7 @@
 import { sign, verify } from "jsonwebtoken";
 import { ITokenUser } from "../models";
-
+import { config } from "dotenv";
+config()
 export const signJwt = (user: ITokenUser, tokenSecret: string | null = null, expiryTime: string | null = null): string => {        
     return sign(user, tokenSecret ?? (process.env.TOKEN_SECRET_KEY ?? '') , { expiresIn: expiryTime ?? '3 hours' });
 }

@@ -1,9 +1,10 @@
-import { AccountEntityBase } from "./base-entities/account-entity-base";
-import { IUserRequest, IUserResponse, UserStatus } from "../models";
+import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
+import { IUserRequest, IUserResponse, ResponseInput, UserStatus } from "../models";
 import { Role } from "./role";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { Types } from "mongoose";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
 export class User extends AccountEntityBase implements IToResponseBase<User, IUserResponse> {
     userName!: string;
@@ -20,10 +21,10 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     lastLogin?: Date;
     lastOnline?: Date;
     roleId!: Types.ObjectId;
-
     role?: Role
 
-    toResponse(entity: User): IUserResponse {
+    toResponse(entity?: ResponseInput<User>): IUserResponse {
+        if (!entity) entity = this;
         return {
             ...super.toAccountResponseBase(entity),
             userName: entity.userName,
@@ -42,6 +43,9 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
         }    
     }
 
+    toInstance(): User {
+        return documentToEntityMapper<User>(new User, this)
+    };
     
     toEntity = (requestEntity: IUserRequest, id?: string, contextUser?: ITokenUser): User => {
         this.userName = requestEntity.userName;
@@ -67,3 +71,34 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     }
 
 }
+
+export const userSchema = new Schema<User>({
+    userName: { type: String, required: true },
+    email: { type: String, required: true },
+    passwordHash: { type: String, required: true },
+    firstName: { type: String, required: true },
+    middleName: { type: String },
+    lastName: { type: String, required: true },
+    pictureUrl: { type: String },
+    dateOfBirth: { type: Date, required: true },
+    firm: { type: String },
+    position: { type: String },
+    status: { type: Number, default: 1 },
+    lastLogin: { type: Date },
+    lastOnline: { type: Date },
+    roleId: { type: Schema.Types.ObjectId, ref: 'Role' },
+});
+userSchema.add(accountEntityBaseSchema);
+// Create a virtual populate for the role
+userSchema.virtual('role', {
+    ref: 'Role',
+    localField: 'roleId',
+    foreignField: '_id',
+    justOne: true,
+});
+
+// Load the User class into the schema
+userSchema.loadClass(User);
+
+// Create the User model using the modelCreator function
+export const userModel = modelCreator<User, IUserResponse>('User', userSchema);

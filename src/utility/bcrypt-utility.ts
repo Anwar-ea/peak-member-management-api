@@ -1,8 +1,7 @@
 import {hash, genSalt, compare} from 'bcrypt';
 
 export const encrypt = async (data: string): Promise<string> => {
-    const salt = await genSalt(10, 'a');
-    return await hash(data, salt);
+    return await hash(data, 10);
 }
 
 export const compareHash = async (data: string, hash: string): Promise<boolean> => {

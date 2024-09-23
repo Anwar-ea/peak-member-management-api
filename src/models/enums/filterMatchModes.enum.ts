@@ -9,5 +9,6 @@ export enum FilterMatchModes {
     Contains = 8,
     Any = 9,
     Between = 10,
-    In = 11
+    In = 11,
+    NotIn = 12
   }

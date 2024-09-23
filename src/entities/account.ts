@@ -1,7 +1,9 @@
-import { EntityBase } from "./base-entities/entity-base";
-import { IAccountRequest, IAccountResponse } from "../models";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
+import { IAccountRequest, IAccountResponse, ResponseInput } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { IToResponseBase } from "./abstractions/to-response-base";
+import { documentToEntityMapper, modelCreator } from "../utility";
+import { Schema } from "mongoose";
 
 export class Account extends EntityBase implements IToResponseBase<Account, IAccountResponse> {
     name!: string;
@@ -18,7 +20,8 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
     longitude!: number;
     latitude!: number;
 
-    toResponse(entity: Account): IAccountResponse {
+    toResponse(entity?: ResponseInput<Account>): IAccountResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
@@ -35,6 +38,10 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
             longitude: entity.longitude,
             latitude: entity.latitude,
         }
+    }
+
+    toInstance(): Account {
+        return documentToEntityMapper<Account>(new Account(), this)
     }
 
     toEntity = (requestEntity: IAccountRequest, id?: string, contextUser?: ITokenUser): Account => {
@@ -62,3 +69,25 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
         return this;
     }
 }
+
+export const accountSchema = new Schema<Account>({
+    name: { type: String, required: true },
+    code: { type: String, required: true, unique: true },
+    phoneNo: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true},
+    address: { type: String, required: true },
+    temporaryAddress: { type: String },
+    zipCode: { type: Number, required: true },
+    country: { type: String, required: true },
+    state: { type: String, required: true },
+    city: { type: String, required: true },
+    street: { type: String, required: true },
+    longitude: { type: Number, required: true },
+    latitude: { type: Number, required: true },
+});
+
+
+accountSchema.add(entityBaseSchema);
+accountSchema.loadClass(Account);
+
+export const accountModel = modelCreator<Account, IAccountResponse>('Account' ,accountSchema)

@@ -39,35 +39,36 @@ export class AccountService implements IAccountService {
             user._id = new Types.ObjectId();
 
         }
-        let response  = await this.accountRepository.addRecord(account);
-        if (response) return response;
+        let response  = await this.accountRepository.add(account);
+        if (response) return response.toResponse();
         else throw new Error(`Error adding ${entityRequest}`);
     }
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<Account, keyof Account>>): Promise<IAccountResponse | null> {
-        return await this.accountRepository.getOne(filtersRequest)
+        let result = await this.accountRepository.getOneByQuery(filtersRequest, true, true, contextUser.accountId);
+        return result ? result.toResponse() : null;
     }
 
     async add(entityRequest: IAccountRequest, contextUser?: ITokenUser): Promise<IAccountResponse> {
         let account = new Account().toEntity(entityRequest, undefined, contextUser);
-        let response  = await this.accountRepository.addRecord(account);
-        if (response) return response;
+        let response  = await this.accountRepository.add(account);
+        if (response) return response.toResponse();
         else throw new Error(`Error adding ${entityRequest}`);
     }
 
     async addMany(entitesRequest: IAccountRequest[], contextUser: ITokenUser): Promise<IAccountResponse[]> {
-        return this.accountRepository.addMany(entitesRequest.map<Account>(acc => {
+        return (await this.accountRepository.addRange(entitesRequest.map<Account>(acc => {
             let account = new Account().toEntity(acc, undefined, contextUser);
             return account;
-        }))
+        }))).map(x => x.toResponse())
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<Account>): Promise<IDataSourceResponse<IAccountResponse>> {
-        return await this.accountRepository.get(fetchRequest);
+        return await this.accountRepository.getPagedData(fetchRequest, true, true);
     }
 
     async getById(id: string, contextUser: ITokenUser): Promise<IAccountResponse | null> {
-        return await this.accountRepository.getById(id);
+        return await this.accountRepository.findOneByIdWithResponse(id);
     }
 
     async update(id: string, entityRequest: IAccountRequest, contextUser: ITokenUser): Promise<IAccountResponse> {
@@ -76,7 +77,7 @@ export class AccountService implements IAccountService {
         account.modifiedById = new Types.ObjectId(contextUser.id);
         account.modifiedBy = contextUser.name;
         account._id = new Types.ObjectId(id);
-        return await this.accountRepository.updateRecord(account);
+        return await this.accountRepository.update(id, account);
     }
 
     async partialUpdate(id: string, partialEntity: Partial<Omit<IAccountRequest, 'defaultUser'>>, contextUser: ITokenUser): Promise<IAccountResponse> {
@@ -87,27 +88,23 @@ export class AccountService implements IAccountService {
             modifiedBy: contextUser.name
         };
         
-        return await this.accountRepository.partialUpdate(id, assignIn(entity, partialEntity));
+        return await this.accountRepository.update(id, assignIn(entity, partialEntity));
     }
 
-    async updateMany(entitesRequest: (IAccountRequest & { id: string; })[], contextUser: ITokenUser): Promise<IAccountResponse[]> {
-        return this.accountRepository.updateMany(entitesRequest.map<Account>(acc => {
+    async updateMany(entitesRequest: (IAccountRequest & { id: string; })[], contextUser: ITokenUser): Promise<any> {
+        return (await this.accountRepository.updateRange(entitesRequest.map<Account>(acc => {
             let account = new Account().toEntity(acc, acc.id, contextUser);
             return account;
-        }))
+        }),{}))
     }
 
     async delete(id: string, contextUser: ITokenUser): Promise<void> {
-        let account = await this.accountRepository.findOneById(id);
-        if(account) await this.accountRepository.deleteEntity(account);
-        else throw new Error(`Account with id ${id} not found`);
+        await this.accountRepository.delete(id);
     }
 
     async deleteMany(ids: string[], contextUser: ITokenUser): Promise<void> {
-        let accounts = await this.accountRepository.where({where:{_id: In(ids)}});
+        let accounts = await this.accountRepository.deleteRange({_id: {$in: ids.map(id => new Types.ObjectId(id))}});
         
         if(accounts.length !== ids.length) throw new Error(`Some account with provided ids not found`);
-
-        await this.accountRepository.deleteMany(accounts);
     }
 }

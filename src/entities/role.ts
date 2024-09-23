@@ -1,15 +1,12 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from "typeorm";
 import { Privilege } from "./privilege";
-import { IRoleRequest, IRoleResponse } from "../models";
+import { IRoleRequest, IRoleResponse, ResponseInput } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
-import { EntityBase } from "./base-entities/entity-base";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
 import { Account } from "./account";
-import { randomUUID } from "crypto";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { User } from "./user";
-import { Types } from "mongoose";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
-@Entity('Role')
 export class Role extends EntityBase implements IToResponseBase<Role, IRoleResponse> {
     name!: string;
     code!: string;
@@ -18,7 +15,8 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
     account?: Account | undefined
     privileges?: Array<Privilege>;
     
-    toResponse(entity: Role): IRoleResponse {
+    toResponse(entity?: ResponseInput<Role>): IRoleResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
@@ -27,27 +25,20 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
         }    
     }
 
+    toInstance(): Role {
+        return documentToEntityMapper<Role>(new Role, this);
+    };
+
     toEntity = (entityRequest: IRoleRequest, id?: string, contextUser?: ITokenUser): Role => {
         this.name = entityRequest.name;
         this.code = entityRequest.code;
         if(contextUser && !id){
-            this.createdBy = contextUser.name;
-            this.createdAt = new Date();
-            this.accountId  = contextUser.accountId ? new Types.ObjectId(contextUser.accountId) : undefined;
-            this.createdById = new Types.ObjectId(contextUser.id);
-            this.active = true;
-            this.deleted = false;
-            this._id = new Types.ObjectId();
+            this.toBaseEntiy(contextUser);
         }
         
         if(id && contextUser){
             this.accountId = contextUser.accountId ? new Types.ObjectId(contextUser.accountId) : undefined;
-            this._id = new Types.ObjectId(id);
-            this.modifiedBy = contextUser.name;
-            this.modifiedAt = new Date();
-            this.modifiedById = new Types.ObjectId(contextUser.id);
-            this.active = true;
-            this.deleted = false;
+            this.toBaseEntiy(contextUser, id)
         }
 
         this.privilegeIds = entityRequest.privilegeIds.map(prv => new Types.ObjectId(prv));
@@ -56,3 +47,31 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
     }
 
 }
+
+export const roleSchema = new Schema<Role>({
+    name: { type: String, required: true },
+    code: { type: String, required: true },
+    privilegeIds: [{ type: Types.ObjectId, ref: 'Privilege' }],
+    accountId: { type: Types.ObjectId, ref: 'Account' },
+});
+
+roleSchema.add(entityBaseSchema)
+
+roleSchema.loadClass(Role);
+roleSchema.virtual('privileges', {
+    ref: 'Privilege',
+    localField: 'privilegeIds',
+    foreignField: '_id',
+    justOne: false,
+});
+roleSchema.virtual('account', {
+    ref: 'Account',
+    localField: 'accountId',
+    foreignField: '_id',
+    justOne: true,
+});
+
+export const roleModel = modelCreator<Role, IRoleResponse>('Role', roleSchema);
+
+
+

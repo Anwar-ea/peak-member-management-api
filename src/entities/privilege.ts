@@ -1,10 +1,9 @@
-import { EntityBase } from "./base-entities/entity-base";
-import { Role } from "./role";
-import { IPrivilegeResponse } from "../models";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
+import { IPrivilegeResponse, ResponseInput } from "../models";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { randomUUID } from "crypto";
 import { EmptyGuid } from "../constants";
-import { Types } from "mongoose";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
 export class Privilege extends EntityBase implements IToResponseBase<Privilege, IPrivilegeResponse> {
 
@@ -14,7 +13,7 @@ export class Privilege extends EntityBase implements IToResponseBase<Privilege, 
         this._id = new Types.ObjectId();
         this.createdAt = new Date();
         this.createdBy = "Super Admin";
-        this.createdById = new Types.ObjectId(EmptyGuid);
+        this.createdById = new Types.ObjectId(undefined);
         this.active = true;
         this.deleted = false;
         this.name = name;
@@ -22,7 +21,12 @@ export class Privilege extends EntityBase implements IToResponseBase<Privilege, 
         return this;
     }
 
-    toResponse(entity: Privilege): IPrivilegeResponse {
+    toInstance(): Privilege {
+        return documentToEntityMapper<Privilege>(new Privilege, this);
+    };
+
+    toResponse(entity?: ResponseInput<Privilege>): IPrivilegeResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
@@ -30,3 +34,13 @@ export class Privilege extends EntityBase implements IToResponseBase<Privilege, 
         }
     }
 }
+
+export const privilegeSchema = new Schema<Privilege>({
+    name: { type: String, required: true },
+    code: { type: String, required: true },
+});
+privilegeSchema.add(entityBaseSchema)
+
+privilegeSchema.loadClass(Privilege);
+
+export const PrivilegeModel = modelCreator<Privilege, IPrivilegeResponse>('Privilege', privilegeSchema);

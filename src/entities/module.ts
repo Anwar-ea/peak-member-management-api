@@ -1,11 +1,10 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { EntityBase } from "./base-entities/entity-base";
+import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
 import { Privilege } from "./privilege";
-import { IModuleResponse } from "../models";
+import { IModuleResponse, ResponseInput } from "../models";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { randomUUID } from "crypto";
 import { EmptyGuid } from "../constants";
-import { Types } from "mongoose";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
 export class Module extends EntityBase implements IToResponseBase<Module, IModuleResponse>  {
     name!: string;
@@ -17,7 +16,7 @@ export class Module extends EntityBase implements IToResponseBase<Module, IModul
         this._id = new Types.ObjectId();
         this.createdAt = new Date();
         this.createdBy = "Super Admin";
-        this.createdById = new Types.ObjectId(EmptyGuid);
+        this.createdById = new Types.ObjectId(undefined);
         this.active = true;
         this.deleted = false;
         this.name = name;
@@ -26,7 +25,12 @@ export class Module extends EntityBase implements IToResponseBase<Module, IModul
         return this;
     }
 
-    toResponse(entity: Module): IModuleResponse {
+    toInstance(): Module {
+        return documentToEntityMapper<Module>(new Module, this);
+    };
+
+    toResponse(entity?: ResponseInput<Module>): IModuleResponse {
+        if(!entity) entity = this;
         return {
             ...super.toResponseBase(entity),
             name: entity.name,
@@ -35,3 +39,21 @@ export class Module extends EntityBase implements IToResponseBase<Module, IModul
         }
     }
 }
+
+export const moduleSchema =  new Schema<Module>({
+    name: { type: String, required: true },
+    code: { type: String, required: true },
+    privilageIds: [{ type: Types.ObjectId, ref: 'Privilege' }],
+});
+
+moduleSchema.loadClass(Module);
+moduleSchema.add(entityBaseSchema);
+
+moduleSchema.virtual('privilages', {
+    ref: 'Privilege',
+    localField: 'privilageIds',
+    foreignField: '_id',
+    justOne: false,
+});
+
+export const moduleModel = modelCreator<Module, IModuleResponse>('Module', moduleSchema);

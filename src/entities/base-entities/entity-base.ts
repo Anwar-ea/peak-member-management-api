@@ -1,8 +1,6 @@
 import { IResponseBase } from "../../models/inerfaces/response/response-base";
-import { ITokenUser } from "../../models";
-import { EmptyGuid } from "../../constants";
-import { randomUUID } from "crypto";
-import { ObjectId, Types } from "mongoose";
+import { ITokenUser, ResponseInput } from "../../models";
+import { Schema, Types } from "mongoose";
 
 export abstract class EntityBase {
     _id!: Types.ObjectId;
@@ -18,11 +16,12 @@ export abstract class EntityBase {
     protected toBaseEntiy(contextUser: ITokenUser, id?: string): EntityBase {
             this.active = true;
             this.deleted = false;
+
         if(!id){
             this._id = new Types.ObjectId();
             this.createdAt = new Date();
             this.createdBy = contextUser.name;
-            this.createdById = new Types.ObjectId(contextUser.id);
+            this.createdById = new Types.ObjectId(contextUser.id.length ? contextUser.id : undefined);
         }else {
             this._id = new Types.ObjectId(id);
             this.modifiedAt = new Date();
@@ -33,7 +32,7 @@ export abstract class EntityBase {
         return this;
     }
     
-    protected toResponseBase<T extends EntityBase>(entity: T): IResponseBase {
+    protected toResponseBase<T extends EntityBase>(entity: ResponseInput<T>): IResponseBase {
         return {
             id: entity._id.toString(),
             active: entity.active,
@@ -46,3 +45,17 @@ export abstract class EntityBase {
         }
     }
 }
+
+export const entityBaseSchema = new Schema<EntityBase>({
+    _id: { type: Schema.Types.ObjectId },
+    createdAt: { type: Date, default: Date.now },
+    active: { type: Boolean, default: true },
+    createdBy: { type: String, required: true },
+    createdById: { type: Schema.Types.ObjectId, required: true },
+    modifiedAt: { type: Date },
+    modifiedBy: { type: String },
+    modifiedById: { type: Schema.Types.ObjectId },
+    deleted: { type: Boolean, default: false },
+});
+
+entityBaseSchema.loadClass(EntityBase);

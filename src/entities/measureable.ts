@@ -1,8 +1,9 @@
-import { AccountEntityBase } from "./base-entities/account-entity-base";
+import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
 import { User } from "./user";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { IMeasurableRequest, IMeasurableResponse, ITokenUser } from "../models";
-import { Types } from "mongoose";
+import { IMeasurableRequest, IMeasurableResponse, ITokenUser, ResponseInput } from "../models";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
 export class Measurable extends AccountEntityBase implements IToResponseBase<Measurable, IMeasurableResponse> {
     name!: string
@@ -42,7 +43,12 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
         return this;
     }
 
-    toResponse(entity: Measurable): IMeasurableResponse {
+    toInstance(): Measurable {
+        return documentToEntityMapper<Measurable>(new Measurable, this);
+    };
+
+    toResponse(entity?: ResponseInput<Measurable>): IMeasurableResponse {
+        if(!entity) entity = this;
         return {
             ...super.toAccountResponseBase(entity),
             name: entity.name,
@@ -61,3 +67,30 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
     };
 
 }
+
+export const measurableSchema = new Schema({
+    name: { type: String, required: true },
+    unit: { type: String, required: true },
+    goal: { type: Number, required: true },
+    goalMetric: { type: Number, required: true },
+    showAverage: { type: Boolean, required: true },
+    showCumulative: { type: Boolean, required: true },
+    applyFormula: { type: Boolean, required: true },
+    averageStartDate: { type: Date },
+    cumulativeStartDate: { type: Date },
+    formula: { type: String },
+    accountableId: { type: Schema.Types.ObjectId, ref: "User" },
+  });
+
+measurableSchema.virtual("accountable", {
+  ref: "User",
+  localField: "accountableId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+measurableSchema.add(accountEntityBaseSchema)
+
+measurableSchema.loadClass(Measurable);
+
+export const measurableModel = modelCreator<Measurable, IMeasurableResponse>('Measurable', measurableSchema);

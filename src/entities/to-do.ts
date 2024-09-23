@@ -1,10 +1,9 @@
-import { IToDoRequest, IToDoResponse, ITokenUser } from "../models";
+import { IToDoRequest, IToDoResponse, ITokenUser, ResponseInput } from "../models";
 import { User } from "./user";
-import { AccountEntityBase } from "./base-entities/account-entity-base";
-import { Account } from "./account";
-import { randomUUID } from "crypto";
+import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { Types } from "mongoose";
+import { Schema, Types } from "mongoose";
+import { documentToEntityMapper, modelCreator } from "../utility";
 
 export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, IToDoResponse> {
     todo!: string;
@@ -14,7 +13,8 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
     userId!: Types.ObjectId;
     user?: User
     
-    toResponse(entity: ToDo): IToDoResponse {
+    toResponse(entity?: ResponseInput<ToDo>): IToDoResponse {
+        if(!entity) entity = this;
         return {
             ...super.toAccountResponseBase(entity),
             todo: entity.todo,
@@ -25,6 +25,10 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
             user: entity.user ? entity.user.toResponse(entity.user) : undefined,
         }
     }
+
+    toInstance(): ToDo {
+        return documentToEntityMapper<ToDo>(new ToDo, this);
+    } ;
 
     toEntity = (entityRequest: IToDoRequest, id?: string, contextUser?: ITokenUser): ToDo => {
         this.todo = entityRequest.todo;
@@ -44,3 +48,26 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
         return this;
     }
 }
+
+const todoSchema =
+  new Schema<ToDo>({
+    todo: { type: String, required: true },
+    details: { type: String, required: true },
+    dueDate: { type: Date, required: true },
+    completed: { type: Boolean, default: false },
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
+  });
+
+todoSchema.add(accountEntityBaseSchema)
+
+todoSchema.loadClass(ToDo);
+
+// Create a virtual populate for the user
+todoSchema.virtual("user", {
+  ref: "User",
+  localField: "userId",
+  foreignField: "_id",
+  justOne: true,
+});
+
+export const todoModel = modelCreator<ToDo, IToDoResponse>("Todo", todoSchema);

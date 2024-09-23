@@ -1,10 +1,11 @@
 
-import { AccountEntityBase } from './base-entities/account-entity-base';
+import { AccountEntityBase, accountEntityBaseSchema } from './base-entities/account-entity-base';
 import { IToResponseBase } from './abstractions/to-response-base';
-import { IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser, IVisionRequest, IVisionResponse } from '../models';
-import { Types } from 'mongoose';
+import { IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser, IVisionRequest, IVisionResponse, ResponseInput } from '../models';
+import { Schema, Types } from 'mongoose';
 import { Goal } from './goal';
 import { Measurable } from './measureable';
+import { documentToEntityMapper, modelCreator } from '../utility';
 
 export class BusinessPlan extends AccountEntityBase implements IToResponseBase<BusinessPlan, IBusinessPlanResponse> {
     coreValues!: Array<string>;
@@ -38,7 +39,12 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
         return this;
     }
 
-    toResponse(entity: BusinessPlan): IBusinessPlanResponse {
+    toInstance(): BusinessPlan {
+        return documentToEntityMapper<BusinessPlan>(new BusinessPlan(), this)
+    }
+
+    toResponse(entity?: ResponseInput<BusinessPlan>): IBusinessPlanResponse {
+        if(!entity) entity = this;
         return {
             ...super.toAccountResponseBase(entity),
             coreValues: entity.coreValues,
@@ -87,7 +93,7 @@ const visionRequstToEntity = (req: IVisionRequest, contextUser: ITokenUser): IVi
     }
 }
 
-const visionEntityToRequst = (ent: IVision): IVisionResponse => {
+const visionEntityToRequst = (ent: ResponseInput<IVision>): IVisionResponse => {
     return {
         futureDate: ent.futureDate,
         revenue: ent.revenue,
@@ -98,3 +104,56 @@ const visionEntityToRequst = (ent: IVision): IVisionResponse => {
         metrics: ent.metrics ? ent.metrics.map(m => m.toResponse(m)) : undefined
     }
 }
+
+
+const marketingStrategySchema = new Schema({
+    targetMarket: { type: String, required: true },
+    whoTheyAre: { type: String, required: true },
+    whereTheyAre: { type: String, required: true },
+    whatTheyAre: { type: String, required: true },
+    provenProcess: { type: String, required: true },
+    guarantee: { type: String, required: true },
+});
+
+const visionSchema = new Schema({
+    futureDate: { type: Date, required: true },
+    revenue: { type: Number, required: true },
+    profit: { type: Number, required: true },
+    goalIds: [{ type: Schema.Types.ObjectId, ref: 'Goal' }],
+    metricIds: [{ type: Schema.Types.ObjectId, ref: 'Measurable' }],
+});
+
+// Virtual populate for goals
+visionSchema.virtual('goals', {
+    ref: 'Goal',
+    localField: 'goalIds',
+    foreignField: '_id',
+    justOne: false,
+});
+
+// Virtual populate for metrics
+visionSchema.virtual('metrics', {
+    ref: 'Measurable',
+    localField: 'metricIds',
+    foreignField: '_id',
+    justOne: false,
+});
+
+// Ensure virtuals are included in JSON output
+visionSchema.set('toJSON', { virtuals: true });
+
+export const businessPlanSchema =  new Schema<BusinessPlan>({
+    coreValues: [{ type: String, required: true }],
+    purpose: { type: String, required: true },
+    niche: { type: String, required: true },
+    marketingStrategies: [{ type: marketingStrategySchema, required: true }],
+    threeYearVision: { type: visionSchema, required: true },
+    oneYearVision: { type: visionSchema, required: true },
+});
+
+businessPlanSchema.add(accountEntityBaseSchema)
+
+businessPlanSchema.loadClass(BusinessPlan);
+
+export const businessPlanModel = modelCreator<BusinessPlan, IBusinessPlanResponse>('BusinessPlan', businessPlanSchema);
+
