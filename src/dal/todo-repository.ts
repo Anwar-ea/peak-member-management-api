@@ -9,6 +9,7 @@ export class ToDoRepository extends GenericRepository<ToDo, IToDoResponse> imple
 
     constructor () {
         super(todoModel);
+        this.populate = ['user'];
     }
 
     

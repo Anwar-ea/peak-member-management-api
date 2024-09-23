@@ -9,6 +9,7 @@ export class MeasurableRepository extends GenericRepository<Measurable, IMeasura
 
     constructor () {
         super(measurableModel);
+        this.populate = ['accountable']
     }
     
 }

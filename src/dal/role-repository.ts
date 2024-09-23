@@ -8,6 +8,7 @@ import {  IRoleResponse } from "../models";
 export class RoleRepository extends GenericRepository<Role, IRoleResponse> implements IRoleRepository {
     constructor(){
         super(roleModel);
+        this.populate = ['account', 'privileges']
     }
 
 

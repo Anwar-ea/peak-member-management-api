@@ -42,7 +42,8 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
         this.details = entityRequest.details;
         this.dueDate = entityRequest.dueDate;
         this.accountableId = new Types.ObjectId(entityRequest.accountableId);
-
+        this.status = entityRequest.status;
+        this.type = entityRequest.type;
         if(contextUser && !id){
             super.toAccountEntity(contextUser)
         }

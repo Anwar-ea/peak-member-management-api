@@ -8,6 +8,7 @@ import { IModuleResponse } from "../models";
 export class ModuleRepository extends GenericRepository<Module, IModuleResponse> implements IModuleRepository {
     constructor(){
         super(moduleModel);
+        this.populate = ['privilages']
     }
 
 }

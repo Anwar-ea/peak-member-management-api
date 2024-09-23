@@ -9,6 +9,7 @@ export class GoalRepository extends GenericRepository<Goal, IGoalResponse> imple
 
     constructor () {
         super(goalModel);
+        this.populate = ['accountable']
     }
     
 }
