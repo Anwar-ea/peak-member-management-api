@@ -5,7 +5,7 @@ import { ExtendedRequest } from "../../models/inerfaces/extended-Request";
 import { IFetchRequest, IFilter } from "../../models";
 import { CommonRoutes } from "../../constants/commonRoutes";
 import { authorize } from "../../middlewares/authentication";
-import { Revenue } from "../../entities/revenue";
+import { Revenue } from "../../entities";
 import { IRevenueRequest } from "../../models/inerfaces/request/revenue-request";
 import { IRevenueService } from "../../bl/abstractions/revenue-service";
 

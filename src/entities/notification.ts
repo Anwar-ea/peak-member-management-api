@@ -1,11 +1,9 @@
-import { ITokenUser, ResponseInput } from "../models";
+import { INotificationRequest, INotificationResponse, ITokenUser, NotificationTypes, ResponseInput } from "../models";
 import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
 import { IToResponseBase } from "./abstractions/to-response-base";
 import { Schema } from "mongoose";
-import { documentToEntityMapper, modelCreator } from "../utility";
-import { NotificationTypes } from "../models/enums/notification-types.enum";
-import { INotificationResponse } from "../models/inerfaces/response/notification-response";
-import { INotificationRequest } from "../models/inerfaces/request/notification-request";
+import { documentToEntityMapper } from "../utility";
+import { modelCreator } from "../utility/model-creator-utility";
 
 export class Notification extends AccountEntityBase implements IToResponseBase<Notification, INotificationResponse> {
     description!: string;
@@ -27,7 +25,7 @@ export class Notification extends AccountEntityBase implements IToResponseBase<N
         return documentToEntityMapper<Notification>(new Notification, this)
     }
     
-    toEntity = (entityRequest: INotificationRequest, id?: string, contextUser?: ITokenUser): Notification => {
+    toEntity (entityRequest: INotificationRequest, id?: string, contextUser?: ITokenUser): Notification  {
         this.description = entityRequest.description;
         this.type = entityRequest.type;
         this.expirationDate = entityRequest.expirationDate;
@@ -54,4 +52,4 @@ notificationSchema.add(accountEntityBaseSchema)
 
 notificationSchema.loadClass(Notification);
 
-export const notificationModel = modelCreator<Notification, INotificationResponse>('Notification', notificationSchema);
+export const notificationModel = modelCreator<Notification, INotificationResponse>('Notifications', notificationSchema);

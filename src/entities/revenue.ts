@@ -2,10 +2,9 @@ import { Schema, Types } from "mongoose";
 import { IToResponseBase } from "./abstractions/to-response-base";
 import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
 import { User } from "./user";
-import { ITokenUser, ResponseInput } from "../models";
-import { documentToEntityMapper, modelCreator } from "../utility";
-import { IRevenueResponse } from "../models/inerfaces/response/revenue-response";
-import { IRevenueRequest } from "../models/inerfaces/request/revenue-request";
+import { IRevenueRequest, IRevenueResponse, ITokenUser, ResponseInput } from "../models";
+import { documentToEntityMapper } from "../utility";
+import { modelCreator } from "../utility/model-creator-utility";
 
 export class Revenue extends AccountEntityBase implements IToResponseBase<Revenue, IRevenueResponse> {
     startOfWeek!: Date;
@@ -35,7 +34,7 @@ export class Revenue extends AccountEntityBase implements IToResponseBase<Revenu
         return documentToEntityMapper<Revenue>(new Revenue, this)
     }
     
-    toEntity = (entityRequest: IRevenueRequest, id?: string, contextUser?: ITokenUser): Revenue => {
+    toEntity(entityRequest: IRevenueRequest, id?: string, contextUser?: ITokenUser): Revenue {
         this.startOfWeek = entityRequest.startOfWeek;
         this.endOfWeek = entityRequest.endOfWeek;
         this.week = entityRequest.week;

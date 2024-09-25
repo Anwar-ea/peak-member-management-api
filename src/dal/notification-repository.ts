@@ -1,4 +1,4 @@
-import { Notification, notificationModel } from "../entities/notification";
+import { Notification, notificationModel } from "../entities";
 import { INotificationResponse } from "../models/inerfaces/response/notification-response";
 import { INotificationRepository } from "./abstractions/notification-repository";
 import { GenericRepository } from "./generics/repository";

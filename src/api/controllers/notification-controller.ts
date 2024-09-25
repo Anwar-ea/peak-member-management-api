@@ -7,7 +7,7 @@ import { CommonRoutes } from "../../constants/commonRoutes";
 import { authorize } from "../../middlewares/authentication";
 import { INotificationService } from "../../bl/abstractions/notification-service";
 import { INotificationRequest } from "../../models/inerfaces/request/notification-request";
-import { Notification } from "../../entities/notification";
+import { Notification } from "../../entities";
 
 @injectable()
 export class NotificationController extends ControllerBase {

@@ -9,4 +9,6 @@ export * from './goal';
 export * from './to-do';
 export * from './measureable';
 export * from './businessPlan';
+export * from './notification';
+export * from './revenue';
  

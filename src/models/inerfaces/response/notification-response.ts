@@ -1,4 +1,4 @@
-import { NotificationTypes } from "../../enums/notification-types.enum";
+import { NotificationTypes } from "../../enums";
 import { IAccountResponseBase } from "./response-base";
 
 export interface INotificationResponse extends IAccountResponseBase {

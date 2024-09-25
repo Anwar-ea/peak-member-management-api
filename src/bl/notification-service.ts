@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import { IDataSourceResponse, IFetchRequest, IFilter, ITokenUser } from "../models";
-import { Notification } from "../entities/notification";
+import { Notification } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 import { INotificationService } from "./abstractions/notification-service";
