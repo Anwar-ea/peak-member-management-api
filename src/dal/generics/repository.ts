@@ -5,6 +5,7 @@ import { AccountEntityBase } from '../../entities/base-entities/account-entity-b
 import { buildMongoQuery, mongoQueryOptionsMapper, setSaurceDataResponse } from '../../utility';
 import { IToResponseBase } from '../../entities/abstractions/to-response-base';
 import { HydratedDocument, ProjectionType, RootFilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
+import { IDropdownResponse } from '../../models/inerfaces/response/dropdown-response';
 
 @injectable()
 export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) & IToResponseBase<TEntity, TResponse>, TResponse>  {
@@ -136,4 +137,14 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         return entities;
     }
 
+    async dropdown(accountId: string, fieldName: string) : Promise<IDropdownResponse[]> {
+        const filter = { accountId: accountId } as RootFilterQuery<TEntity>;
+        const entities = await this.model.find(filter).select(fieldName);
+        const dropdownResponse = entities.map(entity => ({
+            id: entity._id.toString(),
+            name: entity.get(fieldName)
+        })) as IDropdownResponse[];
+
+        return dropdownResponse;
+    }
 }

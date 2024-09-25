@@ -6,6 +6,7 @@ import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { Role } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
+import { IDropdownResponse } from "../models/inerfaces/response/dropdown-response";
 
 @injectable()
 export class RoleService implements IRoleService {
@@ -68,5 +69,9 @@ export class RoleService implements IRoleService {
         
         if(roles.length !== ids.length) throw new Error(`Some role with provided ids not found`);
 
+    }
+
+    async dropdown(accountId: string): Promise<IDropdownResponse[]> {
+        return await this.roleRepository.dropdown(accountId, 'name');
     }
 }

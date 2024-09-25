@@ -1,4 +1,3 @@
-import { FindOneOptions } from "typeorm";
 import { User } from "../../entities";
 import { IRepositoryBase } from "./repository-base";
 import { IUserResponse } from "../../models";
