@@ -33,6 +33,7 @@ export class Role extends EntityBase implements IToResponseBase<Role, IRoleRespo
         this.name = entityRequest.name;
         this.code = entityRequest.code;
         if(contextUser && !id){
+            this.accountId = contextUser.accountId ? new Types.ObjectId(contextUser.accountId) : undefined;
             this.toBaseEntiy(contextUser);
         }
         
