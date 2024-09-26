@@ -2,7 +2,8 @@ export interface IMeasurableRequest {
     name: string    
     unit: string
     goal: number
-    goalMetric: number
+    goalMetric?: number
+    goalMetricRange?: { start: number, end: number }
     showAverage: boolean
     showCumulative: boolean
     applyFormula: boolean

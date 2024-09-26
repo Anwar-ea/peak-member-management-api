@@ -4,12 +4,14 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 import { IMeasurableRequest, IMeasurableResponse, ITokenUser, ResponseInput } from "../models";
 import { Schema, Types } from "mongoose";
 import { documentToEntityMapper, modelCreator } from "../utility";
+import { Goals } from "../models/enums/goals.enum";
 
 export class Measurable extends AccountEntityBase implements IToResponseBase<Measurable, IMeasurableResponse> {
     name!: string
     unit!: string
-    goal!: number
-    goalMetric!: number
+    goal!: Goals
+    goalMetric?: number
+    goalMetricRange?: { start: number, end: number }
     showAverage!: boolean
     showCumulative!: boolean
     applyFormula!: boolean
@@ -24,6 +26,7 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
         this.unit = entityRequest.unit;
         this.goal = entityRequest.goal;
         this.goalMetric = entityRequest.goalMetric;
+        this.goalMetricRange = entityRequest.goalMetricRange;
         this.showAverage = entityRequest.showAverage;
         this.showCumulative = entityRequest.showCumulative;
         this.applyFormula = entityRequest.applyFormula;
@@ -55,6 +58,7 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
             unit: entity.unit,
             goal: entity.goal,
             goalMetric: entity.goalMetric,
+            goalMetricRange: entity.goalMetricRange,
             showAverage: entity.showAverage,
             showCumulative: entity.showCumulative,
             applyFormula: entity.applyFormula,
@@ -72,7 +76,8 @@ export const measurableSchema = new Schema({
     name: { type: String, required: true },
     unit: { type: String, required: true },
     goal: { type: Number, required: true },
-    goalMetric: { type: Number, required: true },
+    goalMetric: { type: Number, required: false },
+    goalMetricRange: { type: Number, required: false },
     showAverage: { type: Boolean, required: true },
     showCumulative: { type: Boolean, required: true },
     applyFormula: { type: Boolean, required: true },

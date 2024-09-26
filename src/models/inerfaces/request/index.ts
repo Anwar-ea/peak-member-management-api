@@ -12,3 +12,4 @@ export * from './marketingStrategy-request';
 export * from './measurable-request';
 export * from './notification-request';
 export * from './revenue-request';
+export * from './calender-event-request';

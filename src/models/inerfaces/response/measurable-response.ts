@@ -1,3 +1,4 @@
+import { Goals } from "../../enums/goals.enum";
 import { IAccountResponseBase } from "./response-base";
 import { IUserResponse } from "./user-response";
 import { IVisionResponse } from "./vision-response";
@@ -5,8 +6,9 @@ import { IVisionResponse } from "./vision-response";
 export interface IMeasurableResponse extends IAccountResponseBase {
     name: string;
     unit: string;
-    goal: number;
-    goalMetric: number;
+    goal: Goals;
+    goalMetric?: number;
+    goalMetricRange?: { start: number, end: number }
     showAverage: boolean;
     showCumulative: boolean;
     applyFormula: boolean;
