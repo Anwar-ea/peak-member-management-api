@@ -11,3 +11,5 @@ export * from './measurable-response';
 export * from './marketingStrategy-response';
 export * from './businessPlan-response';
 export * from './vision-response';
+export * from './notification-response';
+export * from './revenue-response';

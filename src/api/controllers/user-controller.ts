@@ -52,6 +52,12 @@ export class UserController extends ControllerBase {
                 method: 'POST',
                 path: 'login',
                 handler: this.login as RouteHandlerMethod
+            },
+            {
+                method: 'GET',
+                path: 'dropdown',
+                middlewares: [authorize as preHandlerHookHandler],
+                handler: this.dropdown as RouteHandlerMethod
             }
         ];
 
@@ -107,5 +113,13 @@ export class UserController extends ControllerBase {
         if (request.user) {
           res.send(await this.userService.update(req.params.id, req.body, request.user));
         }  
+    }
+
+    private dropdown = async (req: FastifyRequest, res: FastifyReply) => {
+        let request = req as ExtendedRequest;
+
+        if (request.user) {
+            res.send(await this.userService.dropdown(request.user.accountId));
+        }
     }
 }

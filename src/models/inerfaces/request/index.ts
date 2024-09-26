@@ -10,3 +10,5 @@ export * from './vision-request';
 export * from './businessPlaan-request';
 export * from './marketingStrategy-request';
 export * from './measurable-request';
+export * from './notification-request';
+export * from './revenue-request';

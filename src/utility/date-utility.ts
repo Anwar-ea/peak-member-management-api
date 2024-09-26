@@ -57,3 +57,21 @@ export const getWorkDaysOfWeekfromDate = (date: Date = new Date()) => {
 
     return {days: weekWorkDays.length, dates: weekWorkDays, startDate: firstDayOfWeek.toDate(), endDate: lastDayOfWeek.toDate()};    
 }
+
+export const weekProducer = () => {
+    let reportWeekData = [];
+    for (let d = moment().startOf('year'); d.isBefore(new Date); d.add(1, 'week')) {
+        let currentWeek = d.get('week');
+        let weekStart = d.clone().utc().day(1).startOf('d');
+        let weekEnd = d.clone().utc().day(5).startOf('d');
+
+        reportWeekData.push({
+            label: `${weekStart.format('yyyy/MM-DD')} - ${weekEnd.format('yyyy/MM-DD')}`,
+            startDate: weekStart.utc().toDate(),
+            endDate: weekEnd.utc().toDate(),
+            week: currentWeek
+        })
+    }
+
+    return reportWeekData;
+}

@@ -8,6 +8,7 @@ import { compareHash, encrypt, signJwt } from "../utility";
 import { FastifyError } from 'fastify'
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
+import { IDropdownResponse } from "../models/inerfaces/response/dropdown-response";
 
 @injectable()
 export class UserService implements IUserService {
@@ -96,5 +97,9 @@ export class UserService implements IUserService {
         
         if(users.length !== ids.length) throw new Error(`Some user with provided ids not found`);
 
+    }
+
+    async dropdown(accountId: string): Promise<IDropdownResponse[]> {
+        return await this.userRepository.dropdown(accountId, 'userName');
     }
 }

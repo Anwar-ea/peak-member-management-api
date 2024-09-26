@@ -1,17 +1,18 @@
 import { inject, injectable } from "tsyringe";
 import { ControllerBase } from "./generics/controller-base";
-import { IRoleService } from "../../bl";
 import { FastifyReply, FastifyRequest, preHandlerHookHandler, RouteHandlerMethod } from "fastify";
 import { ExtendedRequest } from "../../models/inerfaces/extended-Request";
-import { IFetchRequest, IFilter, IRoleRequest } from "../../models";
-import { Role } from "../../entities";
+import { IFetchRequest, IFilter } from "../../models";
 import { CommonRoutes } from "../../constants/commonRoutes";
 import { authorize } from "../../middlewares/authentication";
+import { INotificationService } from "../../bl/abstractions/notification-service";
+import { INotificationRequest } from "../../models/inerfaces/request/notification-request";
+import { Notification } from "../../entities";
 
 @injectable()
-export class RoleController extends ControllerBase {
-    constructor(@inject('RoleService') private readonly roleService: IRoleService){
-        super('/role');
+export class NotificationController extends ControllerBase {
+    constructor(@inject('NotificationService') private readonly notificationService: INotificationService) {
+        super('/notification');
         this.middleware = authorize as preHandlerHookHandler;
         this.endPoints = [
             {
@@ -43,30 +44,24 @@ export class RoleController extends ControllerBase {
                 method: 'DELETE',
                 path: `${CommonRoutes.delete}/:id`,
                 handler: this.delete as RouteHandlerMethod
-            },
-            {
-                method: 'GET',
-                path: 'dropdown',
-                middlewares: [authorize as preHandlerHookHandler],
-                handler: this.dropdown as RouteHandlerMethod
             }
         ];
 
     }
 
     
-    private add = async (req: FastifyRequest<{Body: IRoleRequest}>, res: FastifyReply) => {
+    private add = async (req: FastifyRequest<{Body: INotificationRequest}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if(request.user){
-            res.send(await this.roleService.add(req.body, request.user))
+            res.send(await this.notificationService.add(req.body, request.user))
         }
     }
 
-    private getAll = async (req: FastifyRequest<{Body?: IFetchRequest<Role>}>, res: FastifyReply) => {
+    private getAll = async (req: FastifyRequest<{Body?: IFetchRequest<Notification>}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
-        res.send(await this.roleService.get(request.user, req.body))
+        res.send(await this.notificationService.get(request.user, req.body))
         if(request.user){
         }
     }
@@ -74,16 +69,16 @@ export class RoleController extends ControllerBase {
     private getById = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
-        res.send(await this.roleService.getById(req.params.id, request.user));
+        res.send(await this.notificationService.getById(req.params.id, request.user));
         if(request.user){
         }
     }
 
-    private getOneByQuery = async (req: FastifyRequest<{Body: Array<IFilter<Role, keyof Role>>}>, res: FastifyReply) => {
+    private getOneByQuery = async (req: FastifyRequest<{Body: Array<IFilter<Notification, keyof Notification>>}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if (request.user) {
-          res.send(await this.roleService.getOne(request.user, req.body));
+          res.send(await this.notificationService.getOne(request.user, req.body));
         }    
     }
  
@@ -91,23 +86,15 @@ export class RoleController extends ControllerBase {
         let request = req as ExtendedRequest;
 
         if (request.user) {
-          res.send(await this.roleService.delete(req.params.id, request.user));
+          res.send(await this.notificationService.delete(req.params.id, request.user));
         }       
     }
 
-    private update = async (req: FastifyRequest<{Body: IRoleRequest, Params: {id: string}}>, res: FastifyReply) => {
+    private update = async (req: FastifyRequest<{Body: INotificationRequest, Params: {id: string}}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if (request.user) {
-          res.send(await this.roleService.update(req.params.id, req.body, request.user));
+          res.send(await this.notificationService.update(req.params.id, req.body, request.user));
         }  
-    }
-
-    private dropdown = async (req: FastifyRequest, res: FastifyReply) => {
-        let request = req as ExtendedRequest;
-
-        if (request.user) {
-            res.send(await this.roleService.dropdown(request.user.accountId));
-        }
     }
 }
