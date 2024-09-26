@@ -7,3 +7,4 @@ export * from './abstractions/privilege-service';
 export * from './abstractions/module-service';
 export * from './abstractions/measurable-service';
 export * from './abstractions/businessPlan-service';
+export * from './abstractions/calender-event-service';

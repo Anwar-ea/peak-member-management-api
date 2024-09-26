@@ -7,3 +7,4 @@ export * from './todo-service';
 export * from './goal-service';
 export * from './measurable-service';
 export * from './businessPlan-service';
+export * from './calender-event-service';

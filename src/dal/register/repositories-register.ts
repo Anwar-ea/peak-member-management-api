@@ -10,6 +10,7 @@ import { MeasurableRepository } from "../measureable-repository";
 import { BusinessPlanRepository } from "../businessPlan-repository";
 import { NotificationRepository } from "../notification-repository";
 import { RevenueRepository } from "../revenue-repository";
+import { CalenderEventRepository } from "../calender-event-repository";
 
 export const registerRepositories = (container: DependencyContainer) => {
     container.register<AccountRepository>('AccountRepository', AccountRepository);
@@ -23,4 +24,5 @@ export const registerRepositories = (container: DependencyContainer) => {
     container.register<BusinessPlanRepository>('BusinessPlanRepository', BusinessPlanRepository );
     container.register<NotificationRepository>('NotificationRepository', NotificationRepository);
     container.register<RevenueRepository>('RevenueRepository', RevenueRepository);
+    container.register<CalenderEventRepository>('CalenderEventRepository', CalenderEventRepository);
 }

@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { IDataSourceResponse, IFetchRequest, IFilter, IGoalRequest, IGoalResponse, ITokenUser } from "../models";
+import { IDataSourceResponse, IFetchRequest, IFilter, ITokenUser } from "../models";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 import { IRevenueService } from "./abstractions/revenue-service";
