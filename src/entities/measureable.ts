@@ -4,11 +4,11 @@ import { IToResponseBase } from "./abstractions/to-response-base";
 import { IMeasurableRequest, IMeasurableResponse, ITokenUser, ResponseInput } from "../models";
 import { Schema, Types } from "mongoose";
 import { documentToEntityMapper, modelCreator } from "../utility";
-import { Goals } from "../models/enums/goals.enum";
+import { Goals, GoalUnits } from "../models/enums/goals.enum";
 
 export class Measurable extends AccountEntityBase implements IToResponseBase<Measurable, IMeasurableResponse> {
     name!: string
-    unit!: string
+    unit!: GoalUnits
     goal!: Goals
     goalMetric?: number
     goalMetricRange?: { start: number, end: number }

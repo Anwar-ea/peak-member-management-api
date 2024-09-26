@@ -14,16 +14,22 @@ export class UploadController extends ControllerBase {
         this.endPoints = [
             {
                 method: 'POST',
-                path: "profile-picture/{id}",
+                path: "profile_picture/:id",
                 middlewares: [authorize as preHandlerHookHandler],
                 handler: this.uploadProfilePic as RouteHandlerMethod
+            },
+            {
+                method: 'GET',
+                path: "cover_pic",
+                middlewares: [authorize as preHandlerHookHandler],
+                handler: this.test as RouteHandlerMethod
             }
         ];
 
     }
 
 
-    private uploadProfilePic = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
+    uploadProfilePic = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         const file = await req.file()
@@ -35,6 +41,10 @@ export class UploadController extends ControllerBase {
         }else {
             res.status(400).send({message: 'file not found'});
         }
+    }
+
+    test = async (req: FastifyRequest, res: FastifyReply) => {
+        res.send('cover pic');
     }
 
 }

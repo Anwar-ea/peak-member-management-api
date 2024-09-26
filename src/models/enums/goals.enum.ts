@@ -6,3 +6,8 @@ export enum Goals {
     LessThanOrEqualTo = 5,
     LessThan = 6
 }
+
+export enum GoalUnits{
+    Dollar = 1,
+    percent = 2,
+}
