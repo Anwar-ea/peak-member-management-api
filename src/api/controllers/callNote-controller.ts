@@ -11,7 +11,7 @@ import { ICallNoteService } from "../../bl";
 @injectable()
 export class CallNoteController extends ControllerBase {
     constructor(@inject('CallNoteService') private readonly callNoteService: ICallNoteService){
-        super('/callnote');
+        super('/call_note');
         this.middleware = authorize as preHandlerHookHandler;
         this.endPoints = [
             {
