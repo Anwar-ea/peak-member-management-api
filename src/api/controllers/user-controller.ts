@@ -6,6 +6,7 @@ import { FastifyReply, FastifyRequest, preHandlerHookHandler, RouteHandlerMethod
 import { ExtendedRequest, IFetchRequest, IFilter, ILoginRequest, IUserRequest } from "../../models";
 import { User } from "../../entities";
 import { authorize } from "../../middlewares/authentication";
+import { IResetPassword } from "../../models/inerfaces/request/resetPasswordRequest";
 
 @injectable()
 export class UserController extends ControllerBase {
@@ -52,6 +53,11 @@ export class UserController extends ControllerBase {
                 method: 'POST',
                 path: 'login',
                 handler: this.login as RouteHandlerMethod
+            },
+            {
+                method: 'POST',
+                path: 'reset_password',
+                handler: this.resetPassword as RouteHandlerMethod
             },
             {
                 method: 'GET',
@@ -112,6 +118,14 @@ export class UserController extends ControllerBase {
 
         if (request.user) {
           res.send(await this.userService.update(req.params.id, req.body, request.user));
+        }  
+    }
+
+    private resetPassword = async (req: FastifyRequest<{Body: IResetPassword}>, res: FastifyReply) => {
+        let request = req as ExtendedRequest;
+
+        if (request.user) {
+          res.send(await this.userService.resetPassword(req.body, request.user));
         }  
     }
 

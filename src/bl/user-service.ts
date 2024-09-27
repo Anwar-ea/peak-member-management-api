@@ -9,6 +9,7 @@ import { FastifyError } from 'fastify'
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 import { IDropdownResponse } from "../models/inerfaces/response/dropdown-response";
+import { IResetPassword } from "../models/inerfaces/request/resetPasswordRequest";
 
 @injectable()
 export class UserService implements IUserService {
@@ -76,8 +77,14 @@ export class UserService implements IUserService {
         return await this.userRepository.update(id, assignIn(entity, entityRequest));
     }
 
-    async resetPassword(id: string, password: string, contextUser: ITokenUser): Promise<IUserResponse> {
-        let updatedEntity = this.partialUpdate(id, {password}, contextUser);
+    async resetPassword(resetPassword: IResetPassword, contextUser: ITokenUser): Promise<IUserResponse> {
+        let entity: Partial<User> = {
+            modifiedAt: new Date(),
+            modifiedBy: contextUser.name,
+            modifiedById: new Types.ObjectId(contextUser.id),
+            passwordHash: await encrypt(resetPassword.password)
+        };
+        let updatedEntity = this.userRepository.update(resetPassword.userId, entity);
         return updatedEntity;
     }
 
