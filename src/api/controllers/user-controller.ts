@@ -57,6 +57,7 @@ export class UserController extends ControllerBase {
             {
                 method: 'POST',
                 path: 'reset_password',
+                middlewares: [authorize as preHandlerHookHandler],
                 handler: this.resetPassword as RouteHandlerMethod
             },
             {
