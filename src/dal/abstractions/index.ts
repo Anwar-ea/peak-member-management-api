@@ -9,3 +9,4 @@ export * from './todo-repository';
 export * from './businessPlan-repository';
 export * from './measurable-repository';
 export * from './calender-event-repository';
+export * from './callNote-repository';

@@ -13,3 +13,4 @@ export * from './measurable-request';
 export * from './notification-request';
 export * from './revenue-request';
 export * from './calender-event-request';
+export * from './call-note-request';

@@ -13,6 +13,7 @@ import { RevenueController } from '../revenue-controller';
 import { ReportingController } from '../reporting-controller';
 import { CalenderEventController } from '../calender-event-controller';
 import { UploadController } from '../upload-controller';
+import { CallNoteController } from '../callNote-controller';
 
 export const registerControllers = (container: DependencyContainer) => {
     container.register<AccountController>('AccountController', AccountController);
@@ -29,6 +30,7 @@ export const registerControllers = (container: DependencyContainer) => {
     container.register<ReportingController>('ReportingController', ReportingController, );
     container.register<CalenderEventController>('CalenderEventController', CalenderEventController, );
     container.register<UploadController>('UploadController', UploadController, );
+    container.register<CallNoteController>('CallNoteController', CallNoteController, );
     return {
         accountController: container.resolve(AccountController),
         userController: container.resolve(UserController),
@@ -44,6 +46,7 @@ export const registerControllers = (container: DependencyContainer) => {
         reportingController: container.resolve(ReportingController),
         calenderEventController: container.resolve(CalenderEventController),
         uploadController: container.resolve(UploadController),
+        callNoteController: container.resolve(CallNoteController),
     }
     // Add more controllers here
 

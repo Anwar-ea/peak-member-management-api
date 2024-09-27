@@ -14,3 +14,4 @@ export * from './vision-response';
 export * from './notification-response';
 export * from './revenue-response';
 export * from './calender-event-response';
+export * from './call-note-response';
