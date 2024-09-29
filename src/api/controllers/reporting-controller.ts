@@ -13,8 +13,13 @@ export class ReportingController extends ControllerBase {
         this.endPoints = [
             {
                 method: 'GET',
-                path: 'revenue',
+                path: 'revenues',
                 handler: this.getAll as RouteHandlerMethod
+            },
+            {
+                method: 'GET',
+                path: `revenues/:userId`,
+                handler: this.getByUserId as RouteHandlerMethod
             }
         ];
 
@@ -23,6 +28,16 @@ export class ReportingController extends ControllerBase {
     private getAll = async (req: FastifyRequest, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
-        res.send(await this.reportingService.get())
+        if (request.user) {
+            res.send(await this.reportingService.get(request.user))
+        }
+    }
+
+    private getByUserId = async (req: FastifyRequest<{Params: {userId: string}}>, res: FastifyReply) => {
+        let request = req as ExtendedRequest;
+
+        if(request.user){
+            res.send(await this.reportingService.get(request.user, req.params.userId));
+        }
     }
 }

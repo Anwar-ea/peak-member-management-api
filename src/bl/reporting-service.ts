@@ -1,21 +1,159 @@
 import { inject, injectable } from "tsyringe";
-import { IDataSourceResponse, IFetchRequest, IFilter, ITokenUser } from "../models";
-import { Notification } from "../entities/notification";
-import { INotificationResponse } from "../models/inerfaces/response/notification-response";
 import { IReportingService } from "./abstractions/reporting-service";
-import { IMeasurableRepository } from "../dal";
-import { IRevenueRepository } from "../dal/abstractions/revenue-repository";
-import { Measurable } from "../entities";
-import { RootFilterQuery } from "mongoose";
+import { IUserRepository } from "../dal";
+import { Measurable, Revenue, User } from "../entities";
+import { Types } from "mongoose";
 import moment from "moment";
+import { weekProducer } from "../utility";
+import { ITokenUser } from "../models";
+import { IMeasurableReport } from "../models/inerfaces/reports";
 
 @injectable()
 export class ReportingService implements IReportingService {
-    constructor(@inject('MeasurableRepository') private readonly measurableRepository: IMeasurableRepository,
-                @inject('RevenueRepository') private readonly revenueRepository: IRevenueRepository) { }
+    constructor(@inject('UserRepository') private readonly userRepository: IUserRepository) { }
 
-    async get(): Promise<any> {
-        const filter = { createdAt: moment().startOf('year') } as RootFilterQuery<Measurable>;
-        return await this.measurableRepository.find(filter);
+    async get(contextUser: ITokenUser, userId?: string): Promise<Array<IMeasurableReport>> {
+        let matchQuery: Record<string, any> = {
+            'active': true, 
+            'deleted': false, 
+            'accountId': new Types.ObjectId(contextUser.accountId)
+        };
+
+        if (userId) {
+            matchQuery['_id'] = new Types.ObjectId(userId);
+        }
+
+        let result = await this.userRepository.aggregate<User & { measurables: Array<Measurable>, revenues: Array<Revenue> }>(
+            [
+                {
+                  '$match': matchQuery
+                }, {
+                  '$lookup': {
+                    'from': 'Measurable', 
+                    'let': {
+                      'accountableId': '$_id'
+                    }, 
+                    'pipeline': [
+                      {
+                        '$match': {
+                          '$expr': {
+                            '$and': [
+                              {
+                                '$eq': [
+                                  '$accountableId', '$$accountableId'
+                                ]
+                              }, {
+                                '$eq': [
+                                  '$active', true
+                                ]
+                              }, {
+                                '$eq': [
+                                  '$deleted', false
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ], 
+                    'as': 'measurables'
+                  }
+                }, {
+                  '$lookup': {
+                    'from': 'Revenue', 
+                    'let': {
+                      'userId': '$_id'
+                    }, 
+                    'pipeline': [
+                      {
+                        '$match': {
+                          '$expr': {
+                            '$and': [
+                              {
+                                '$eq': [
+                                  '$userId', '$$userId'
+                                ]
+                              }, {
+                                '$eq': [
+                                  '$active', true
+                                ]
+                              }, {
+                                '$eq': [
+                                  '$deleted', false
+                                ]
+                              }, {
+                                '$eq': [
+                                  '$year', moment().get('year')
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      }, {
+                        '$sort': {
+                          'week': -1
+                        }
+                      }
+                    ], 
+                    'as': 'revenues'
+                  }
+                }, {
+                  '$match': {
+                    'measurables': {
+                      '$gt': {
+                        '$size': 0
+                      }
+                    }
+                  }
+                }
+              ]
+        );
+
+        let weeks = weekProducer();
+
+        for (let week of weeks) {
+            for (let res of result) {
+                if (res.revenues.some(x => x.week !== week.week)) {
+                    res.revenues.push(new Revenue().toEntity({
+                        week: week.week,
+                        year: week.year,
+                        endOfWeek: week.endDate,
+                        startOfWeek: week.startDate,
+                        revenue: 0,
+                        userId: res._id.toString()
+                    }, undefined, contextUser));
+
+                    res.revenues = res.revenues.sort((x, y) => y.week - x.week);
+                }
+            }
+        }
+
+        let responseToReturn: Array<IMeasurableReport> = [];
+        let responseObject = {} as IMeasurableReport;
+        let currentWeekNumber = moment().week();
+
+        for (let res of result) {
+            responseObject.user = res.toResponse();
+
+            for (let measurable of res.measurables) {
+                responseObject.measurable = measurable.toResponse();
+
+                if (measurable.showAverage && measurable.averageStartDate) {
+                    let averageStartDateWeekNumber = moment(measurable.averageStartDate).week();
+                    let revenueToShow = res.revenues.filter(x => x.week >= averageStartDateWeekNumber && x.week <= currentWeekNumber);
+                    responseObject.averageRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0) / revenueToShow.length;
+                }
+
+                if (measurable.showCumulative && measurable.cumulativeStartDate) {
+                    let cumulativeStartDateWeekNumber = moment(measurable.cumulativeStartDate).week();
+                    let revenueToShow = res.revenues.filter(x => x.week >= cumulativeStartDateWeekNumber && x.week <= currentWeekNumber);
+                    responseObject.cumulativeRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0);
+                }
+            }
+
+            responseToReturn.push(responseObject);
+        }
+
+        return responseToReturn;
     }
 }
