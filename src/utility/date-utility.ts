@@ -63,13 +63,16 @@ export const weekProducer = () => {
     for (let d = moment().startOf('year'); d.isBefore(new Date); d.add(1, 'week')) {
         let currentWeek = d.get('week');
         let weekStart = d.clone().utc().day(1).startOf('d');
-        let weekEnd = d.clone().utc().day(5).startOf('d');
+        let weekEnd = d.clone().utc().day(5).startOf('d');        
+        let year = d.clone().utc().get('year');        
+
 
         reportWeekData.push({
             label: `${weekStart.format('yyyy/MM-DD')} - ${weekEnd.format('yyyy/MM-DD')}`,
             startDate: weekStart.utc().toDate(),
             endDate: weekEnd.utc().toDate(),
-            week: currentWeek
+            week: currentWeek,
+            year
         })
     }
 

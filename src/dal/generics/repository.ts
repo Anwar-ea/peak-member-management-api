@@ -4,7 +4,7 @@ import { injectable } from 'tsyringe';
 import { AccountEntityBase } from '../../entities/base-entities/account-entity-base';
 import { buildMongoQuery, mongoQueryOptionsMapper, setSaurceDataResponse } from '../../utility';
 import { IToResponseBase } from '../../entities/abstractions/to-response-base';
-import { HydratedDocument, ProjectionType, RootFilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
+import { AggregateOptions, HydratedDocument, PipelineStage, ProjectionType, RootFilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 import { IDropdownResponse } from '../../models/inerfaces/response/dropdown-response';
 
 @injectable()
@@ -146,5 +146,9 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         })) as IDropdownResponse[];
 
         return dropdownResponse;
+    }
+
+    async aggregate<T>(pipeline: PipelineStage[], aggregateOptions?: AggregateOptions) : Promise<Array<T>> {
+        return await this.model.aggregate<T>(pipeline, aggregateOptions);
     }
 }

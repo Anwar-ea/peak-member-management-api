@@ -1,3 +1,5 @@
+import { IMeasurableReport, ITokenUser } from "../../models";
+
 export interface IReportingService {
-    get(): Promise<any>;
+    get(contextUser: ITokenUser, userId?: string): Promise<Array<IMeasurableReport>>;
 }
