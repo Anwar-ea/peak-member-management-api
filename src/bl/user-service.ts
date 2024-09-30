@@ -107,6 +107,6 @@ export class UserService implements IUserService {
     }
 
     async dropdown(accountId: string): Promise<IDropdownResponse[]> {
-        return await this.userRepository.dropdown(accountId, 'userName');
+        return await this.userRepository.dropdown(accountId, ['firstName', 'lastName']);
     }
 }

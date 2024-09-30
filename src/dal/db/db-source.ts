@@ -3,7 +3,7 @@ import { connect } from "mongoose";
 import { AddDefaultData } from "../../utility/default-data";
 config();
 
-connect("mongodb://localhost:27017/", {dbName: process.env.DB_DataBase})
+connect("mongodb+srv://peakTest:JsIy3ngy1nJGaE17@peakdb.fuvfqca.mongodb.net/", {dbName: process.env.DB_DataBase})
 .then(async (x) => {
     await AddDefaultData()
     console.log("Database Connected successfully")

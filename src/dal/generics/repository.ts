@@ -137,12 +137,16 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         return entities;
     }
 
-    async dropdown(accountId: string, fieldName: string) : Promise<IDropdownResponse[]> {
+    async dropdown(accountId: string, fieldNames: Array<string>) : Promise<IDropdownResponse[]> {
         const filter = { accountId: accountId } as RootFilterQuery<TEntity>;
-        const entities = await this.model.find(filter).select(fieldName);
+        const entities = await this.model.find(filter).select(fieldNames);
         const dropdownResponse = entities.map(entity => ({
             id: entity._id.toString(),
-            name: entity.get(fieldName)
+            name: fieldNames.reduce<string>((acc: string, val: string, idx: number) => {
+                if(idx !== 0) acc+=' ';
+                acc += entity.get(val) 
+                return acc;
+            }, '')
         })) as IDropdownResponse[];
 
         return dropdownResponse;

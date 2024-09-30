@@ -23,6 +23,6 @@ export interface IRepositoryBase<TEntity, TResponse> {
     updateRange(entities: Partial<TEntity>[], filter: RootFilterQuery<TEntity>): Promise<UpdateWriteOpResult>;
     delete(id: string): Promise<TEntity | undefined>;
     deleteRange(entities: RootFilterQuery<TEntity>): Promise<TEntity[]>;
-    dropdown(accountId: string, fieldName: string) : Promise<IDropdownResponse[]>;
+    dropdown(accountId: string, fieldNames: Array<string>) : Promise<IDropdownResponse[]>;
     aggregate<T>(pipeline: PipelineStage[], aggregateOptions?: AggregateOptions) : Promise<Array<T>>;
 }

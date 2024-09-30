@@ -72,6 +72,6 @@ export class RoleService implements IRoleService {
     }
 
     async dropdown(accountId: string): Promise<IDropdownResponse[]> {
-        return await this.roleRepository.dropdown(accountId, 'name');
+        return await this.roleRepository.dropdown(accountId, ['name']);
     }
 }

@@ -5,7 +5,7 @@ import { Measurable, Revenue, User } from "../entities";
 import { Types } from "mongoose";
 import moment from "moment";
 import { weekProducer } from "../utility";
-import { ITokenUser } from "../models";
+import { IMeasurableResponse, ITokenUser } from "../models";
 import { IMeasurableReport } from "../models/inerfaces/reports";
 
 @injectable()
@@ -113,7 +113,7 @@ export class ReportingService implements IReportingService {
 
         for (let week of weeks) {
             for (let res of result) {
-                if (res.revenues.some(x => x.week !== week.week)) {
+                if (!res.revenues.some(x => x.week === week.week)) {
                     res.revenues.push(new Revenue().toEntity({
                         week: week.week,
                         year: week.year,
@@ -133,24 +133,29 @@ export class ReportingService implements IReportingService {
         let currentWeekNumber = moment().week();
 
         for (let res of result) {
-            responseObject.user = res.toResponse();
+            responseObject = {
+               ...(new User().toResponse(res)),
+                measurables: [],
+                revenues: []
+            };
 
             for (let measurable of res.measurables) {
-                responseObject.measurable = measurable.toResponse();
+                 let avgCumObj: IMeasurableResponse & { averageRevenue?: number; cumulativeRevenue?: number;} = new Measurable().toResponse(measurable);
 
                 if (measurable.showAverage && measurable.averageStartDate) {
                     let averageStartDateWeekNumber = moment(measurable.averageStartDate).week();
                     let revenueToShow = res.revenues.filter(x => x.week >= averageStartDateWeekNumber && x.week <= currentWeekNumber);
-                    responseObject.averageRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0) / revenueToShow.length;
+                    avgCumObj.averageRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0) / revenueToShow.length;
                 }
 
                 if (measurable.showCumulative && measurable.cumulativeStartDate) {
                     let cumulativeStartDateWeekNumber = moment(measurable.cumulativeStartDate).week();
                     let revenueToShow = res.revenues.filter(x => x.week >= cumulativeStartDateWeekNumber && x.week <= currentWeekNumber);
-                    responseObject.cumulativeRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0);
+                    avgCumObj.cumulativeRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0);
                 }
+                responseObject.measurables.push(avgCumObj);
             }
-
+            responseObject.revenues = res.revenues.map(x => new Revenue().toResponse(x));
             responseToReturn.push(responseObject);
         }
 
