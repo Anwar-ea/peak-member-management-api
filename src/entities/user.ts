@@ -38,6 +38,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             lastLogin: entity.lastLogin,
             lastOnline: entity.lastOnline,
             roleId: entity.roleId.toString(),
+            role: entity.role ? entity.role?.toResponse() : undefined,
             firm: entity.firm,
             position: entity.position
         }    

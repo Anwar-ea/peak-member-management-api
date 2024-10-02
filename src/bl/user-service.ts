@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
-import { IUserRepository } from "../dal";
+import { IPrivilegeRepository, IUserRepository } from "../dal";
 import { IUserService } from "./abstractions";
-import { FilterMatchModes, FilterOperators, IDataSourceResponse, IFetchRequest, IFilter, ILoginRequest, IUserRequest, IUserResponse, UserStatus } from "../models";
+import { IDataSourceResponse, IFetchRequest, IFilter, ILoginRequest, IUserRequest, IUserResponse, UserStatus } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { User } from "../entities";
 import { compareHash, encrypt, signJwt } from "../utility";
@@ -14,7 +14,7 @@ import { IResetPassword } from "../models/inerfaces/request/resetPasswordRequest
 @injectable()
 export class UserService implements IUserService {
 
-    constructor(@inject('UserRepository') private readonly userRepository: IUserRepository) { }
+    constructor(@inject('UserRepository') private readonly userRepository: IUserRepository, @inject('PrivilegeRepository') private readonly privilegeRepository: IPrivilegeRepository) { }
     
     async login(loginRequest: ILoginRequest): Promise<IUserResponse & {token: string}> {
         let user = await this.userRepository.findOne({$or:[{userName: loginRequest.userName},{email: loginRequest.userName}], active: true});
@@ -27,6 +27,8 @@ export class UserService implements IUserService {
         if (match) {
             user.lastLogin = new Date();
             await this.userRepository.update(user._id.toString(),user);
+            let privilages = await this.privilegeRepository.find({_id: {$in: user.role?.privilegeIds ?? []}});
+            if(user.role ) user.role.privileges = privilages;
             return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []})};
         }
         else {
