@@ -15,4 +15,5 @@ export interface IAccountRequest {
     longitude: number;
     latitude: number;
     defaultUser?: IDefaultUserRequest;
+    retentionRate?: number;
 }

@@ -87,11 +87,11 @@ export class AccountController extends ControllerBase {
         }       
     }
 
-    private update = async (req: FastifyRequest<{Body: IAccountRequest, Params: {id: string}}>, res: FastifyReply) => {
+    private update = async (req: FastifyRequest<{Body: Partial<IAccountRequest>, Params: {id: string}}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if (request.user) {
-          res.send(await this.accountService.update(req.params.id, req.body, request.user));
+          res.send(await this.accountService.partialUpdate(req.params.id, req.body, request.user));
         }  
     }
 

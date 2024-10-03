@@ -2,7 +2,6 @@ import { EntityBase, entityBaseSchema } from "./base-entities/entity-base";
 import { Privilege } from "./privilege";
 import { IModuleResponse, ResponseInput } from "../models";
 import { IToResponseBase } from "./abstractions/to-response-base";
-import { EmptyGuid } from "../constants";
 import { Schema, Types } from "mongoose";
 import { documentToEntityMapper, modelCreator } from "../utility";
 
@@ -47,6 +46,7 @@ export const moduleSchema =  new Schema<Module>({
 });
 
 moduleSchema.loadClass(Module);
+
 moduleSchema.add(entityBaseSchema);
 
 moduleSchema.virtual('privilages', {

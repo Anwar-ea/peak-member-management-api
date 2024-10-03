@@ -72,12 +72,15 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
 
 }
 
-export const measurableSchema = new Schema({
+export const measurableSchema = new Schema<Measurable>({
     name: { type: String, required: true },
-    unit: { type: String, required: true },
+    unit: { type: Number, required: true },
     goal: { type: Number, required: true },
     goalMetric: { type: Number, required: false },
-    goalMetricRange: { type: Number, required: false },
+    goalMetricRange: { 
+        start: { type: Number },
+        end: { type: Number },
+     },
     showAverage: { type: Boolean, required: true },
     showCumulative: { type: Boolean, required: true },
     applyFormula: { type: Boolean, required: true },

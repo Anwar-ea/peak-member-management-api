@@ -14,4 +14,5 @@ export interface IAccountResponse extends IResponseBase {
     street: string;
     longitude: number;
     latitude: number;
+    retentionRate?: number;
 }

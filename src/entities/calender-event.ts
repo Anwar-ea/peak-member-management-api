@@ -7,6 +7,7 @@ import { documentToEntityMapper } from "../utility";
 import { modelCreator } from "../utility/model-creator-utility";
 
 export class CalenderEvent extends AccountEntityBase implements IToResponseBase<CalenderEvent, ICalenderEventResponse> {
+    title!: string;
     detail!: string;
     eventDate!: Date;
     userId!: Types.ObjectId;
@@ -17,6 +18,7 @@ export class CalenderEvent extends AccountEntityBase implements IToResponseBase<
 
         return {
             ...super.toAccountResponseBase(entity),
+            title: entity.title,
             detail: entity.detail,
             eventDate: entity.eventDate,
             userId: entity.userId.toString(),
@@ -29,6 +31,7 @@ export class CalenderEvent extends AccountEntityBase implements IToResponseBase<
     }
     
     toEntity(entityRequest: ICalenderEventRequest, id?: string, contextUser?: ITokenUser): CalenderEvent {
+        this.title = entityRequest.title;
         this.detail = entityRequest.detail;
         this.eventDate = entityRequest.eventDate;
         this.userId = new Types.ObjectId(entityRequest.userId);
@@ -46,6 +49,7 @@ export class CalenderEvent extends AccountEntityBase implements IToResponseBase<
 }
 
 export const calenderEventSchema = new Schema<CalenderEvent>({
+    title: { type: String, required: true },
     detail: { type: String, required: true },
     eventDate: { type: Date, required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User' }

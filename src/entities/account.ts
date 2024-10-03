@@ -19,6 +19,7 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
     street!: string;
     longitude!: number;
     latitude!: number;
+    retentionRate?: number;
 
     toResponse(entity?: ResponseInput<Account>): IAccountResponse {
         if(!entity) entity = this;
@@ -37,6 +38,7 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
             street: entity.street,
             longitude: entity.longitude,
             latitude: entity.latitude,
+            retentionRate: entity.retentionRate,
         }
     }
 
@@ -58,7 +60,7 @@ export class Account extends EntityBase implements IToResponseBase<Account, IAcc
         this.street = requestEntity.street;
         this.longitude = requestEntity.longitude;
         this.latitude = requestEntity.latitude;
-        
+        this.retentionRate = requestEntity.retentionRate;
         if(contextUser && !id){
             this.toBaseEntiy(contextUser);
         }
@@ -84,6 +86,7 @@ export const accountSchema = new Schema<Account>({
     street: { type: String, required: true },
     longitude: { type: Number, required: true },
     latitude: { type: Number, required: true },
+    retentionRate: { type: Number, required: false },
 });
 
 

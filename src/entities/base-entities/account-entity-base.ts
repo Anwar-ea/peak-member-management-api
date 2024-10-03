@@ -22,7 +22,7 @@ export abstract class AccountEntityBase extends EntityBase {
   protected toAccountResponseBase<T extends AccountEntityBase>( entity: ResponseInput<T> ): IAccountResponseBase {
     return {
       ...super.toResponseBase(entity),
-      accountId: entity.accountId.toString(),
+      accountId: entity.accountId.toString(), 
     };
   }
 }
@@ -31,12 +31,12 @@ export abstract class AccountEntityBase extends EntityBase {
 export const accountEntityBaseSchema = new Schema<AccountEntityBase>({
   accountId: { type: Schema.Types.ObjectId, required: true, ref: "Account" },
 });
-accountEntityBaseSchema.add(entityBaseSchema)
 
+accountEntityBaseSchema.add(entityBaseSchema);
 accountEntityBaseSchema.loadClass(AccountEntityBase);
 accountEntityBaseSchema.virtual('account', {
   ref: 'Account',
   localField: 'accountId',
   foreignField: '_id',
   justOne: true
-})
+});
