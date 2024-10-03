@@ -12,7 +12,11 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8060;
 
 
 const app = fastify({ logger: true });
-app.register(fastifymultipart);
+app.register(fastifymultipart,{
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10 MB (set the file size limit here)
+  }
+});
 initializeSocket(app.server);
 fastifyRegisters(app);
 

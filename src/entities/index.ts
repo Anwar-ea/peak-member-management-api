@@ -13,4 +13,5 @@ export * from './notification';
 export * from './revenue';
 export * from './calender-event';
 export * from './call-notes';
+export * from './financials';
  

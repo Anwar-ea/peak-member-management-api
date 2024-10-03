@@ -1,7 +1,7 @@
 import { Account, accountModel, Module, moduleModel, Privilege, PrivilegeModel, Role, roleModel, User, userModel } from "../entities";
 import { EmptyGuid } from "../constants";
 import { encrypt } from "./bcrypt-utility";
-import { Modules } from "../constants/modules";
+import { modulePrivilages, Modules } from "../constants/modules";
 import { toCamelCase } from "./string-utility";
 import { Privileges } from "../constants/privileges";
 import { Types } from "mongoose";
@@ -58,35 +58,39 @@ export const AddDefaultData = async () => {
 
     user.passwordHash = await encrypt("asdf@123");
 
-    if(!roleCount) await (new roleRepo(role)).save();
-
-    if(!accountCount){
-        await (new accountRepo(account)).save();
-        await (new userRepo({...user,account: account})).save();
-    }
-
+ 
+    let allPrivilages: Array<Types.ObjectId> = [];
     if(!moduleCount) {
-      for (const module of Modules) {
+      for (let module of Object.keys(modulePrivilages)) {
         let moduleEntity = new Module().newInstanceToAdd(module, toCamelCase(module.replaceAll(" ", "")), [])
 
-        let modulePrivilages: Array<Privilege> = [];
-        for (const privilege of Privileges) {
+        let privilages: Array<Privilege> = [];
+        for (const privilege of modulePrivilages[module]) {
           let privilageName = `${privilege} ${module}`;
-          let privilageCode = `${privilege}${module.replaceAll(" ", "")}`;
-          modulePrivilages.push(
+          let privilageCode = `${privilege.replaceAll(" ", "")}${module.replaceAll(" ", "")}`;
+          privilages.push(
             new Privilege().newInstanceToAdd(
               `${privilageName}`,
               toCamelCase(privilageCode)
             )
           );
         }
-        moduleEntity.privilages = modulePrivilages;
-        moduleEntity.privilageIds = modulePrivilages.map(p => p._id)
+        // moduleEntity.privilages = privilages;
+        moduleEntity.privilageIds = privilages.map(p => p._id)
+        allPrivilages.push(...moduleEntity.privilageIds);
+        await privilageRepo.insertMany(privilages);
         await (new moduleRepo(moduleEntity)).save();
-        await privilageRepo.insertMany(modulePrivilages);
       }
     }
 
+    role.privilegeIds = allPrivilages;
+    role.accountId = account._id;
+    if(!roleCount) await (new roleRepo(role)).save();
+
+    if(!accountCount){
+        await (new accountRepo(account)).save();
+        await (new userRepo({...user,account: account})).save();
+    }
 
 }
 

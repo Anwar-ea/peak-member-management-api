@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { IRoleRepository } from "../dal";
+import { IRoleRepository, UserRepository } from "../dal";
 import { IRoleService } from "./abstractions";
 import { IDataSourceResponse, IFetchRequest, IFilter, IRoleRequest, IRoleResponse } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
@@ -10,7 +10,7 @@ import { IDropdownResponse } from "../models/inerfaces/response/dropdown-respons
 
 @injectable()
 export class RoleService implements IRoleService {
-    constructor(@inject('RoleRepository') private readonly roleRepository: IRoleRepository){}
+    constructor(@inject('RoleRepository') private readonly roleRepository: IRoleRepository, @inject('UserRepository') private readonly userRepository: UserRepository){}
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<Role, keyof Role>>): Promise<IRoleResponse | null> {
         return await this.roleRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
@@ -61,6 +61,10 @@ export class RoleService implements IRoleService {
     }
 
     async delete(id: string, contextUser: ITokenUser): Promise<void> {
+        let roleUsers = await this.userRepository.find({roleId: id});
+        if(roleUsers.length > 0) {
+            throw new Error(' Role is in use cannot be deleted')
+        }
         await this.roleRepository.delete(id);
     }
 

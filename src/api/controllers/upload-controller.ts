@@ -36,8 +36,8 @@ export class UploadController extends ControllerBase {
         if(request.user && file){
             
             let url = await upload(file, req.params.id);
-            this.userService.partialUpdate(req.params.id,{pictureUrl: url}, request.user);
-            res.send(url);
+            await this.userService.partialUpdate(req.params.id,{pictureUrl: url}, request.user);
+            res.send({url});
         }else {
             res.status(400).send({message: 'file not found'});
         }

@@ -13,7 +13,7 @@ export class Privilege extends EntityBase implements IToResponseBase<Privilege, 
         this._id = new Types.ObjectId();
         this.createdAt = new Date();
         this.createdBy = "Super Admin";
-        this.createdById = new Types.ObjectId(undefined);
+        this.createdById = new Types.ObjectId();
         this.active = true;
         this.deleted = false;
         this.name = name;
