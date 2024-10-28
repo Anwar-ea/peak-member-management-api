@@ -5,8 +5,7 @@ import { IVisionResponse } from "./vision-response";
 export interface IBusinessPlanResponse extends IAccountResponseBase {
     coreValues: string[];
     purpose: string;
-    niche: string;
-    marketingStrategies?: Array<IMarketingStrategyResponse>;
+    yourWhy: string;
     threeYearVision?: IVisionResponse;
     oneYearVision?: IVisionResponse;
 }

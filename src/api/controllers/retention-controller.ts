@@ -1,17 +1,16 @@
 import { inject, injectable } from "tsyringe";
 import { ControllerBase } from "./generics/controller-base";
-import { IBusinessPlanService } from "../../bl";
 import { FastifyReply, FastifyRequest, preHandlerHookHandler, RouteHandlerMethod } from "fastify";
-import { ExtendedRequest } from "../../models/inerfaces/extended-Request";
-import { IFetchRequest, IFilter, IBusinessPlanRequest } from "../../models";
-import { BusinessPlan } from "../../entities";
 import { CommonRoutes } from "../../constants/commonRoutes";
 import { authorize } from "../../middlewares/authentication";
+import { IRetentionService } from "../../bl/abstractions/retention-service";
+import { Retention } from "../../entities";
+import { IRetentionRequest, ExtendedRequest, IFetchRequest, IFilter } from "../../models";
 
 @injectable()
-export class BusinessPlanController extends ControllerBase {
-    constructor(@inject('BusinessPlanService') private readonly businessPlanService: IBusinessPlanService){
-        super('/business_plan');
+export class RetentionController extends ControllerBase {
+    constructor(@inject('RetentionService') private readonly retentionService: IRetentionService) {
+        super('/retention');
         this.middleware = authorize as preHandlerHookHandler;
         this.endPoints = [
             {
@@ -49,18 +48,18 @@ export class BusinessPlanController extends ControllerBase {
     }
 
     
-    private add = async (req: FastifyRequest<{Body: IBusinessPlanRequest}>, res: FastifyReply) => {
+    private add = async (req: FastifyRequest<{Body: IRetentionRequest}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if(request.user){
-            res.send(await this.businessPlanService.add(req.body, request.user))
+            res.send(await this.retentionService.add(req.body, request.user))
         }
     }
 
-    private getAll = async (req: FastifyRequest<{Body?: IFetchRequest<BusinessPlan>}>, res: FastifyReply) => {
+    private getAll = async (req: FastifyRequest<{Body?: IFetchRequest<Retention>}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
-        res.send(await this.businessPlanService.get(request.user, req.body))
+        res.send(await this.retentionService.get(request.user, req.body))
         if(request.user){
         }
     }
@@ -68,16 +67,16 @@ export class BusinessPlanController extends ControllerBase {
     private getById = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
-        res.send(await this.businessPlanService.getById(req.params.id, request.user));
+        res.send(await this.retentionService.getById(req.params.id, request.user));
         if(request.user){
         }
     }
 
-    private getOneByQuery = async (req: FastifyRequest<{Body: Array<IFilter<BusinessPlan, keyof BusinessPlan>>}>, res: FastifyReply) => {
+    private getOneByQuery = async (req: FastifyRequest<{Body: Array<IFilter<Retention, keyof Retention>>}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if (request.user) {
-          res.send(await this.businessPlanService.getOne(request.user, req.body));
+          res.send(await this.retentionService.getOne(request.user, req.body));
         }    
     }
  
@@ -85,15 +84,15 @@ export class BusinessPlanController extends ControllerBase {
         let request = req as ExtendedRequest;
 
         if (request.user) {
-          res.send(await this.businessPlanService.delete(req.params.id, request.user));
+          res.send(await this.retentionService.delete(req.params.id, request.user));
         }       
     }
 
-    private update = async (req: FastifyRequest<{Body: Partial<IBusinessPlanRequest>, Params: {id: string}}>, res: FastifyReply) => {
+    private update = async (req: FastifyRequest<{Body: IRetentionRequest, Params: {id: string}}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if (request.user) {
-          res.send(await this.businessPlanService.partialUpdate(req.params.id, req.body, request.user));
+          res.send(await this.retentionService.update(req.params.id, req.body, request.user));
         }  
     }
 }

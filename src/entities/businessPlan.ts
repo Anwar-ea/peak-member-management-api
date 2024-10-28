@@ -10,16 +10,14 @@ import { documentToEntityMapper, modelCreator } from '../utility';
 export class BusinessPlan extends AccountEntityBase implements IToResponseBase<BusinessPlan, IBusinessPlanResponse> {
     coreValues!: Array<string>;
     purpose!: string;
-    niche!: string;
-    marketingStrategies!: Array<IMarketingStrategy>;
+    yourWhy!: string;
     threeYearVision!: IVision;
     oneYearVision!: IVision;
-
 
     toEntity = (entityRequest: IBusinessPlanRequest , id?: string, contextUser?: ITokenUser): BusinessPlan => {
         this.coreValues = entityRequest.coreValues;
         this.purpose = entityRequest.purpose;
-        this.niche = entityRequest.niche;
+        this.yourWhy = entityRequest.yourWhy;
         
         if(contextUser && !id){
             super.toAccountEntity(contextUser);
@@ -34,8 +32,6 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
             this.oneYearVision = visionRequstToEntity(entityRequest.oneYearVision, contextUser);
         }
         
-        this.marketingStrategies = entityRequest.marketingStrategies;
-
         return this;
     }
 
@@ -49,8 +45,7 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
             ...super.toAccountResponseBase(entity),
             coreValues: entity.coreValues,
             purpose: entity.purpose,
-            niche: entity.niche,
-            marketingStrategies: entity.marketingStrategies,
+            yourWhy: entity.yourWhy,
             threeYearVision: visionEntityToRequst(entity.threeYearVision),
             oneYearVision: visionEntityToRequst(entity.oneYearVision)
         };
@@ -58,16 +53,6 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
 
 }
 
-
-
-export interface IMarketingStrategy {
-    targetMarket: string;
-    whoTheyAre: string;
-    whereTheyAre: string;
-    whatTheyAre: string;
-    provenProcess: string;
-    guarantee: string;
-}
 
 export interface IVision {
     futureDate: Date;
@@ -106,15 +91,6 @@ const visionEntityToRequst = (ent: ResponseInput<IVision>): IVisionResponse => {
 }
 
 
-const marketingStrategySchema = new Schema({
-    targetMarket: { type: String, required: true },
-    whoTheyAre: { type: String, required: true },
-    whereTheyAre: { type: String, required: true },
-    whatTheyAre: { type: String, required: true },
-    provenProcess: { type: String, required: true },
-    guarantee: { type: String, required: true },
-});
-
 const visionSchema = new Schema({
     futureDate: { type: Date, required: true },
     revenue: { type: Number, required: true },
@@ -131,8 +107,7 @@ visionSchema.set('toJSON', { virtuals: true });
 export const businessPlanSchema =  new Schema<BusinessPlan>({
     coreValues: [{ type: String, required: true }],
     purpose: { type: String, required: true },
-    niche: { type: String, required: true },
-    marketingStrategies: [{ type: marketingStrategySchema, required: true }],
+    yourWhy: { type: String, required: true },
     threeYearVision: { type: visionSchema, required: true },
     oneYearVision: { type: visionSchema, required: true },
 });

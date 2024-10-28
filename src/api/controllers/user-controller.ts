@@ -65,6 +65,12 @@ export class UserController extends ControllerBase {
                 path: 'dropdown',
                 middlewares: [authorize as preHandlerHookHandler],
                 handler: this.dropdown as RouteHandlerMethod
+            },
+            {
+                method: 'GET',
+                path: 'login_as_member',
+                middlewares: [authorize as preHandlerHookHandler],
+                handler: this.loginAsMember as RouteHandlerMethod
             }
         ];
 
@@ -72,6 +78,10 @@ export class UserController extends ControllerBase {
 
     private login = async (req: FastifyRequest<{Body: ILoginRequest}>, res: FastifyReply) => {
             res.send(await this.userService.login(req.body));
+    }
+
+    private loginAsMember = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
+        res.send(await this.userService.loginAsMember(req.params.id));
     }
 
     private add = async (req: FastifyRequest<{Body: IUserRequest}>, res: FastifyReply) => {

@@ -1,8 +1,8 @@
 import { inject, injectable } from "tsyringe";
 import { IBusinessPlanService } from "./abstractions";
 import { IBusinessPlanRepository, IGoalRepository, IMeasurableRepository } from "../dal";
-import { IDataSourceResponse, IFetchRequest, IFilter, IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser } from "../models";
-import { BusinessPlan } from "../entities";
+import { IDataSourceResponse, IFetchRequest, IFilter, IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser, IGoalRequest, IMeasurableRequest } from "../models";
+import { BusinessPlan, Goal, Measurable } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 
@@ -52,6 +52,50 @@ export class BusinessPlanService implements IBusinessPlanService {
             modifiedAt: new Date(),
             modifiedBy: contextUser.name,
             modifiedById: new Types.ObjectId(contextUser.id)
+        }
+
+        if(partialEntity.oneYearVision){
+            let goalsToUpdate = partialEntity.oneYearVision.goals.filter(x => x.id);
+            let metricesToUpdate = partialEntity.oneYearVision.metrics.filter(x => x.id);
+            await this.goalRepository.updateRange(goalsToUpdate.map<Partial<Goal>>((x: IGoalRequest) => {
+                return {
+                    title: x.title,
+                    dueDate: x.dueDate,
+                    modifiedAt: new Date(),
+                    modifiedBy: contextUser.name,
+                    modifiedById: new Types.ObjectId(contextUser.id)
+                }
+            }), {_id: {$in: goalsToUpdate.map(x => new Types.ObjectId(x.id))}});
+            await this.measurableRepository.updateRange(metricesToUpdate.map<Partial<Measurable>>((x: IMeasurableRequest) => {
+                return {
+                    name: x.name,
+                    modifiedAt: new Date(),
+                    modifiedBy: contextUser.name,
+                    modifiedById: new Types.ObjectId(contextUser.id)
+                }
+            }), {_id: {$in: metricesToUpdate.map(x => new Types.ObjectId(x.id))}});
+        }
+
+        if(partialEntity.threeYearVision){
+            let goalsToUpdate = partialEntity.threeYearVision.goals.filter(x => x.id);
+            let metricesToUpdate = partialEntity.threeYearVision.metrics.filter(x => x.id);
+            await this.goalRepository.updateRange(goalsToUpdate.map<Partial<Goal>>((x: IGoalRequest) => {
+                return {
+                    title: x.title,
+                    dueDate: x.dueDate,
+                    modifiedAt: new Date(),
+                    modifiedBy: contextUser.name,
+                    modifiedById: new Types.ObjectId(contextUser.id)
+                }
+            }), {_id: {$in: goalsToUpdate.map(x => new Types.ObjectId(x.id))}});
+            await this.measurableRepository.updateRange(metricesToUpdate.map<Partial<Measurable>>((x: IMeasurableRequest) => {
+                return {
+                    name: x.name,
+                    modifiedAt: new Date(),
+                    modifiedBy: contextUser.name,
+                    modifiedById: new Types.ObjectId(contextUser.id)
+                }
+            }), {_id: {$in: metricesToUpdate.map(x => new Types.ObjectId(x.id))}});
         }
         return await this.businessPlanRepository.update(id, assignIn(entity, partialEntity));
     }

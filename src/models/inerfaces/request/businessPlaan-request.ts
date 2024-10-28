@@ -4,8 +4,7 @@ import { IVisionRequest } from "./vision-request";
 export interface IBusinessPlanRequest {
     coreValues: string[];
     purpose: string;
-    niche: string;
-    marketingStrategies: Array<IMarketingStrategyRequest>;
+    yourWhy: string;
     threeYearVision: IVisionRequest;
     oneYearVision: IVisionRequest;
 }

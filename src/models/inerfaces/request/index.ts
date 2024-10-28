@@ -14,4 +14,4 @@ export * from './notification-request';
 export * from './revenue-request';
 export * from './calender-event-request';
 export * from './call-note-request';
-export * from './financials-request';
+export * from './retention-request';

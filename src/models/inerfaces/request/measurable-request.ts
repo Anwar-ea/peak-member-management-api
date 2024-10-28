@@ -1,6 +1,7 @@
 import { Goals, GoalUnits } from "../../enums/goals.enum"
 
 export interface IMeasurableRequest {
+    id?: string;
     name: string    
     unit: GoalUnits
     goal: Goals

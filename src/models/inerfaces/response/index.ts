@@ -15,4 +15,4 @@ export * from './notification-response';
 export * from './revenue-response';
 export * from './calender-event-response';
 export * from './call-note-response';
-export * from './financials-response';
+export * from './retention-response';

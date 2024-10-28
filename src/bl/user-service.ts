@@ -1,20 +1,26 @@
 import { inject, injectable } from "tsyringe";
-import { IPrivilegeRepository, IUserRepository } from "../dal";
+import { IMeasurableRepository, IPrivilegeRepository, IUserRepository } from "../dal";
 import { IUserService } from "./abstractions";
 import { IDataSourceResponse, IFetchRequest, IFilter, ILoginRequest, IUserRequest, IUserResponse, UserStatus } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
-import { User } from "../entities";
+import { Measurable, User } from "../entities";
 import { compareHash, encrypt, signJwt } from "../utility";
 import { FastifyError } from 'fastify'
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 import { IDropdownResponse } from "../models/inerfaces/response/dropdown-response";
 import { IResetPassword } from "../models/inerfaces/request/resetPasswordRequest";
+import { Goals, GoalUnits } from "../models/enums/goals.enum";
 
 @injectable()
 export class UserService implements IUserService {
 
-    constructor(@inject('UserRepository') private readonly userRepository: IUserRepository, @inject('PrivilegeRepository') private readonly privilegeRepository: IPrivilegeRepository) { }
+    constructor(
+        @inject('UserRepository') private readonly userRepository: IUserRepository, 
+        @inject('PrivilegeRepository') private readonly privilegeRepository: IPrivilegeRepository,
+        @inject('MeasurableRepository') private readonly measureableRepoisitory: IMeasurableRepository,
+    
+    ) { }
     
     async login(loginRequest: ILoginRequest): Promise<IUserResponse & {token: string}> {
         let user = await this.userRepository.findOne({$or:[{userName: loginRequest.userName},{email: loginRequest.userName}], active: true});
@@ -35,6 +41,17 @@ export class UserService implements IUserService {
             throw new Error('Invalid username or password',  error);
         }
     }
+    
+    async loginAsMember(memberId: string): Promise<IUserResponse & {token: string}> {
+        let user = await this.userRepository.findOneById(memberId) as User;
+
+            user.lastLogin = new Date();
+            await this.userRepository.update(user._id.toString(),user);
+            let privilages = await this.privilegeRepository.find({_id: {$in: user.role?.privilegeIds ?? []}});
+            if(user.role ) user.role.privileges = privilages;
+            return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []})};
+
+    }
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<User, keyof User>>): Promise<IUserResponse | null> {
         return await this.userRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
@@ -42,6 +59,36 @@ export class UserService implements IUserService {
 
     async add(entityRequest: IUserRequest, contextUser?: ITokenUser): Promise<IUserResponse> {
         let user = new User().toEntity(entityRequest, undefined, contextUser);
+
+        let revenueMeasurable = new Measurable().toEntity({
+            name: 'Revenue',
+            unit: GoalUnits.percent,
+            goal: Goals.GreaterThanOrEqualTo,
+            goalMetric: 10000,
+            showAverage: true,
+            showCumulative: true,
+            applyFormula: false,
+            formula: '',
+            accountableId: user._id.toString()
+        }, 
+        undefined, 
+        {id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []});
+
+        let retentionMeasurable = new Measurable().toEntity({
+            name: 'Revenue',
+            unit: GoalUnits.percent,
+            goal: Goals.GreaterThanOrEqualTo,
+            goalMetric: 10000,
+            showAverage: true,
+            showCumulative: true,
+            applyFormula: false,
+            formula: '',
+            accountableId: user._id.toString()
+        }, 
+        undefined, 
+        {id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []})
+
+        await this.measureableRepoisitory.addRange([revenueMeasurable, retentionMeasurable])
         user.passwordHash = await encrypt(entityRequest.password);
         user.status = UserStatus.Online;
         let response  = await this.userRepository.add(user);
