@@ -43,7 +43,7 @@ export class Retention extends AccountEntityBase implements IToResponseBase<Rete
         return {
             ...this.toAccountResponseBase(entity), 
             retained: entity.retained,
-            appointments: this.appointments,
+            appointments: entity.appointments,
             week: entity.week,
             startOfWeek: entity.startOfWeek,
             endOfWeek: entity.endOfWeek,
@@ -76,4 +76,4 @@ retentionSchema.virtual('user', {
     justOne: true,
 });
 
-export const retentionModel = modelCreator<Retention, IRetentionResponse>('Finanials', retentionSchema);
+export const retentionModel = modelCreator<Retention, IRetentionResponse>('Retention', retentionSchema);

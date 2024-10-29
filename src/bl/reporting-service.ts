@@ -1,12 +1,13 @@
 import { inject, injectable } from "tsyringe";
 import { IReportingService } from "./abstractions/reporting-service";
 import { IUserRepository } from "../dal";
-import { Measurable, Revenue, User } from "../entities";
+import { Measurable, Retention, Revenue, User } from "../entities";
 import { Types } from "mongoose";
 import moment from "moment";
 import { weekProducer } from "../utility";
 import { IMeasurableResponse, ITokenUser } from "../models";
 import { IMeasurableReport } from "../models/inerfaces/reports";
+import { GoalUnits } from "../models/enums/goals.enum";
 
 @injectable()
 export class ReportingService implements IReportingService {
@@ -23,7 +24,7 @@ export class ReportingService implements IReportingService {
             matchQuery['_id'] = new Types.ObjectId(userId);
         }
 
-        let result = await this.userRepository.aggregate<User & { measurables: Array<Measurable>, revenues: Array<Revenue> }>(
+        let result = await this.userRepository.aggregate<User & { measurables: Array<Measurable>, revenues: Array<Revenue>, retentions: Array<Retention> }>(
             [
                 {
                   '$match': matchQuery
@@ -97,7 +98,44 @@ export class ReportingService implements IReportingService {
                     ], 
                     'as': 'revenues'
                   }
-                }, {
+                },
+                {
+                  $lookup: {
+                    from: "Retention",
+                    let: {
+                      userId: "$_id"
+                    },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              {
+                                $eq: ["$userId", "$$userId"]
+                              },
+                              {
+                                $eq: ["$active", true]
+                              },
+                              {
+                                $eq: ["$deleted", false]
+                              },
+                              {
+                                $eq: ["$year", 2024]
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        $sort: {
+                          week: -1
+                        }
+                      }
+                    ],
+                    as: "retentions"
+                  }
+                },
+                {
                   '$match': {
                     'measurables': {
                       '$gt': {
@@ -125,6 +163,19 @@ export class ReportingService implements IReportingService {
 
                     res.revenues = res.revenues.sort((x, y) => y.week - x.week);
                 }
+                if (!res.retentions.some(x => x.week === week.week)) {
+                    res.retentions.push(new Retention().toEntity({
+                        week: week.week,
+                        year: week.year,
+                        endOfWeek: week.endDate,
+                        startOfWeek: week.startDate,
+                        appointments: 0,
+                        retained: 0,
+                        userId: res._id.toString()
+                    }, undefined, contextUser));
+
+                    res.retentions = res.retentions.sort((x, y) => y.week - x.week);
+                }
             }
         }
 
@@ -136,26 +187,41 @@ export class ReportingService implements IReportingService {
             responseObject = {
                ...(new User().toResponse(res)),
                 measurables: [],
-                revenues: []
+                revenues: [],
+                retentions: []
             };
 
             for (let measurable of res.measurables) {
-                 let avgCumObj: IMeasurableResponse & { averageRevenue?: number; cumulativeRevenue?: number;} = new Measurable().toResponse(measurable);
+                 let avgCumObj: IMeasurableResponse & { average?: number; cumulative?: number;} = new Measurable().toResponse(measurable);
 
                 if (measurable.showAverage && measurable.averageStartDate) {
                     let averageStartDateWeekNumber = moment(measurable.averageStartDate).week();
-                    let revenueToShow = res.revenues.filter(x => x.week >= averageStartDateWeekNumber && x.week <= currentWeekNumber);
-                    avgCumObj.averageRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0) / revenueToShow.length;
+                    if(measurable.unit === GoalUnits.Revenue ){
+                      let revenueToShow = res.revenues.filter(x => x.week >= averageStartDateWeekNumber && x.week <= currentWeekNumber);
+                      avgCumObj.average = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0) / revenueToShow.length;
+                    } else {
+                      let retentionToShow = res.retentions.filter(x => x.week >= averageStartDateWeekNumber && x.week <= currentWeekNumber);
+                      avgCumObj.average = retentionToShow.reduce((accumulator, currentValue) => accumulator + parseFloat((currentValue.retained/ (currentValue.appointments ? (currentValue.appointments/100):1)).toFixed(2)), 0) / retentionToShow.length;
+                      avgCumObj.average = parseFloat(avgCumObj.average .toFixed(2))
+                    }
                 }
 
                 if (measurable.showCumulative && measurable.cumulativeStartDate) {
                     let cumulativeStartDateWeekNumber = moment(measurable.cumulativeStartDate).week();
-                    let revenueToShow = res.revenues.filter(x => x.week >= cumulativeStartDateWeekNumber && x.week <= currentWeekNumber);
-                    avgCumObj.cumulativeRevenue = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0);
+
+                    if(measurable.unit === GoalUnits.Revenue ){
+                      let revenueToShow = res.revenues.filter(x => x.week >= cumulativeStartDateWeekNumber && x.week <= currentWeekNumber);
+                      avgCumObj.cumulative = revenueToShow.reduce((accumulator, currentValue) => accumulator + currentValue.revenue, 0);
+                    } else {
+                      let retentionToShow = res.retentions.filter(x => x.week >= cumulativeStartDateWeekNumber && x.week <= currentWeekNumber);
+                      avgCumObj.cumulative = retentionToShow.reduce((accumulator, currentValue) => accumulator + currentValue.retained, 0);
+
+                    }
                 }
                 responseObject.measurables.push(avgCumObj);
             }
             responseObject.revenues = res.revenues.map(x => new Revenue().toResponse(x));
+            responseObject.retentions = res.retentions.map(x => new Retention().toResponse(x));
             responseToReturn.push(responseObject);
         }
 

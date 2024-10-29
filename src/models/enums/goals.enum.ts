@@ -8,6 +8,6 @@ export enum Goals {
 }
 
 export enum GoalUnits{
-    Dollar = 1,
-    percent = 2,
+    Revenue = 1,
+    RetentionRate = 2,
 }

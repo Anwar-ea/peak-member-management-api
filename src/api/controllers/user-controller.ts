@@ -68,7 +68,7 @@ export class UserController extends ControllerBase {
             },
             {
                 method: 'GET',
-                path: 'login_as_member',
+                path: 'login_as_member/:id',
                 middlewares: [authorize as preHandlerHookHandler],
                 handler: this.loginAsMember as RouteHandlerMethod
             }

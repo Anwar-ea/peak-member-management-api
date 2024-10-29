@@ -62,7 +62,7 @@ export class UserService implements IUserService {
 
         let revenueMeasurable = new Measurable().toEntity({
             name: 'Revenue',
-            unit: GoalUnits.percent,
+            unit: GoalUnits.RetentionRate,
             goal: Goals.GreaterThanOrEqualTo,
             goalMetric: 10000,
             showAverage: true,
@@ -76,7 +76,7 @@ export class UserService implements IUserService {
 
         let retentionMeasurable = new Measurable().toEntity({
             name: 'Revenue',
-            unit: GoalUnits.percent,
+            unit: GoalUnits.RetentionRate,
             goal: Goals.GreaterThanOrEqualTo,
             goalMetric: 10000,
             showAverage: true,

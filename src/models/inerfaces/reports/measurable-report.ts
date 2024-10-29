@@ -1,6 +1,8 @@
-import { IMeasurableResponse, IRevenueResponse, IUserResponse } from "../response";
+import { Retention } from "../../../entities";
+import { IMeasurableResponse, IRetentionResponse, IRevenueResponse, IUserResponse } from "../response";
 
 export interface IMeasurableReport extends IUserResponse {
-    measurables: Array<IMeasurableResponse & { averageRevenue?: number; cumulativeRevenue?: number;}>;
+    measurables: Array<IMeasurableResponse & { average?: number; cumulative?: number;}>;
     revenues: Array<IRevenueResponse>;
+     retentions: Array<IRetentionResponse>;
 }

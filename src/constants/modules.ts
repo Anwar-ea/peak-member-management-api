@@ -17,4 +17,10 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Manage Notifications",
         "Manage Retention Rate"
     ],
+    "Dashboard": [
+        "Member Login",
+        "Goals",
+        "To-Dos",
+        "Call Notes"
+    ]
 } as const;

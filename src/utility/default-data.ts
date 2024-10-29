@@ -16,7 +16,8 @@ export const AddDefaultData = async () => {
     
     let accountCount = await accountRepo.countDocuments();
     let roleCount = await roleRepo.countDocuments();
-    let moduleCount = await moduleRepo.countDocuments();
+    let modules = await moduleRepo.find({});
+    let dbPrivleges = await privilageRepo.find({});
 
     let account: Account = new Account().toEntity({
         name: "Default",
@@ -60,7 +61,6 @@ export const AddDefaultData = async () => {
 
  
     let allPrivilages: Array<Types.ObjectId> = [];
-    if(!moduleCount) {
       for (let module of Object.keys(modulePrivilages)) {
         let moduleEntity = new Module().newInstanceToAdd(module, toCamelCase(module.replaceAll(" ", "")), [])
 
@@ -78,10 +78,11 @@ export const AddDefaultData = async () => {
         // moduleEntity.privilages = privilages;
         moduleEntity.privilageIds = privilages.map(p => p._id)
         allPrivilages.push(...moduleEntity.privilageIds);
-        await privilageRepo.insertMany(privilages);
-        await (new moduleRepo(moduleEntity)).save();
+        let pvgsToAdd = privilages.filter(p => !dbPrivleges.some(x => x.name === p.name))
+        if(pvgsToAdd) await privilageRepo.insertMany(pvgsToAdd);
+        if(!modules.some(x => x.name === moduleEntity.name)) await (new moduleRepo(moduleEntity)).save();
       }
-    }
+    
 
     role.privilegeIds = allPrivilages;
     role.accountId = account._id;
