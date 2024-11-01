@@ -15,7 +15,8 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Manage Measurables",
         "Manage Bussiness Plan",
         "Manage Notifications",
-        "Manage Retention Rate"
+        "Manage Retention Rate",
+        "See All Score Cards"
     ],
     "Dashboard": [
         "Member Login",
