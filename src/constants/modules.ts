@@ -16,6 +16,7 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Manage Bussiness Plan",
         "Manage Notifications",
         "Manage Retention Rate",
+        "Manage Revenue",
         "See All Score Cards"
     ],
     "Dashboard": [
@@ -24,5 +25,5 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "To-Dos",
         "Call Notes",
         "Total Report"
-    ]
+    ],
 } as const;
