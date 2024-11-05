@@ -9,7 +9,7 @@ export class BusinessPlanRepository extends GenericRepository<BusinessPlan, IBus
 
     constructor () {
         super(businessPlanModel);
-        this.populate = ['threeYearVision.goals', 'oneYearVision.metrics', 'oneYearVision.goals', 'threeYearVision.metrics']
+        this.populate = ['threeYearVision.goals', 'oneYearVision.metrics', 'oneYearVision.goals', 'threeYearVision.metrics', "user"]
 
     }
 

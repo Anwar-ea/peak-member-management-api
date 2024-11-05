@@ -22,6 +22,7 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Member Login",
         "Goals",
         "To-Dos",
-        "Call Notes"
+        "Call Notes",
+        "Total Report"
     ]
 } as const;

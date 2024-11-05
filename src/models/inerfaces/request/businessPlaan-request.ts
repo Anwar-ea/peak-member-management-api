@@ -7,4 +7,5 @@ export interface IBusinessPlanRequest {
     yourWhy: string;
     threeYearVision: IVisionRequest;
     oneYearVision: IVisionRequest;
+    userId: string;
 }

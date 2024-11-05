@@ -62,33 +62,34 @@ export class UserService implements IUserService {
 
         let revenueMeasurable = new Measurable().toEntity({
             name: 'Revenue',
-            unit: GoalUnits.RetentionRate,
+            unit: GoalUnits.Revenue,
             goal: Goals.GreaterThanOrEqualTo,
             goalMetric: 10000,
             showAverage: true,
             showCumulative: true,
             applyFormula: false,
-            formula: '',
+            formula: undefined,
             accountableId: user._id.toString()
         }, 
         undefined, 
         {id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []});
 
         let retentionMeasurable = new Measurable().toEntity({
-            name: 'Revenue',
+            name: 'Retention',
             unit: GoalUnits.RetentionRate,
             goal: Goals.GreaterThanOrEqualTo,
-            goalMetric: 10000,
+            goalMetric: 60,
             showAverage: true,
             showCumulative: true,
             applyFormula: false,
-            formula: '',
+            formula: undefined,
             accountableId: user._id.toString()
         }, 
         undefined, 
         {id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []})
 
-        await this.measureableRepoisitory.addRange([revenueMeasurable, retentionMeasurable])
+        await this.measureableRepoisitory.add(revenueMeasurable)
+        await this.measureableRepoisitory.add(retentionMeasurable);
         user.passwordHash = await encrypt(entityRequest.password);
         user.status = UserStatus.Online;
         let response  = await this.userRepository.add(user);

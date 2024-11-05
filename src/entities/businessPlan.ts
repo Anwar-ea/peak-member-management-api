@@ -13,12 +13,13 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
     yourWhy!: string;
     threeYearVision!: IVision;
     oneYearVision!: IVision;
+    userId!: Types.ObjectId;
 
     toEntity = (entityRequest: IBusinessPlanRequest , id?: string, contextUser?: ITokenUser): BusinessPlan => {
         this.coreValues = entityRequest.coreValues;
         this.purpose = entityRequest.purpose;
         this.yourWhy = entityRequest.yourWhy;
-        
+        this.userId = new Types.ObjectId(entityRequest.userId);
         if(contextUser && !id){
             super.toAccountEntity(contextUser);
         }
@@ -28,8 +29,8 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
         }
 
         if(contextUser){
-            this.threeYearVision = visionRequstToEntity(entityRequest.threeYearVision, contextUser);
-            this.oneYearVision = visionRequstToEntity(entityRequest.oneYearVision, contextUser);
+            this.threeYearVision = visionRequstToEntity(entityRequest.threeYearVision, contextUser, this.userId.toString());
+            this.oneYearVision = visionRequstToEntity(entityRequest.oneYearVision, contextUser, this.userId.toString());
         }
         
         return this;
@@ -46,6 +47,7 @@ export class BusinessPlan extends AccountEntityBase implements IToResponseBase<B
             coreValues: entity.coreValues,
             purpose: entity.purpose,
             yourWhy: entity.yourWhy,
+            userId: entity.userId.toString(),
             threeYearVision: visionEntityToRequst(entity.threeYearVision),
             oneYearVision: visionEntityToRequst(entity.oneYearVision)
         };
@@ -64,7 +66,7 @@ export interface IVision {
     metrics?: Array<Measurable>;
 }
 
-const visionRequstToEntity = (req: IVisionRequest, contextUser: ITokenUser): IVision => {
+const visionRequstToEntity = (req: IVisionRequest, contextUser: ITokenUser, userId: string): IVision => {
     let goals = req.goals.map(g => new Goal().toEntity(g, undefined, contextUser));
     let metrics = req.metrics.map(m => new Measurable().toEntity(m, undefined, contextUser));
     return {
@@ -110,10 +112,17 @@ export const businessPlanSchema =  new Schema<BusinessPlan>({
     yourWhy: { type: String, required: true },
     threeYearVision: { type: visionSchema, required: true },
     oneYearVision: { type: visionSchema, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 });
 businessPlanSchema.virtual('threeYearVision.goals', {
     ref: 'Goal',
     localField: 'threeYearVision.goalIds',
+    foreignField: '_id',
+    justOne: false,
+});
+businessPlanSchema.virtual('user', {
+    ref: 'User',
+    localField: 'userId',
     foreignField: '_id',
     justOne: false,
 });

@@ -16,3 +16,4 @@ export * from './revenue-response';
 export * from './calender-event-response';
 export * from './call-note-response';
 export * from './retention-response';
+export * from './report-totals-response';

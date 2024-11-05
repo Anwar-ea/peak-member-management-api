@@ -1,17 +1,18 @@
 import { inject, injectable } from "tsyringe";
 import { IReportingService } from "./abstractions/reporting-service";
-import { IUserRepository } from "../dal";
+import { IAccountRepository, IUserRepository } from "../dal";
 import { Measurable, Retention, Revenue, User } from "../entities";
 import { Types } from "mongoose";
 import moment from "moment";
 import { weekProducer } from "../utility";
-import { IMeasurableResponse, ITokenUser } from "../models";
+import { IMeasurableResponse, IReportTotals, ITokenUser } from "../models";
 import { IMeasurableReport } from "../models/inerfaces/reports";
 import { GoalUnits } from "../models/enums/goals.enum";
+import { reportTotalsQuery } from "../constants/queries";
 
 @injectable()
 export class ReportingService implements IReportingService {
-    constructor(@inject('UserRepository') private readonly userRepository: IUserRepository) { }
+    constructor(@inject('UserRepository') private readonly userRepository: IUserRepository, @inject('AccountRepository') private readonly accountRepository: IAccountRepository) { }
 
     async get(contextUser: ITokenUser, userId?: string): Promise<Array<IMeasurableReport>> {
         let matchQuery: Record<string, any> = {
@@ -227,4 +228,11 @@ export class ReportingService implements IReportingService {
 
         return responseToReturn;
     }
+
+    async reportTotals(accountId: string): Promise<IReportTotals>{
+      let res = await this.accountRepository.aggregate<IReportTotals>(reportTotalsQuery(accountId, moment().get('year')));
+      return res.length > 0? res[0] : { totalRevenue: 0, totalAppointments: 0, totalRetained: 0, retention: 0 };
+    }
 }
+
+

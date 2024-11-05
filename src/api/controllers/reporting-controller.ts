@@ -20,6 +20,11 @@ export class ReportingController extends ControllerBase {
                 method: 'GET',
                 path: `revenues/:userId`,
                 handler: this.getByUserId as RouteHandlerMethod
+            },
+            {
+                method: 'GET',
+                path: `totalas`,
+                handler: this.reportTotals as RouteHandlerMethod
             }
         ];
 
@@ -38,6 +43,14 @@ export class ReportingController extends ControllerBase {
 
         if(request.user){
             res.send(await this.reportingService.get(request.user, req.params.userId));
+        }
+    }
+
+    private reportTotals =async (req: FastifyRequest, res: FastifyReply) => {
+        let request = req as ExtendedRequest;
+
+        if(request.user){
+            res.send(await this.reportingService.reportTotals(request.user.accountId));
         }
     }
 }

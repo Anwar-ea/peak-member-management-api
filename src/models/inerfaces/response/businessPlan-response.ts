@@ -1,5 +1,6 @@
 import { IMarketingStrategyResponse } from "./marketingStrategy-response";
 import { IAccountResponseBase } from "./response-base";
+import { IUserResponse } from "./user-response";
 import { IVisionResponse } from "./vision-response";
 
 export interface IBusinessPlanResponse extends IAccountResponseBase {
@@ -8,4 +9,6 @@ export interface IBusinessPlanResponse extends IAccountResponseBase {
     yourWhy: string;
     threeYearVision?: IVisionResponse;
     oneYearVision?: IVisionResponse;
+    userId: string;
+    user?: IUserResponse;
 }
