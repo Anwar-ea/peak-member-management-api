@@ -108,7 +108,7 @@ visionSchema.set('toJSON', { virtuals: true });
 
 export const businessPlanSchema =  new Schema<BusinessPlan>({
     coreValues: [{ type: String, required: true }],
-    purpose: { type: String, required: true },
+    purpose: { type: String },
     yourWhy: { type: String, required: true },
     threeYearVision: { type: visionSchema, required: true },
     oneYearVision: { type: visionSchema, required: true },
