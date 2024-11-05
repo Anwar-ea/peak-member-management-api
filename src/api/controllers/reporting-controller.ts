@@ -23,7 +23,7 @@ export class ReportingController extends ControllerBase {
             },
             {
                 method: 'GET',
-                path: `totalas`,
+                path: `totals`,
                 handler: this.reportTotals as RouteHandlerMethod
             }
         ];
