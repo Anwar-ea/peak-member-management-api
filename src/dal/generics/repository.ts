@@ -124,7 +124,7 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
     }
 
     async updateRange(entities: Partial<TEntity>[], filter: RootFilterQuery<TEntity>): Promise<UpdateWriteOpResult> {
-        return await this.model.updateMany(entities, filter).populate(this.populate);
+        return await this.model.updateMany(filter, { $set: entities }).populate(this.populate);
     }
 
     async delete(id: string): Promise<TEntity | undefined> {
