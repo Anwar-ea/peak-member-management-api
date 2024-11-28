@@ -1,8 +1,8 @@
 import { inject, injectable } from "tsyringe";
 import { IBusinessPlanService } from "./abstractions";
 import { IBusinessPlanRepository, IGoalRepository, IMeasurableRepository } from "../dal";
-import { IDataSourceResponse, IFetchRequest, IFilter, IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser, IGoalRequest, IMeasurableRequest } from "../models";
-import { BusinessPlan, Goal, Measurable } from "../entities";
+import { IDataSourceResponse, IFetchRequest, IFilter, IBusinessPlanRequest, IBusinessPlanResponse, ITokenUser, IGoalRequest, IMeasurableRequest, IVisionRequest } from "../models";
+import { BusinessPlan, Goal, IVision, Measurable } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 
@@ -55,49 +55,55 @@ export class BusinessPlanService implements IBusinessPlanService {
         }
 
         if(partialEntity.oneYearVision){
-            let goalsToUpdate = partialEntity.oneYearVision.goals.filter(x => x.id);
-            let metricesToUpdate = partialEntity.oneYearVision.metrics.filter(x => x.id);
-            await this.goalRepository.updateRange(goalsToUpdate.map<Partial<Goal>>((x: IGoalRequest) => {
-                return {
-                    title: x.title,
-                    dueDate: x.dueDate,
-                    modifiedAt: new Date(),
-                    modifiedBy: contextUser.name,
-                    modifiedById: new Types.ObjectId(contextUser.id)
-                }
-            }), {_id: {$in: goalsToUpdate.map(x => new Types.ObjectId(x.id))}});
-            await this.measurableRepository.updateRange(metricesToUpdate.map<Partial<Measurable>>((x: IMeasurableRequest) => {
-                return {
-                    name: x.name,
-                    modifiedAt: new Date(),
-                    modifiedBy: contextUser.name,
-                    modifiedById: new Types.ObjectId(contextUser.id)
-                }
-            }), {_id: {$in: metricesToUpdate.map(x => new Types.ObjectId(x.id))}});
+            entity.oneYearVision = await this.updateVision(partialEntity.oneYearVision, contextUser);
         }
 
         if(partialEntity.threeYearVision){
-            let goalsToUpdate = partialEntity.threeYearVision.goals.filter(x => x.id);
-            let metricesToUpdate = partialEntity.threeYearVision.metrics.filter(x => x.id);
-            await this.goalRepository.updateRange(goalsToUpdate.map<Partial<Goal>>((x: IGoalRequest) => {
-                return {
-                    title: x.title,
-                    dueDate: x.dueDate,
-                    modifiedAt: new Date(),
-                    modifiedBy: contextUser.name,
-                    modifiedById: new Types.ObjectId(contextUser.id)
-                }
-            }), {_id: {$in: goalsToUpdate.map(x => new Types.ObjectId(x.id))}});
-            await this.measurableRepository.updateRange(metricesToUpdate.map<Partial<Measurable>>((x: IMeasurableRequest) => {
-                return {
-                    name: x.name,
-                    modifiedAt: new Date(),
-                    modifiedBy: contextUser.name,
-                    modifiedById: new Types.ObjectId(contextUser.id)
-                }
-            }), {_id: {$in: metricesToUpdate.map(x => new Types.ObjectId(x.id))}});
+            entity.threeYearVision = await this.updateVision(partialEntity.threeYearVision, contextUser);
         }
         return await this.businessPlanRepository.update(id, assignIn(entity, partialEntity));
+    }
+
+    async updateVision(visionReq: IVisionRequest, contextUser: ITokenUser): Promise<IVision> {
+
+
+        let goalsToUpdate = visionReq.goals.filter(x => x.id);
+        let metricesToUpdate = visionReq.metrics.filter(x => x.id);
+        await Promise.all(goalsToUpdate.map(goal => {
+            this.goalRepository.update(goal.id as string, {
+                title: goal.title,
+                dueDate: goal.dueDate,
+                modifiedAt: new Date(),
+                modifiedBy: contextUser.name,
+                modifiedById: new Types.ObjectId(contextUser.id)
+            })
+        }));
+
+        await Promise.all(metricesToUpdate.map(metric => {
+            this.measurableRepository.update(metric.id as string, {
+                name: metric.name,
+                modifiedAt: new Date(),
+                modifiedBy: contextUser.name,
+                modifiedById: new Types.ObjectId(contextUser.id)
+            })
+        }));
+
+        let newGoals = visionReq.goals.filter(goal => !goal.id);
+        let newMetrics = visionReq.metrics.filter(metric => !metric.id);
+        let vision: IVision = {
+            futureDate: visionReq.futureDate,
+            revenue: visionReq.revenue,
+            profit: visionReq.profit,
+            goalIds: visionReq.goals.filter(x => x.id ? false : true).map(x => new Types.ObjectId(x.id)),
+            metricIds: visionReq.metrics.filter(x => x.id ? false : true).map(x => new Types.ObjectId(x.id))
+        }
+
+        let goalResponses =await Promise.all(newGoals.map(goal => this.goalRepository.add(new Goal().toEntity(goal, undefined, contextUser))));
+
+        let metricResponses = await Promise.all(newMetrics.map(metric => this.measurableRepository.add(new Measurable().toEntity(metric, undefined, contextUser))));
+        vision.goalIds = [...vision.goalIds, ...goalResponses.map(x => x._id)];
+        vision.metricIds = [...vision.metricIds, ...metricResponses.map(x => x._id)];
+        return vision;
     }
 
     async updateMany(entitesRequest: (IBusinessPlanRequest & { id: string; })[], contextUser: ITokenUser): Promise<any> {

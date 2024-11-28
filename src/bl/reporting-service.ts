@@ -29,7 +29,6 @@ export class ReportingService implements IReportingService {
 
         if(contextUser.privileges.includes('seeRevenueScoreCard')) measurableTypes.push(GoalUnits.Revenue);
         if(contextUser.privileges.includes('seeRetentionScoreCard')) measurableTypes.push(GoalUnits.RetentionRate);
-        if(contextUser.privileges.includes('seeAllScoreCardsAdmin')) measurableTypes = [GoalUnits.Revenue, GoalUnits.RetentionRate];
 
         let result = await this.userRepository.aggregate<User & { measurables: Array<Measurable>, revenues: Array<Revenue>, retentions: Array<Retention> }>(
             [
@@ -50,14 +49,19 @@ export class ReportingService implements IReportingService {
                                 '$eq': [
                                   '$accountableId', '$$accountableId'
                                 ]
-                              }, {
+                              }, 
+                              {
                                 '$eq': [
                                   '$active', true
                                 ]
-                              }, {
+                              }, 
+                              {
                                 '$eq': [
                                   '$deleted', false
                                 ]
+                              },
+                              {  
+                                '$in': ["$unit", measurableTypes]
                               }
                             ]
                           }
@@ -97,10 +101,7 @@ export class ReportingService implements IReportingService {
                                   '$year', moment().get('year')
                                 ]
                               },
-                              ,
-                              {  
-                                '$in': ["$unit", measurableTypes]
-                              }
+                             
                             ]
                           }
                         }
