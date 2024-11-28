@@ -35,7 +35,7 @@ export class UserService implements IUserService {
             await this.userRepository.update(user._id.toString(),user);
             let privilages = await this.privilegeRepository.find({_id: {$in: user.role?.privilegeIds ?? []}});
             if(user.role ) user.role.privileges = privilages;
-            return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []})};
+            return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: user.role?.privileges ? user.role.privileges.map(x => x.name) : []})};
         }
         else {
             throw new Error('Invalid username or password',  error);
@@ -49,7 +49,7 @@ export class UserService implements IUserService {
             await this.userRepository.update(user._id.toString(),user);
             let privilages = await this.privilegeRepository.find({_id: {$in: user.role?.privilegeIds ?? []}});
             if(user.role ) user.role.privileges = privilages;
-            return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: []})};
+            return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), privileges: user.role?.privileges ? user.role.privileges.map(x => x.name) : []})};
 
     }
 

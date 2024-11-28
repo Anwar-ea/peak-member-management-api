@@ -24,6 +24,12 @@ export class ReportingService implements IReportingService {
         if (userId) {
             matchQuery['_id'] = new Types.ObjectId(userId);
         }
+        
+        let measurableTypes: Array<GoalUnits> = [];
+
+        if(contextUser.privileges.includes('seeRevenueScoreCard')) measurableTypes.push(GoalUnits.Revenue);
+        if(contextUser.privileges.includes('seeRetentionScoreCard')) measurableTypes.push(GoalUnits.RetentionRate);
+        if(contextUser.privileges.includes('seeAllScoreCardsAdmin')) measurableTypes = [GoalUnits.Revenue, GoalUnits.RetentionRate];
 
         let result = await this.userRepository.aggregate<User & { measurables: Array<Measurable>, revenues: Array<Revenue>, retentions: Array<Retention> }>(
             [
@@ -75,18 +81,25 @@ export class ReportingService implements IReportingService {
                                 '$eq': [
                                   '$userId', '$$userId'
                                 ]
-                              }, {
+                              }, 
+                              {
                                 '$eq': [
                                   '$active', true
                                 ]
-                              }, {
+                              }, 
+                              {
                                 '$eq': [
                                   '$deleted', false
                                 ]
-                              }, {
+                              }, 
+                              {
                                 '$eq': [
                                   '$year', moment().get('year')
                                 ]
+                              },
+                              ,
+                              {  
+                                '$in': ["$unit", measurableTypes]
                               }
                             ]
                           }
@@ -121,9 +134,9 @@ export class ReportingService implements IReportingService {
                                 $eq: ["$deleted", false]
                               },
                               {
-                                $eq: ["$year", 2024]
+                                $eq: ["$year", moment().get('year')]
                               }
-                            ]
+                            ],
                           }
                         }
                       },
