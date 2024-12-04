@@ -9,6 +9,7 @@ export const modulePrivilages: Record<string, Array<string>> = {
     "Measurables": ["Add", "Update", "Delete", "Get"],
     "Revenue": ["Add", "Update", "Delete", "Get"],
     "Retention": ["Add", "Update", "Delete", "Get"],
+    "Call Note": ["Add", "Update", "Delete", "Get"],
     "Bussiness Plan": [
         "Manage",
     ],
