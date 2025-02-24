@@ -3,9 +3,9 @@ import { IUserResponse } from "./user-response";
 
 export interface IToDoResponse extends IAccountResponseBase {
     todo: string;
-    details: string;
+    details?: string;
     userId: string;
     completed: boolean;
-    dueDate: Date;
+    dueDate?: Date;
     user?: IUserResponse
 }
