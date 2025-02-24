@@ -7,8 +7,8 @@ import { documentToEntityMapper, modelCreator } from "../utility";
 
 export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, IToDoResponse> {
     todo!: string;
-    details!: string;
-    dueDate!: Date;
+    details?: string;
+    dueDate?: Date;
     completed!: boolean;
     userId!: Types.ObjectId;
     user?: User
@@ -18,9 +18,9 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
         return {
             ...super.toAccountResponseBase(entity),
             todo: entity.todo,
-            details: entity.details,
+            details: entity.details ? entity.details : undefined,
             completed: entity.completed,
-            dueDate: entity.dueDate,
+            dueDate: entity.dueDate ? entity.dueDate : undefined,
             userId: entity.userId.toString(),
             user: entity.user ? entity.user.toResponse(entity.user) : undefined,
         }
@@ -52,8 +52,8 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
 const todoSchema =
   new Schema<ToDo>({
     todo: { type: String, required: true },
-    details: { type: String, required: true },
-    dueDate: { type: Date, required: true },
+    details: { type: String },
+    dueDate: { type: Date },
     completed: { type: Boolean, default: false },
     userId: { type: Schema.Types.ObjectId, ref: "User" },
   });
