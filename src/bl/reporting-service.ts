@@ -26,6 +26,9 @@ export class ReportingService implements IReportingService {
         }
         
         let measurableTypes: Array<GoalUnits> = [];
+        if(contextUser.privileges.includes('lawFirmRelativeDataDashboard')) {
+          matchQuery['lawFirmId'] = new Types.ObjectId(contextUser?.lawFirmId);
+        }
 
         if(contextUser.privileges.includes('seeRevenueScoreCard')) measurableTypes.push(GoalUnits.Revenue);
         if(contextUser.privileges.includes('seeRetentionScoreCard')) measurableTypes.push(GoalUnits.RetentionRate);

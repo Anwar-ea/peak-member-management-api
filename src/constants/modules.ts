@@ -1,6 +1,6 @@
 import { Measurable } from "../entities";
 
-export const Modules = ["Users", "Roles", "To-Dos", "Goals", "Bussiness Plan", "Revenue", "Admin", "Notifications"] as const;
+export const Modules = ["Users", "Roles", "To-Dos", "Goals", "Bussiness Plan", "Revenue", "Admin", "Notifications", "Law Firm"] as const;
 
 
 export const modulePrivilages: Record<string, Array<string>> = {
@@ -10,6 +10,7 @@ export const modulePrivilages: Record<string, Array<string>> = {
     "Revenue": ["Add", "Update", "Delete", "Get"],
     "Retention": ["Add", "Update", "Delete", "Get"],
     "Call Note": ["Add", "Update", "Delete", "Get"],
+    "Law Firm": ["Add", "Update", "Delete", "Get"],
     "Bussiness Plan": [
         "Manage",
     ],
@@ -22,7 +23,8 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Manage Notifications",
         "Manage Retention Rate",
         "Manage Revenue",
-        "See All Score Cards"
+        "See All Score Cards",
+        "Manage Law Firms"
     ],
     "Score Card": [
         'See Revenue',
@@ -33,6 +35,7 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Goals",
         "To-Dos",
         "Call Notes",
-        "Total Report"
+        "Total Report",
+        "Law Firm Relative Data"
     ],
 } as const;

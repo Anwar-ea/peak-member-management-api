@@ -1,14 +1,17 @@
 import { inject, injectable } from "tsyringe";
 import { IMeasurableService } from "./abstractions";
-import { IMeasurableRepository } from "../dal";
-import { IDataSourceResponse, IFetchRequest, IFilter, IMeasurableRequest, IMeasurableResponse, ITokenUser } from "../models";
+import { IMeasurableRepository, IUserRepository } from "../dal";
+import { FilterMatchModes, FilterOperators, IDataSourceResponse, IFetchRequest, IFilter, IMeasurableRequest, IMeasurableResponse, ITokenUser } from "../models";
 import { Measurable } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 
 @injectable()
 export class MeasurableService implements IMeasurableService {
-    constructor(@inject('MeasurableRepository') private readonly measurableRepository: IMeasurableRepository) { }
+    constructor(
+        @inject('MeasurableRepository') private readonly measurableRepository: IMeasurableRepository,
+        @inject('UserRepository') private readonly userRepository: IUserRepository,
+    ) { }
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<Measurable, keyof Measurable>>): Promise<IMeasurableResponse | null> {
         return await this.measurableRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
@@ -29,6 +32,15 @@ export class MeasurableService implements IMeasurableService {
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<Measurable>): Promise<IDataSourceResponse<IMeasurableResponse>> {
+        if(contextUser.privileges.includes('lawFirmRelativeDataDashboard')) {
+            let userIds = await this.userRepository.find({lawFirmId: new Types.ObjectId(contextUser?.lawFirmId)}, {'_id':1});
+            let lawFirmFilter = {field: 'accountableId', values: userIds.map(x => x._id), matchMode: FilterMatchModes.In, operator: FilterOperators.And};
+            if(fetchRequest.queryOptionsRequest && fetchRequest.queryOptionsRequest.filtersRequest) fetchRequest.queryOptionsRequest.filtersRequest.push(lawFirmFilter);
+            else fetchRequest.queryOptionsRequest = {
+                ...fetchRequest.queryOptionsRequest, 
+                filtersRequest: fetchRequest.queryOptionsRequest?.filtersRequest ? [...fetchRequest.queryOptionsRequest?.filtersRequest, lawFirmFilter] : [lawFirmFilter] } ;
+          }
+  
         // fetchRequest.queryOptionsRequest = fetchRequest.queryOptionsRequest ? {...fetchRequest.queryOptionsRequest, includes:['User', 'MileStone']} :{includes:['User', 'MileStone']};
         return await this.measurableRepository.getPagedData(fetchRequest, true, true, contextUser.accountId);
     }

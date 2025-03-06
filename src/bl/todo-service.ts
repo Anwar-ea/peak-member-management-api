@@ -1,14 +1,18 @@
 import { inject, injectable } from "tsyringe";
 import { IToDoService } from "./abstractions";
-import { IToDoRepository } from "../dal";
-import { IDataSourceResponse, IFetchRequest, IFilter, IToDoRequest, IToDoResponse, ITokenUser } from "../models";
+import { IToDoRepository, IUserRepository } from "../dal";
+import { FilterMatchModes, FilterOperators, IDataSourceResponse, IFetchRequest, IFilter, IToDoRequest, IToDoResponse, ITokenUser } from "../models";
 import { ToDo } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 
 @injectable()
 export class ToDoService implements IToDoService {
-    constructor(@inject('ToDoRepository') private readonly todoRepository: IToDoRepository) { }
+    constructor(
+        @inject('ToDoRepository') private readonly todoRepository: IToDoRepository,
+        @inject('UserRepository') private readonly userRepository: IUserRepository
+        
+    ) { }
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<ToDo, keyof ToDo>>): Promise<IToDoResponse | null> {
         return await this.todoRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
@@ -29,6 +33,14 @@ export class ToDoService implements IToDoService {
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<ToDo>): Promise<IDataSourceResponse<IToDoResponse>> {
+        if(contextUser.privileges.includes('lawFirmRelativeDataDashboard')) {
+            let userIds = await this.userRepository.find({lawFirmId: new Types.ObjectId(contextUser?.lawFirmId)}, {'_id':1});
+            let lawFirmFilter = {field: 'userId', values: userIds.map(x => x._id), matchMode: FilterMatchModes.In, operator: FilterOperators.And};
+            if(fetchRequest.queryOptionsRequest && fetchRequest.queryOptionsRequest.filtersRequest) fetchRequest.queryOptionsRequest.filtersRequest.push(lawFirmFilter);
+            else fetchRequest.queryOptionsRequest = {
+                ...fetchRequest.queryOptionsRequest, 
+                filtersRequest: fetchRequest.queryOptionsRequest?.filtersRequest ? [...fetchRequest.queryOptionsRequest?.filtersRequest, lawFirmFilter] : [lawFirmFilter] } ;
+            }
         // fetchRequest.queryOptionsRequest = fetchRequest.queryOptionsRequest ? {...fetchRequest.queryOptionsRequest, includes:['User', 'MileStone']} :{includes:['User', 'MileStone']};
         return await this.todoRepository.getPagedData(fetchRequest, true, true, contextUser.accountId);
     }

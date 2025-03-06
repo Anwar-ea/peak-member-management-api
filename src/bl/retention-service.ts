@@ -1,14 +1,18 @@
 import { inject, injectable } from "tsyringe";
-import { IDataSourceResponse, IFetchRequest, IFilter, ITokenUser, IRetentionResponse, IRetentionRequest } from "../models";
+import { IDataSourceResponse, IFetchRequest, IFilter, ITokenUser, IRetentionResponse, IRetentionRequest, FilterMatchModes, FilterOperators } from "../models";
 import { Retention } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 import { IRetentionService } from "./abstractions/retention-service";
 import { IRetentionRepository } from "../dal/abstractions/retention-repository";
+import { IUserRepository } from "../dal";
 
 @injectable()
 export class RetentionService implements IRetentionService {
-    constructor(@inject('RetentionRepository') private readonly retentionRepository: IRetentionRepository) { }
+    constructor(
+        @inject('RetentionRepository') private readonly retentionRepository: IRetentionRepository,
+        @inject('UserRepository') private readonly userRepository: IUserRepository
+    ) { }
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<Retention, keyof Retention>>): Promise<IRetentionResponse | null> {
         return await this.retentionRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
@@ -29,6 +33,14 @@ export class RetentionService implements IRetentionService {
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<Retention>): Promise<IDataSourceResponse<IRetentionResponse>> {
+        if(contextUser.privileges.includes('lawFirmRelativeDataDashboard')) {
+            let userIds = await this.userRepository.find({lawFirmId: new Types.ObjectId(contextUser?.lawFirmId)}, {'_id':1});
+            let lawFirmFilter = {field: 'userId', values: userIds.map(x => x._id), matchMode: FilterMatchModes.In, operator: FilterOperators.And};
+            if(fetchRequest.queryOptionsRequest && fetchRequest.queryOptionsRequest.filtersRequest) fetchRequest.queryOptionsRequest.filtersRequest.push(lawFirmFilter);
+            else fetchRequest.queryOptionsRequest = {
+                ...fetchRequest.queryOptionsRequest, 
+                filtersRequest: fetchRequest.queryOptionsRequest?.filtersRequest ? [...fetchRequest.queryOptionsRequest?.filtersRequest, lawFirmFilter] : [lawFirmFilter] } ;
+        }
         return await this.retentionRepository.getPagedData(fetchRequest, true, true, contextUser.accountId);
     }
 

@@ -15,6 +15,7 @@ import { CalenderEventController } from '../calender-event-controller';
 import { UploadController } from '../upload-controller';
 import { CallNoteController } from '../callNote-controller';
 import { RetentionController } from '../retention-controller';
+import { LawFirmController } from '../law-firm-controller';
 
 export const registerControllers = (container: DependencyContainer) => {
     container.register<AccountController>('AccountController', AccountController);
@@ -50,6 +51,7 @@ export const registerControllers = (container: DependencyContainer) => {
         uploadController: container.resolve(UploadController),
         callNoteController: container.resolve(CallNoteController),
         retentionController: container.resolve(RetentionController),
+        lawFirmController: container.resolve(LawFirmController),
     }
     // Add more controllers here
 
