@@ -14,8 +14,8 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     middleName?: string;
     lastName!: string;
     pictureUrl?: string;
-    dateOfBirth!: Date;
-    firm?: string;
+    dateOfBirth?: Date;
+    firm!: string;
     position?: string;
     status!: UserStatus;
     lastLogin?: Date;
@@ -81,8 +81,8 @@ export const userSchema = new Schema<User>({
     middleName: { type: String },
     lastName: { type: String, required: true },
     pictureUrl: { type: String },
-    dateOfBirth: { type: Date, required: true },
-    firm: { type: String },
+    dateOfBirth: { type: Date },
+    firm: { type: String, required: true },
     position: { type: String },
     status: { type: Number, default: 1 },
     lastLogin: { type: Date },

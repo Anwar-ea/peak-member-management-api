@@ -8,13 +8,13 @@ export interface IUserResponse extends IAccountResponseBase {
     firstName: string;
     middleName?: string;
     lastName: string;
-    dateOfBirth: Date;
+    dateOfBirth?: Date;
     status: UserStatus;
     lastLogin?: Date;
     lastOnline?: Date;
     roleId: string;
     role?: IRoleResponse;
     pictureUrl?: string;
-    firm?: string;
+    firm: string;
     position?: string;
 }
