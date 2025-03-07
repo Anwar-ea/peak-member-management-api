@@ -1,4 +1,5 @@
 import { UserStatus } from "../../enums";
+import { ILawFirmResponse } from "./law-firm";
 import { IAccountResponseBase } from "./response-base";
 import { IRoleResponse } from "./role-response";
 
@@ -17,4 +18,6 @@ export interface IUserResponse extends IAccountResponseBase {
     pictureUrl?: string;
     firm?: string;
     position?: string;
+    lawFirmId?: string;
+    lawFirm?: ILawFirmResponse;
 }

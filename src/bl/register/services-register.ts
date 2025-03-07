@@ -15,6 +15,7 @@ import { CalenderEventService } from "../calender-event-service";
 import { UploadService } from "../upload-service";
 import { CallNoteService } from "../callnote-service";
 import { RetentionService } from "../retention-service";
+import { LawFirmService } from "../law-firm-service";
 
 export const registerServices = (container: DependencyContainer) => {
     container.register<AccountService>('AccountService', AccountService);
@@ -33,4 +34,5 @@ export const registerServices = (container: DependencyContainer) => {
     container.register<UploadService>('UploadService', UploadService);
     container.register<CallNoteService>('CallNoteService', CallNoteService);
     container.register<RetentionService>('RetentionService', RetentionService);
+    container.register<LawFirmService>('LawFirmService', LawFirmService);
 }

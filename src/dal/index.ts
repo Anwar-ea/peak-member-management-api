@@ -7,3 +7,4 @@ export * from './privilage-repository';
 export * from './measureable-repository';
 export * from './businessPlan-repository';
 export * from './calender-event-repository';
+export * from './law-firm-repository';

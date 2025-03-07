@@ -20,4 +20,5 @@ export interface IUserRequest {
     pictureUrl?: string;
     firm?: string;
     position?: string;
+    lawFirmId?: string;
 }

@@ -10,3 +10,4 @@ export * from './businessPlan-service';
 export * from './calender-event-service';
 export * from './callNote-service';
 export * from './retention-service';
+export * from './law-firm-service';

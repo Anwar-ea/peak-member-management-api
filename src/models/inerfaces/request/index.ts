@@ -15,3 +15,4 @@ export * from './revenue-request';
 export * from './calender-event-request';
 export * from './call-note-request';
 export * from './retention-request';
+export * from './law-firm'

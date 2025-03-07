@@ -5,6 +5,7 @@ import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { IToResponseBase } from "./abstractions/to-response-base";
 import { Schema, Types } from "mongoose";
 import { documentToEntityMapper, modelCreator } from "../utility";
+import { LawFirm } from "./law-firm";
 
 export class User extends AccountEntityBase implements IToResponseBase<User, IUserResponse> {
     userName!: string;
@@ -21,7 +22,9 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     lastLogin?: Date;
     lastOnline?: Date;
     roleId!: Types.ObjectId;
-    role?: Role
+    lawFirmId?: Types.ObjectId;
+    role?: Role;
+    lawFirm?: LawFirm;
 
     toResponse(entity?: ResponseInput<User>): IUserResponse {
         if (!entity) entity = this;
@@ -38,9 +41,10 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             lastLogin: entity.lastLogin,
             lastOnline: entity.lastOnline,
             roleId: entity.roleId.toString(),
+            lawFirmId: entity.lawFirmId ? entity.lawFirmId.toString() : undefined,
             role: entity.role ? entity.role?.toResponse() : undefined,
-            firm: entity.firm,
-            position: entity.position
+            lawFirm: entity.lawFirm ? entity.lawFirm?.toResponse() : undefined,
+            position: entity.position,
         }    
     }
 
@@ -57,8 +61,8 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
         this.dateOfBirth = requestEntity.dateOfBirth;
         this.roleId = new Types.ObjectId(requestEntity.roleId);
         this.pictureUrl = requestEntity.pictureUrl;
-        this.firm = requestEntity.firm;
         this.position = requestEntity.position;
+        this.lawFirmId = requestEntity.lawFirmId ? new Types.ObjectId(requestEntity.lawFirmId) : undefined;
 
         if(contextUser && !id){
             this.toAccountEntity(contextUser)
@@ -88,12 +92,20 @@ export const userSchema = new Schema<User>({
     lastLogin: { type: Date },
     lastOnline: { type: Date },
     roleId: { type: Schema.Types.ObjectId, ref: 'Role' },
+    lawFirmId: { type: Schema.Types.ObjectId, ref: 'LawFirm' },
 });
 userSchema.add(accountEntityBaseSchema);
 // Create a virtual populate for the role
 userSchema.virtual('role', {
     ref: 'Role',
     localField: 'roleId',
+    foreignField: '_id',
+    justOne: true,
+});
+
+userSchema.virtual('LawFirm', {
+    ref: 'LawFirm',
+    localField: 'lawFirmId',
     foreignField: '_id',
     justOne: true,
 });

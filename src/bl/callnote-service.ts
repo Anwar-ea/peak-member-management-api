@@ -1,14 +1,17 @@
 import { inject, injectable } from "tsyringe";
-import { ICallNoteRequest, ICallNoteResponse, IDataSourceResponse, IFetchRequest, IFilter, ITokenUser } from "../models";
+import { FilterMatchModes, FilterOperators, ICallNoteRequest, ICallNoteResponse, IDataSourceResponse, IFetchRequest, IFilter, ITokenUser } from "../models";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
 import { ICallNoteService } from "./abstractions";
-import { ICallNoteRepository } from "../dal";
+import { ICallNoteRepository, IUserRepository } from "../dal";
 import { CallNote } from "../entities";
 
 @injectable()
 export class CallNoteService implements ICallNoteService {
-    constructor(@inject('CallNoteRepository') private readonly callNoteRepository: ICallNoteRepository) { }
+    constructor(
+        @inject('CallNoteRepository') private readonly callNoteRepository: ICallNoteRepository,
+        @inject('UserRepository') private readonly userRepository: IUserRepository
+    ) { }
 
     async getOne(contextUser: ITokenUser, filtersRequest: Array<IFilter<CallNote, keyof CallNote>>): Promise<ICallNoteResponse | null> {
         return await this.callNoteRepository.getOneByQueryWithResponse(filtersRequest, true, true, contextUser.accountId)
@@ -29,6 +32,14 @@ export class CallNoteService implements ICallNoteService {
     }
 
     async get(contextUser: ITokenUser, fetchRequest: IFetchRequest<CallNote>): Promise<IDataSourceResponse<ICallNoteResponse>> {
+        if(contextUser.privileges.includes('lawFirmRelativeDataDashboard')) {
+            let userIds = await this.userRepository.find({lawFirmId: new Types.ObjectId(contextUser?.lawFirmId)}, {'_id':1});
+            let lawFirmFilter = {field: 'userId', values: userIds.map(x => x._id), matchMode: FilterMatchModes.In, operator: FilterOperators.And};
+            if(fetchRequest.queryOptionsRequest && fetchRequest.queryOptionsRequest.filtersRequest) fetchRequest.queryOptionsRequest.filtersRequest.push(lawFirmFilter);
+            else fetchRequest.queryOptionsRequest = {
+                ...fetchRequest.queryOptionsRequest, 
+                filtersRequest: fetchRequest.queryOptionsRequest?.filtersRequest ? [...fetchRequest.queryOptionsRequest?.filtersRequest, lawFirmFilter] : [lawFirmFilter] } ;
+          }
         return await this.callNoteRepository.getPagedData(fetchRequest, true, true, contextUser.accountId);
     }
 
