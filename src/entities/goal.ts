@@ -14,7 +14,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     dueDate!: Date;
     accountableId!: Types.ObjectId;
     accountable?: User
-    milestones!: Array<IMilestone>;
+    milestones?: Array<IMilestone>;
 
     toResponse(entity?: ResponseInput<Goal>): IGoalResponse {
 
@@ -65,9 +65,9 @@ export interface IMilestone {
 
 
 const milestoneSchema = new Schema<IMilestone>({
-    details: { type: String, required: true },
-    dueDate: { type: Date, required: true },
-    completed: { type: Boolean, required: true },
+    details: { type: String },
+    dueDate: { type: Date },
+    completed: { type: Boolean },
 });
 
 export const goalSchema = new Schema<Goal>({
