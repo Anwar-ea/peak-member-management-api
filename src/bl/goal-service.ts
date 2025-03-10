@@ -51,7 +51,10 @@ export class GoalService implements IGoalService {
 
     async update(id: string, entityRequest: IGoalRequest, contextUser: ITokenUser): Promise<IGoalResponse> {
         let goal = new Goal().toEntity(entityRequest, id, contextUser);
-        if(goal.milestones.every(x => x.completed)) goal.active = false;
+        if(goal.milestones){
+            goal.milestones.every(x => x.completed);
+            goal.active = false;
+        }
         return await this.goalRepository.update(id, goal);
     }
         
