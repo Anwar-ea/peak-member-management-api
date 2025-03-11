@@ -5,6 +5,7 @@ import { FilterMatchModes, FilterOperators, IDataSourceResponse, IFetchRequest, 
 import { Measurable } from "../entities";
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
+import { GoalUnits } from "../models/enums/goals.enum";
 
 @injectable()
 export class MeasurableService implements IMeasurableService {
@@ -40,6 +41,13 @@ export class MeasurableService implements IMeasurableService {
                 ...fetchRequest.queryOptionsRequest, 
                 filtersRequest: fetchRequest.queryOptionsRequest?.filtersRequest ? [...fetchRequest.queryOptionsRequest?.filtersRequest, lawFirmFilter] : [lawFirmFilter] } ;
           }
+        if(!contextUser.privileges.includes('canSeeRevenueDataMeasurables')){
+            let revenueFilter: IFilter<Measurable, 'unit'> = {field: 'unit', value: GoalUnits.Revenue, matchMode: FilterMatchModes.NotEqual, operator: FilterOperators.And};
+            if(fetchRequest.queryOptionsRequest && fetchRequest.queryOptionsRequest.filtersRequest) fetchRequest.queryOptionsRequest.filtersRequest.push(revenueFilter);
+            else fetchRequest.queryOptionsRequest = {
+                ...fetchRequest.queryOptionsRequest, 
+                filtersRequest: fetchRequest.queryOptionsRequest?.filtersRequest ? [...fetchRequest.queryOptionsRequest?.filtersRequest, revenueFilter] : [revenueFilter] };
+        }
   
         // fetchRequest.queryOptionsRequest = fetchRequest.queryOptionsRequest ? {...fetchRequest.queryOptionsRequest, includes:['User', 'MileStone']} :{includes:['User', 'MileStone']};
         return await this.measurableRepository.getPagedData(fetchRequest, true, true, contextUser.accountId);

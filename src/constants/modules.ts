@@ -6,7 +6,7 @@ export const Modules = ["Users", "Roles", "To-Dos", "Goals", "Bussiness Plan", "
 export const modulePrivilages: Record<string, Array<string>> = {
     "ToDos": ["Add", "Update", "Delete", "Get"],
     "Goals": ["Add", "Update", "Delete", "Get"],
-    "Measurables": ["Add", "Update", "Delete", "Get"],
+    "Measurables": ["Add", "Update", "Delete", "Get", "Can See Revenue Data"],
     "Revenue": ["Add", "Update", "Delete", "Get"],
     "Retention": ["Add", "Update", "Delete", "Get"],
     "Call Note": ["Add", "Update", "Delete", "Get"],
