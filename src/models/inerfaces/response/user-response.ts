@@ -9,7 +9,7 @@ export interface IUserResponse extends IAccountResponseBase {
     firstName: string;
     middleName?: string;
     lastName: string;
-    dateOfBirth: Date;
+    dateOfBirth?: Date;
     status: UserStatus;
     lastLogin?: Date;
     lastOnline?: Date;
@@ -18,6 +18,6 @@ export interface IUserResponse extends IAccountResponseBase {
     pictureUrl?: string;
     firm?: string;
     position?: string;
-    lawFirmId?: string;
+    lawFirmId: string;
     lawFirm?: ILawFirmResponse;
 }

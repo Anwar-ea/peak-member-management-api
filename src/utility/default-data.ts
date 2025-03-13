@@ -53,6 +53,7 @@ export const AddDefaultData = async () => {
         dateOfBirth: new Date(),
         password: "asdf@123",
         roleId: role._id.toString(),
+        lawFirmId: role._id.toString(),
       }, undefined,
       { name: "Admin", id: '', accountId: account._id.toString(), privileges: [] }
     );

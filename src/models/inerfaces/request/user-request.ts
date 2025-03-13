@@ -4,7 +4,7 @@ export interface IDefaultUserRequest {
     password: string;
     firstName: string;
     lastName: string;
-    dateOfBirth: Date;
+    dateOfBirth?: Date;
     pictureUrl?: string;
 }
 
@@ -15,10 +15,10 @@ export interface IUserRequest {
     firstName: string;
     middleName?: string;
     lastName: string;
-    dateOfBirth: Date;
+    dateOfBirth?: Date;
     roleId: string;
     pictureUrl?: string;
     firm?: string;
     position?: string;
-    lawFirmId?: string;
+    lawFirmId: string;
 }

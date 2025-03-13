@@ -15,14 +15,14 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     middleName?: string;
     lastName!: string;
     pictureUrl?: string;
-    dateOfBirth!: Date;
+    dateOfBirth?: Date;
     firm?: string;
     position?: string;
     status!: UserStatus;
     lastLogin?: Date;
     lastOnline?: Date;
     roleId!: Types.ObjectId;
-    lawFirmId?: Types.ObjectId;
+    lawFirmId!: Types.ObjectId;
     role?: Role;
     lawFirm?: LawFirm;
 
@@ -36,12 +36,12 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             middleName: entity.middleName,
             lastName: entity.lastName,
             pictureUrl: entity.pictureUrl,
-            dateOfBirth: entity.dateOfBirth,
+            dateOfBirth: entity.dateOfBirth ? entity.dateOfBirth : undefined,
             status: entity.status,
             lastLogin: entity.lastLogin,
             lastOnline: entity.lastOnline,
             roleId: entity.roleId.toString(),
-            lawFirmId: entity.lawFirmId ? entity.lawFirmId.toString() : undefined,
+            lawFirmId: entity.lawFirmId.toString(),
             role: entity.role ? entity.role?.toResponse() : undefined,
             lawFirm: entity.lawFirm ? entity.lawFirm?.toResponse() : undefined,
             position: entity.position,
@@ -58,11 +58,11 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
         this.firstName = requestEntity.firstName;
         this.middleName = requestEntity.middleName;
         this.lastName = requestEntity.lastName;
-        this.dateOfBirth = requestEntity.dateOfBirth;
+        this.dateOfBirth = requestEntity.dateOfBirth ? requestEntity.dateOfBirth : undefined;
         this.roleId = new Types.ObjectId(requestEntity.roleId);
         this.pictureUrl = requestEntity.pictureUrl;
         this.position = requestEntity.position;
-        this.lawFirmId = requestEntity.lawFirmId ? new Types.ObjectId(requestEntity.lawFirmId) : undefined;
+        this.lawFirmId = new Types.ObjectId(requestEntity.lawFirmId);
 
         if(contextUser && !id){
             this.toAccountEntity(contextUser)
@@ -85,14 +85,14 @@ export const userSchema = new Schema<User>({
     middleName: { type: String },
     lastName: { type: String, required: true },
     pictureUrl: { type: String },
-    dateOfBirth: { type: Date, required: true },
+    dateOfBirth: { type: Date},
     firm: { type: String },
     position: { type: String },
     status: { type: Number, default: 1 },
     lastLogin: { type: Date },
     lastOnline: { type: Date },
     roleId: { type: Schema.Types.ObjectId, ref: 'Role' },
-    lawFirmId: { type: Schema.Types.ObjectId, ref: 'LawFirm' },
+    lawFirmId: { type: Schema.Types.ObjectId, ref: 'LawFirm' , required: true  },
 });
 userSchema.add(accountEntityBaseSchema);
 // Create a virtual populate for the role
