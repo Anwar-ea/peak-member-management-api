@@ -28,6 +28,7 @@ export class AccountService implements IAccountService {
                 ...entityRequest.defaultUser,
                 dateOfBirth: new Date(),
                 roleId: '0CE02D11-A3E6-444B-BD89-B4C5A75ECD05',
+                lawFirmId: "0CE02D11-A3E6-444B-BD89-B4C5A75ECD05"
             }
             let user = new User().toEntity(userRequest);
             user.createdAt = new Date();
