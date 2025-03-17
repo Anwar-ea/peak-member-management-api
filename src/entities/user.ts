@@ -41,7 +41,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             lastLogin: entity.lastLogin,
             lastOnline: entity.lastOnline,
             roleId: entity.roleId.toString(),
-            lawFirmId: entity.lawFirmId.toString(),
+            lawFirmId: entity.lawFirmId  ? entity.lawFirmId.toString() : undefined,
             role: entity.role ? entity.role?.toResponse() : undefined,
             lawFirm: entity.lawFirm ? entity.lawFirm?.toResponse() : undefined,
             position: entity.position,
@@ -92,7 +92,7 @@ export const userSchema = new Schema<User>({
     lastLogin: { type: Date },
     lastOnline: { type: Date },
     roleId: { type: Schema.Types.ObjectId, ref: 'Role' },
-    lawFirmId: { type: Schema.Types.ObjectId, ref: 'LawFirm' , required: true  },
+    lawFirmId: { type: Schema.Types.ObjectId, ref: 'LawFirm'  },
 });
 userSchema.add(accountEntityBaseSchema);
 // Create a virtual populate for the role

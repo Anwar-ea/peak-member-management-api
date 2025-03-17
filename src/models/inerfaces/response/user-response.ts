@@ -18,6 +18,6 @@ export interface IUserResponse extends IAccountResponseBase {
     pictureUrl?: string;
     firm?: string;
     position?: string;
-    lawFirmId: string;
+    lawFirmId?: string;
     lawFirm?: ILawFirmResponse;
 }
