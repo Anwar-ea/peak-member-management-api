@@ -8,11 +8,11 @@ import { documentToEntityMapper, modelCreator } from "../utility";
 
 export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGoalResponse> {
     title!: string;
-    details!: string;
+    details?: string;
     status!: GoalStatus;
     type!: GoalType;
-    dueDate!: Date;
-    accountableId!: Types.ObjectId;
+    dueDate?: Date;
+    accountableId?: Types.ObjectId;
     accountable?: User
     milestones?: Array<IMilestone>;
 
@@ -28,7 +28,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
             type: entity.type,
             dueDate: entity.dueDate,
             accountable: entity.accountable ? entity.accountable.toResponse(entity.accountable) : undefined,
-            accountableId: entity.accountableId.toString(),
+            accountableId: entity.accountableId ? entity.accountableId.toString() : undefined,
             milestones: entity.milestones
         }
     }
@@ -72,12 +72,12 @@ const milestoneSchema = new Schema<IMilestone>({
 
 export const goalSchema = new Schema<Goal>({
     title: { type: String, required: true },
-    details: { type: String, required: true },
+    details: { type: String, required: false },
     status: { type: Number, required: true },
     type: { type: Number, required: true },
-    dueDate: { type: Date, required: true },
-    accountableId: { type: Schema.Types.ObjectId, ref: 'User' },
-    milestones: [{ type: milestoneSchema }],
+    dueDate: { type: Date, required: false },
+    accountableId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+    milestones: [{ type: milestoneSchema, required: false }],
 });
 
 goalSchema.add(accountEntityBaseSchema)
