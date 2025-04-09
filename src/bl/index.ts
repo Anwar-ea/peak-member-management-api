@@ -9,3 +9,4 @@ export * from './abstractions/measurable-service';
 export * from './abstractions/businessPlan-service';
 export * from './abstractions/calender-event-service';
 export * from './law-firm-service';
+export * from './custom-measureable-value-service'

@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import { IReportingService } from "./abstractions/reporting-service";
 import { IAccountRepository, IUserRepository } from "../dal";
-import { Measurable, Retention, Revenue, User } from "../entities";
+import { CustomMeasureableValue, Measurable, Retention, Revenue, User } from "../entities";
 import { Types } from "mongoose";
 import moment from "moment";
 import { weekProducer } from "../utility";
@@ -33,7 +33,7 @@ export class ReportingService implements IReportingService {
         if(contextUser.privileges.includes('seeRevenueScoreCard')) measurableTypes.push(GoalUnits.Revenue);
         if(contextUser.privileges.includes('seeRetentionScoreCard')) measurableTypes.push(GoalUnits.RetentionRate);
 
-        let result = await this.userRepository.aggregate<User & { measurables: Array<Measurable>, revenues: Array<Revenue>, retentions: Array<Retention> }>(
+        let result = await this.userRepository.aggregate<User & { measurables: Array<Measurable & {customValues: Array<CustomMeasureableValue>}>, revenues: Array<Revenue>, retentions: Array<Retention> }>(
             [
                 {
                   '$match': matchQuery
@@ -68,6 +68,48 @@ export class ReportingService implements IReportingService {
                               }
                             ]
                           }
+                        },
+                        '$lookup' : {
+                          'from': 'CustomMeasureableValue',
+                          'let': {
+                            'measureableId': '$_id'
+                          },
+                          'pipeline':[
+                            {
+                              '$match':{
+                                '$expr':{
+                                  '$and': [
+                                    {
+                                      '$eq': [
+                                        '$userId', '$$userId'
+                                      ]
+                                    }, 
+                                    {
+                                      '$eq': [
+                                        '$active', true
+                                      ]
+                                    }, 
+                                    {
+                                      '$eq': [
+                                        '$deleted', false
+                                      ]
+                                    }, 
+                                    {
+                                      '$eq': [
+                                        '$year', moment().get('year')
+                                      ]
+                                    },
+                                   
+                                  ]
+                                }
+                              }
+                            }, {
+                              '$sort': {
+                                'week': -1
+                              }
+                            }
+                          ],
+                          'as': 'customValues'
                         }
                       }
                     ], 

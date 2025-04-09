@@ -16,6 +16,7 @@ import { UploadService } from "../upload-service";
 import { CallNoteService } from "../callnote-service";
 import { RetentionService } from "../retention-service";
 import { LawFirmService } from "../law-firm-service";
+import { CustomMeasureableValueService } from "../custom-measureable-value-service";
 
 export const registerServices = (container: DependencyContainer) => {
     container.register<AccountService>('AccountService', AccountService);
@@ -35,4 +36,5 @@ export const registerServices = (container: DependencyContainer) => {
     container.register<CallNoteService>('CallNoteService', CallNoteService);
     container.register<RetentionService>('RetentionService', RetentionService);
     container.register<LawFirmService>('LawFirmService', LawFirmService);
+    container.register<CustomMeasureableValueService>('CustomMeasureableValueService', CustomMeasureableValueService);
 }

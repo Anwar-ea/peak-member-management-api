@@ -100,8 +100,8 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         if (!fetchRequest.pagedListRequest) fetchRequest.pagedListRequest = new PagedRequest();
         
         const {query, skip, sort, limit, populate} = buildMongoQuery(fetchRequest, getOnlyActive, dontGetDeleted, accountId);
-        const entities = await this.model.find(query).populate(this.populate).populate(populate).skip(skip).limit(limit).sort(sort);
-        const totalRecords = await this.count(query);
+        // const totalRecords = await this.count(query);
+        const [totalRecords, entities] = await Promise.all([this.count(query), this.model.find(query).populate(this.populate).populate(populate).skip(skip).limit(limit).sort(sort)]);
         return setSaurceDataResponse<TEntity, TResponse>(entities, totalRecords, fetchRequest?.pagedListRequest?.pageSize, fetchRequest?.pagedListRequest?.pageNo);
     }
 
