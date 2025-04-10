@@ -1,7 +1,7 @@
 
-export interface ICustomMeasureableValueRequest {
+export interface ICustomMeasurableValueRequest {
         value: number;
-        measureableId: string;
+        measurableId: string;
         startOfWeek: Date;
         endOfWeek: Date;
         week: number;

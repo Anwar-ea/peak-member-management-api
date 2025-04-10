@@ -14,7 +14,7 @@ import { CalenderEventRepository } from "../calender-event-repository";
 import { CallNoteRepository } from "../callNote-repository";
 import { RetentionRepository } from "../retention-repository";
 import { LawFirmRepository } from "../law-firm-repository";
-import { CustomMeasureableValueRepository } from "../custom-measureable-value-repository";
+import { CustomMeasurableValueRepository } from "../custom-measurable-value-repository";
 
 export const registerRepositories = (container: DependencyContainer) => {
     container.register<AccountRepository>('AccountRepository', AccountRepository);
@@ -32,5 +32,5 @@ export const registerRepositories = (container: DependencyContainer) => {
     container.register<CallNoteRepository>('CallNoteRepository', CallNoteRepository);
     container.register<RetentionRepository>('RetentionRepository', RetentionRepository);
     container.register<LawFirmRepository>('LawFirmRepository', LawFirmRepository);
-    container.register<CustomMeasureableValueRepository>('CustomMeasureableValueRepository', CustomMeasureableValueRepository);
+    container.register<CustomMeasurableValueRepository>('CustomMeasurableValueRepository', CustomMeasurableValueRepository);
 }

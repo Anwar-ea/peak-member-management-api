@@ -11,4 +11,4 @@ export * from './calender-event-service';
 export * from './callNote-service';
 export * from './retention-service';
 export * from './law-firm-service';
-export * from './custom-measureable-value-service';
+export * from './custom-measurable-value-service';

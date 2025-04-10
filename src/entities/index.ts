@@ -16,4 +16,4 @@ export * from './call-notes';
 export * from './retention';
 export * from './law-firm';
 export * from './views'
-export * from './custom-measureable-value';
+export * from './custom-measurable-value';

@@ -19,4 +19,4 @@ export * from './retention-response';
 export * from './report-totals-response';
 export * from './law-firm'
 export * from './law-firm-users';
-export * from './custom-measureable-value-response';
+export * from './custom-measurable-value-response';

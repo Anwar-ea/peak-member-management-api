@@ -5,14 +5,14 @@ import { ExtendedRequest } from "../../models/inerfaces/extended-Request";
 import { IFetchRequest, IFilter } from "../../models";
 import { CommonRoutes } from "../../constants/commonRoutes";
 import { authorize } from "../../middlewares/authentication";
-import { CustomMeasureableValue } from "../../entities";
-import { ICustomMeasureableValueRequest } from "../../models";
-import { ICustomMeasureableValueService } from "../../bl";
+import { CustomMeasurableValue } from "../../entities";
+import { ICustomMeasurableValueRequest } from "../../models";
+import { ICustomMeasurableValueService } from "../../bl";
 
 @injectable()
-export class CustomMeasureableValueController extends ControllerBase {
-    constructor(@inject('CustomMeasureableValueService') private readonly revenueService: ICustomMeasureableValueService){
-        super('/custom_measureable_value');
+export class CustomMeasurableValueController extends ControllerBase {
+    constructor(@inject('CustomMeasurableValueService') private readonly revenueService: ICustomMeasurableValueService){
+        super('/custom_measurable_value');
         this.middleware = authorize as preHandlerHookHandler;
         this.endPoints = [
             {
@@ -49,7 +49,7 @@ export class CustomMeasureableValueController extends ControllerBase {
 
     }
     
-    private add = async (req: FastifyRequest<{Body: ICustomMeasureableValueRequest}>, res: FastifyReply) => {
+    private add = async (req: FastifyRequest<{Body: ICustomMeasurableValueRequest}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if(request.user){
@@ -57,7 +57,7 @@ export class CustomMeasureableValueController extends ControllerBase {
         }
     }
 
-    private getAll = async (req: FastifyRequest<{Body?: IFetchRequest<CustomMeasureableValue>}>, res: FastifyReply) => {
+    private getAll = async (req: FastifyRequest<{Body?: IFetchRequest<CustomMeasurableValue>}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         res.send(await this.revenueService.get(request.user, req.body))
@@ -73,7 +73,7 @@ export class CustomMeasureableValueController extends ControllerBase {
         }
     }
 
-    private getOneByQuery = async (req: FastifyRequest<{Body: Array<IFilter<CustomMeasureableValue, keyof CustomMeasureableValue>>}>, res: FastifyReply) => {
+    private getOneByQuery = async (req: FastifyRequest<{Body: Array<IFilter<CustomMeasurableValue, keyof CustomMeasurableValue>>}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if (request.user) {
@@ -89,7 +89,7 @@ export class CustomMeasureableValueController extends ControllerBase {
         }       
     }
 
-    private update = async (req: FastifyRequest<{Body: ICustomMeasureableValueRequest, Params: {id: string}}>, res: FastifyReply) => {
+    private update = async (req: FastifyRequest<{Body: ICustomMeasurableValueRequest, Params: {id: string}}>, res: FastifyReply) => {
         let request = req as ExtendedRequest;
 
         if (request.user) {

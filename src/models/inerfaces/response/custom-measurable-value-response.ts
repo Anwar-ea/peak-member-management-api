@@ -1,12 +1,12 @@
 import { IMeasurableResponse } from "./measurable-response";
 import { IAccountResponseBase } from "./response-base";
 
-export interface ICustomMeasureableValueResponse extends IAccountResponseBase {
+export interface ICustomMeasurableValueResponse extends IAccountResponseBase {
     value: number;
-    measureableId: string;
+    measurableId: string;
     startOfWeek: Date;
     endOfWeek: Date;
     week: number;
     year: number;
-    measureable?: IMeasurableResponse;
+    measurable?: IMeasurableResponse;
 }
