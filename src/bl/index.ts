@@ -10,3 +10,4 @@ export * from './abstractions/businessPlan-service';
 export * from './abstractions/calender-event-service';
 export * from './law-firm-service';
 export * from './custom-measurable-value-service'
+export * from './verification-service';

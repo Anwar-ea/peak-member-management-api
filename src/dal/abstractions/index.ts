@@ -13,3 +13,4 @@ export * from './callNote-repository';
 export * from './retention-repository';
 export * from './law-firm-reposiotry';
 export * from './custom-measurable-value-repository';
+export * from './verification-repository';
