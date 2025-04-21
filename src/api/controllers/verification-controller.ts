@@ -29,8 +29,13 @@ export class VerificationController extends ControllerBase {
 
     
     private addVerification = async (req: FastifyRequest<{Body:{email: string, type: 'otp' | 'url'}}>, res: FastifyReply): Promise<void> => {
-        const result = await this.verificationService.addVerification( req.body.email, req.body.type);
-        res.send(result);
+        try{
+
+            const result = await this.verificationService.addVerification( req.body.email, req.body.type);
+            res.send(result);
+        }catch(e){
+            res.status(500).send({message: 'No user found.'});
+        }
     }
 
     private getVerifications = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {

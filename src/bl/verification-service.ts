@@ -20,6 +20,10 @@ export class VerificationService {
         this.userRepository.populate = ['role'];
         let user = await this.userRepository.findOne({$or: [{email: email}, {userName: email}]});
         let newVerification: Verification | null = null;
+        
+        if(!user) {
+            throw new Error('User not found');
+        }
 
         if(user){
             newVerification = new Verification;
