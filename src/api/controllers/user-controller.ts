@@ -2,11 +2,12 @@ import { inject, injectable } from "tsyringe";
 import { ControllerBase } from "./generics/controller-base";
 import { IUserService } from "../../bl";
 import { CommonRoutes } from "../../constants";
-import { FastifyReply, FastifyRequest, preHandlerHookHandler, RouteHandlerMethod } from "fastify";
-import { ExtendedRequest, IFetchRequest, IFilter, ILoginRequest, IUserRequest } from "../../models";
+import fastify, { FastifyReply, FastifyRequest, preHandlerHookHandler, RouteHandlerMethod, FastifyError } from "fastify";
+import { ExtendedRequest, IFetchRequest, IFilter, ILoginRequest, ITokenUser, IUserRequest } from "../../models";
 import { User } from "../../entities";
 import { authorize } from "../../middlewares/authentication";
-import { IResetPassword } from "../../models/inerfaces/request/resetPasswordRequest";
+import { IResetPassword, IResetPasswordWithEmail } from "../../models/inerfaces/request/resetPasswordRequest";
+import { verify } from "jsonwebtoken";
 
 @injectable()
 export class UserController extends ControllerBase {
@@ -53,6 +54,11 @@ export class UserController extends ControllerBase {
                 method: 'POST',
                 path: 'login',
                 handler: this.login as RouteHandlerMethod
+            },
+            {
+                method: 'POST',
+                path: 'reset_password_with_verification',
+                handler: this.resetPasswordWithEmail as RouteHandlerMethod
             },
             {
                 method: 'POST',
@@ -138,6 +144,16 @@ export class UserController extends ControllerBase {
         if (request.user) {
           res.send(await this.userService.resetPassword(req.body, request.user));
         }  
+    }
+
+    private resetPasswordWithEmail = async (req: FastifyRequest<{ Body: IResetPasswordWithEmail }>, res: FastifyReply) => {
+        try {
+            const token_data = await verify(req.body.token, process.env.VERIFICATION_TOKEN_SECRET as string) as unknown as ITokenUser
+            res.send(await this.userService.resetPassword({ password: req.body.password, userId: token_data.id }, token_data));
+        } catch (err) {
+
+            res.status(500).send({ error: 'Reset password link expired' });
+        }
     }
 
     private dropdown = async (req: FastifyRequest, res: FastifyReply) => {

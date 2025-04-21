@@ -22,10 +22,10 @@ export const sendEmail = async (from: string, to: string | undefined | null, sub
 
     const mailOptions: Message = {
         From: 'web@aaepa.com',
-        To: 'anwar.stud.ea@gmail.com',
+        To: to ?? '',
         Subject: subject,
         HtmlBody: body,
-        Bcc: 'anwar.stud.ea@gmail.com'
+        Bcc: 'help@allmarketingsolutions.co.uk'
     };
 
 

@@ -17,8 +17,8 @@ export class VerificationService {
 
     async addVerification(email: string, type: 'url' | 'otp'): Promise<any> {
         let currentTimeStamp = new Date();
-        this.userRepository.populate = ['Role'];
-        let user = await this.userRepository.findOne({email: email});
+        this.userRepository.populate = ['role'];
+        let user = await this.userRepository.findOne({$or: [{email: email}, {userName: email}]});
         let newVerification: Verification | null = null;
 
         if(user){
@@ -27,6 +27,7 @@ export class VerificationService {
             newVerification.createdAt = new Date();
             newVerification.createdById = user._id;
             newVerification.createdBy = `${user.firstName} ${user.lastName}`;
+            newVerification.accountId = user.accountId;
             newVerification.active = true;
             newVerification.deleted = false;
             newVerification.userId = user._id;
@@ -48,7 +49,7 @@ export class VerificationService {
             
         if(result) {
             let template = templateReader('reset-password.html');
-           await  sendEmail('',result.email, 'Reset Password Request', template, {userName: result.name, resetPasswordUrl: `https://memberaccountability/reset_password/verify/${result.jwt}`})
+           await  sendEmail('',result.email, 'Reset Password Request', template, {userName: result.name, resetPasswordUrl: `https://memberaccountability.com/auth/reset-password/${result.jwt}`})
         } 
 
         if(result) this.updateVerification(result._id.toString(), {status: 'Delivered'});

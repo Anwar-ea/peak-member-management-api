@@ -17,8 +17,8 @@ export class VerificationController extends ControllerBase {
             },
 
             {
-                method: 'GET',
-                path: `verify/:jwt`,
+                method: 'POST',
+                path: `verify`,
                 handler: this.verify as RouteHandlerMethod
             },
 
@@ -43,8 +43,8 @@ export class VerificationController extends ControllerBase {
         res.send(result);
     }
 
-    private verify = async (req: FastifyRequest<{Params: {jwt: string}}>, res: FastifyReply): Promise<void> => {
-        const result = await this.verificationService.verify(req.params.jwt);
+    private verify = async (req: FastifyRequest<{Body: {token: string}}>, res: FastifyReply): Promise<void> => {
+        const result = await this.verificationService.verify(req.body.token);
         res.send(result);
     }
 }
