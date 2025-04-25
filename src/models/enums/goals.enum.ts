@@ -10,4 +10,10 @@ export enum Goals {
 export enum GoalUnits{
     Revenue = 1,
     RetentionRate = 2,
+    Custom = 3,
+}
+
+export enum CustomGoalType{
+    Value = 1,
+    Percentage = 2,
 }

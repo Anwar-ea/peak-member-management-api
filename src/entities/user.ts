@@ -103,7 +103,7 @@ userSchema.virtual('role', {
     justOne: true,
 });
 
-userSchema.virtual('LawFirm', {
+userSchema.virtual('lawFirm', {
     ref: 'LawFirm',
     localField: 'lawFirmId',
     foreignField: '_id',

@@ -9,3 +9,4 @@ export * from './cloudinary-utility';
 export * from './string-utility';
 export * from './documentToEntityMapper';
 export * from './model-creator-utility';
+export * from './email-utility';

@@ -1,4 +1,3 @@
-import moment from "moment";
 import { Revenue, revenueModel } from "../entities/revenue";
 import { IRevenueResponse } from "../models/inerfaces/response/revenue-response";
 import { IRevenueRepository } from "./abstractions/revenue-repository";

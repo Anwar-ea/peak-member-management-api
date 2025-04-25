@@ -9,7 +9,7 @@ export class UserRepository extends GenericRepository<User,IUserResponse> implem
     
     constructor(){
         super(userModel);
-        this.populate = ['account', 'role'];
+        this.populate = ['account', 'role', 'lawFirm'];
     }
 
 }
