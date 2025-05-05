@@ -23,23 +23,51 @@ export class UserService implements IUserService {
     ) { }
     
     async login(loginRequest: ILoginRequest): Promise<IUserResponse & {token: string}> {
-        let user = await this.userRepository.findOne({$or:[{userName: loginRequest.userName},{email: loginRequest.userName}], active: true});
-        let error: FastifyError = {code: '401', message: 'Invalid username or password', name: 'Unauthorized'};
-
-        if (!user) throw new Error('Invalid username or password',  error);
-        
-        let match = await compareHash(loginRequest.password, user.passwordHash);
-
-        if (match) {
-            user.lastLogin = new Date();
-            await this.userRepository.update(user._id.toString(),user);
-            let privilages = await this.privilegeRepository.find({_id: {$in: user.role?.privilegeIds ?? []}});
-            if(user.role ) user.role.privileges = privilages;
-            return {...user.toResponse(user), token: signJwt({id: user._id.toString(), name: `${user.firstName} ${user.lastName}`, accountId: user.accountId.toString(), lawFirmId: user.lawFirmId ? user.lawFirmId.toString() : undefined, privileges: user.role?.privileges ? user.role.privileges.map(x => x.code) : []})};
-        }
-        else {
-            throw new Error('Invalid username or password',  error);
-        }
+        const user = await this.userRepository.findOne({
+            $or: [
+                { userName: loginRequest.userName },
+                { email: loginRequest.userName }
+            ],
+            active: true
+        });
+    
+        const error: FastifyError = {
+            code: '401',
+            message: 'Invalid username or password',
+            name: 'Unauthorized'
+        };
+    
+        if (!user) throw new Error('Invalid username or password');
+    
+        const match = await compareHash(loginRequest.password, user.passwordHash);
+    
+        if (!match) throw new Error('Invalid username or password');
+    
+        user.lastLogin = new Date();
+        await this.userRepository.update(user._id.toString(), user);
+    
+        const privileges = await this.privilegeRepository.find({
+            _id: { $in: user.role?.privilegeIds ?? [] }
+        });
+    
+        if (user.role) user.role.privileges = privileges;
+    
+        const payload = {
+            id: user._id.toString(),
+            name: `${user.firstName} ${user.lastName}`,
+            accountId: user.accountId.toString(),
+            lawFirmId: user.lawFirmId ? user.lawFirmId.toString() : undefined,
+            privileges: user.role?.privileges?.map(x => x.code) ?? []
+        };
+    
+        const tokenExpiry = loginRequest.rememberMe ? '7d' : '3h';
+    
+        const token = signJwt(payload, null, tokenExpiry);
+    
+        return {
+            ...user.toResponse(user),
+            token
+        };
     }
     
     async loginAsMember(memberId: string): Promise<IUserResponse & {token: string}> {
