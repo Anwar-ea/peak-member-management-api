@@ -1,8 +1,8 @@
 // src/sesEmailService.ts
 import * as handlebars from "handlebars";
-import { Client, Message } from "postmark";
+// import { Client, Message } from "postmark";
 
-const transporter: Client = new Client(process.env.Post_Mark_Token ?? '')
+// const transporter: Client = new Client(process.env.Post_Mark_Token ?? '')
 
 
 export const sendEmail = async (from: string, to: string | undefined | null, subject: string, body: string, templateData?: any): Promise<void> => {
@@ -20,25 +20,25 @@ export const sendEmail = async (from: string, to: string | undefined | null, sub
     }
 
 
-    const mailOptions: Message = {
-        From: 'web@aaepa.com',
-        To: to ?? '',
-        Subject: subject,
-        HtmlBody: body,
-        Bcc: 'help@allmarketingsolutions.co.uk'
-    };
+    // const mailOptions: Message = {
+    //     From: 'web@aaepa.com',
+    //     To: to ?? '',
+    //     Subject: subject,
+    //     HtmlBody: body,
+    //     Bcc: 'help@allmarketingsolutions.co.uk'
+    // };
 
 
-    try {
+    // try {
 
-        await transporter.sendEmail(mailOptions, (err) => {
-            if (err) {
+    //     await transporter.sendEmail(mailOptions, (err) => {
+    //         if (err) {
 
-                console.error("Error sending email:", err);
-            } else {
-                console.log("Email sent successfully!");
-            }
-        });
-    } catch (err) {
-    }
+    //             console.error("Error sending email:", err);
+    //         } else {
+    //             console.log("Email sent successfully!");
+    //         }
+    //     });
+    // } catch (err) {
+    // }
 }
