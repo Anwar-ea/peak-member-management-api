@@ -7,6 +7,7 @@ import { IServiceBase } from "./service-base";
 export interface IUserService extends IServiceBase<IUserRequest, IUserResponse, User> {
     dropdown(accountId: string): Promise<IDropdownResponse[]>;
     login(loginRequest: ILoginRequest): Promise<IUserResponse>;
+    loginBySSO(sso_token: string): Promise<IUserResponse | undefined>;
     loginAsMember(memberId: string): Promise<IUserResponse>;
     resetPassword(passwordResetRequest: IResetPassword, contextUser: ITokenUser): Promise<IUserResponse>;
 }

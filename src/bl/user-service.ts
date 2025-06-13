@@ -4,7 +4,7 @@ import { IUserService } from "./abstractions";
 import { IDataSourceResponse, IFetchRequest, IFilter, ILoginRequest, IUserRequest, IUserResponse, UserStatus } from "../models";
 import { ITokenUser } from "../models/inerfaces/tokenUser";
 import { Measurable, User } from "../entities";
-import { compareHash, encrypt, signJwt } from "../utility";
+import { compareHash, decryptSSOToken, encrypt, signJwt } from "../utility";
 import { FastifyError } from 'fastify'
 import { assignIn } from "lodash";
 import { Types } from "mongoose";
@@ -70,6 +70,53 @@ export class UserService implements IUserService {
         };
     }
     
+    async loginBySSO(sso_token: string): Promise<IUserResponse & {token: string} | undefined> {
+        if (!sso_token) {
+        throw new Error('SSO token is required.')
+        }
+
+        const userData = await decryptSSOToken(sso_token);
+
+        if (!userData) {
+            return;
+        }
+        const user = await this.userRepository.findOne({
+            email: userData.email,
+            active: true
+        });
+    
+    
+        if (!user){
+            return;
+        };
+    
+        user.lastLogin = new Date();
+        await this.userRepository.update(user._id.toString(), user);
+    
+        const privileges = await this.privilegeRepository.find({
+            _id: { $in: user.role?.privilegeIds ?? [] }
+        });
+    
+        if (user.role) user.role.privileges = privileges;
+    
+        const payload = {
+            id: user._id.toString(),
+            name: `${user.firstName} ${user.lastName}`,
+            accountId: user.accountId.toString(),
+            lawFirmId: user.lawFirmId ? user.lawFirmId.toString() : undefined,
+            privileges: user.role?.privileges?.map(x => x.code) ?? []
+        };
+    
+        const tokenExpiry = '3h';
+    
+        const token = signJwt(payload, null, tokenExpiry);
+    
+        return {
+            ...user.toResponse(user),
+            token
+        };
+    }
+
     async loginAsMember(memberId: string): Promise<IUserResponse & {token: string}> {
         let user = await this.userRepository.findOneById(memberId) as User;
 

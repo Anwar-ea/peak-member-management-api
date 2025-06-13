@@ -56,6 +56,11 @@ export class UserController extends ControllerBase {
                 handler: this.login as RouteHandlerMethod
             },
             {
+                method: 'GET',
+                path: 'loginBySSO',
+                handler: this.loginBySSO as RouteHandlerMethod
+            },
+            {
                 method: 'POST',
                 path: 'reset_password_with_verification',
                 handler: this.resetPasswordWithEmail as RouteHandlerMethod
@@ -84,6 +89,10 @@ export class UserController extends ControllerBase {
 
     private login = async (req: FastifyRequest<{Body: ILoginRequest}>, res: FastifyReply) => {
             res.send(await this.userService.login(req.body));
+    }
+
+    private loginBySSO = async (req: FastifyRequest<{Querystring: {sso_token:string}}>, res: FastifyReply) => {
+            res.send(await this.userService.loginBySSO(req.query.sso_token));
     }
 
     private loginAsMember = async (req: FastifyRequest<{Params: {id: string}}>, res: FastifyReply) => {
