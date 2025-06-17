@@ -54,6 +54,7 @@
     "@types/moment": "^2.13.0",
     "@types/moment-timezone": "^0.5.30",
     "@types/mongoose": "^5.11.97",
+    "@types/ms": "^2.1.0",
     "@types/node": "^20.14.8",
     "@types/nodemailer": "^6.4.15",
     "@types/postmark": "^1.4.1",

@@ -20,4 +20,5 @@ export interface IUserResponse extends IAccountResponseBase {
     position?: string;
     lawFirmId?: string;
     lawFirm?: ILawFirmResponse;
+    wordpressLoginUrls: { site: string; loginUrl: string; }[] | undefined;
 }

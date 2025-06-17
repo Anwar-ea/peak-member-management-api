@@ -11,6 +11,7 @@ import { Types } from "mongoose";
 import { IDropdownResponse } from "../models/inerfaces/response/dropdown-response";
 import { IResetPassword } from "../models/inerfaces/request/resetPasswordRequest";
 import { Goals, GoalUnits } from "../models/enums/goals.enum";
+import crypto from 'crypto';
 
 @injectable()
 export class UserService implements IUserService {
@@ -22,6 +23,96 @@ export class UserService implements IUserService {
     
     ) { }
     
+    private readonly sites = [
+        "https://roberta334.sg-host.com",
+        "https://roberta331.sg-host.com",
+        "https://roberta322.sg-host.com", 
+    ];
+
+    private readonly secretKey = 'jf8gf8g^3*s';
+    private readonly secretIv = 'd&&9"dh4%:@';
+
+    /**
+     * Generates login token and URLs for WordPress SSO
+     */
+    public async generateLoginToken(user: any, redirectUrl: string): Promise<{ 
+        token: string, 
+        loginUrls: { site: string, loginUrl: string }[] 
+    }> {
+        // Validate required user properties
+        if (!user || !user.email) {
+            throw new Error('Invalid user object structure');
+        }
+
+        // Prepare user data with proper fallbacks
+        const userData: Record<string, string | number> = {
+            firstname: user.firstName || '',
+            lastname: user.lastName || '',
+            user_email: user.email,
+            user_login: user.userName || '',
+            display_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
+            action: "login",
+            user_pass: '', // WordPress will validate via SSO, not password
+            redirect_to: redirectUrl || '',
+            final_redirect: redirectUrl || '',
+            start: 0, // Assuming the first site is index 0
+            status: user.status ? 0 : 1 // Convert your status to WordPress user_status
+        };
+
+        // Validate critical fields
+        if (!userData.user_email) {
+            throw new Error('User email is required');
+        }
+
+        const token = await this.encryptSSOToken(userData);
+
+        // Generate login URLs for all WordPress sites
+        const loginUrls = this.sites.map(site => ({
+            site,
+            loginUrl: `${site}/sso-ep/?sso_token=${encodeURIComponent(token)}`
+        }));
+
+        return { token, loginUrls };
+    }
+
+    /**
+     * Encrypts SSO token using same method as WordPress plugin
+     */
+    private async encryptSSOToken(data: Record<string, string | number>): Promise<string> {
+        // Generate key and IV exactly like PHP
+        const key : any = crypto.createHash('sha256').update(this.secretKey).digest();
+        const iv : any= crypto.createHash('sha256').update(this.secretIv).digest().subarray(0, 16);
+
+        // Convert data to EXACTLY what WordPress expects
+        // 1. First convert your data to a query string
+        const dataString = Object.entries(data)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v.toString())}`)
+            .join('&');
+        
+        // 2. Then wrap it in the 'key' parameter that WordPress expects
+        const wrappedData = { key: dataString };
+        const plaintext = new URLSearchParams(wrappedData).toString();
+
+        // Apply PKCS7 padding manually
+        const blockSize = 16;
+        const padLength = blockSize - (plaintext.length % blockSize);
+        const padding = String.fromCharCode(padLength).repeat(padLength);
+        const paddedPlaintext = plaintext + padding;
+
+        // Encrypt with same options
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        cipher.setAutoPadding(false);
+
+        let encrypted : any = cipher.update(paddedPlaintext, 'utf8');
+        encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+        // URL-safe base64 (matches PHP's strtr)
+        return encrypted.toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+    }
+
     async login(loginRequest: ILoginRequest): Promise<IUserResponse & {token: string}> {
         const user = await this.userRepository.findOne({
             $or: [
@@ -63,7 +154,11 @@ export class UserService implements IUserService {
         const tokenExpiry = loginRequest.rememberMe ? '7d' : '3h';
     
         const token = signJwt(payload, null, tokenExpiry);
-    
+        const redirectUrl = ''; // Set your desired redirect URL after login
+        const { loginUrls } = await this.generateLoginToken(user, redirectUrl);
+        
+        // Add WordPress login URLs to the response
+        user.wordpressLoginUrls = loginUrls;
         return {
             ...user.toResponse(user),
             token
