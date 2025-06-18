@@ -25,7 +25,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     lawFirmId!: Types.ObjectId;
     role?: Role;
     lawFirm?: LawFirm;
-    wordpressLoginUrls: { site: string; loginUrl: string; }[] | undefined;
+    wordpressLoginUrls: string | undefined;
 
     toResponse(entity?: ResponseInput<User>): IUserResponse {
         if (!entity) entity = this;

@@ -25,7 +25,6 @@ export class UserService implements IUserService {
     
     private readonly sites = [
         "https://roberta334.sg-host.com",
-        "https://roberta331.sg-host.com",
         "https://roberta322.sg-host.com", 
     ];
 
@@ -35,44 +34,37 @@ export class UserService implements IUserService {
     /**
      * Generates login token and URLs for WordPress SSO
      */
-    public async generateLoginToken(user: any, redirectUrl: string): Promise<{ 
-        token: string, 
-        loginUrls: { site: string, loginUrl: string }[] 
+    public async generateLoginToken(user: any, finalRedirectUrl: string): Promise<{
+        token: string;
+        firstLoginUrl: string;
     }> {
-        // Validate required user properties
-        if (!user || !user.email) {
-            throw new Error('Invalid user object structure');
-        }
+        if (!user?.email) throw new Error('Invalid user object');
 
-        // Prepare user data with proper fallbacks
-        const userData: Record<string, string | number> = {
+        const userData = {
             firstname: user.firstName || '',
             lastname: user.lastName || '',
             user_email: user.email,
             user_login: user.userName || '',
             display_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
             action: "login",
-            user_pass: '', // WordPress will validate via SSO, not password
-            redirect_to: redirectUrl || '',
-            final_redirect: redirectUrl || '',
-            start: 0, // Assuming the first site is index 0
-            status: user.status ? 0 : 1 // Convert your status to WordPress user_status
+            user_pass: '',
+            redirect_to: '', // only needed in final
+            final_redirect: '',
+            start: 0,
+            status: user.status ? 0 : 1
         };
-
-        // Validate critical fields
-        if (!userData.user_email) {
-            throw new Error('User email is required');
-        }
 
         const token = await this.encryptSSOToken(userData);
 
-        // Generate login URLs for all WordPress sites
-        const loginUrls = this.sites.map(site => ({
-            site,
-            loginUrl: `${site}/sso-ep/?sso_token=${encodeURIComponent(token)}`
-        }));
+        // Build redirect chain dynamically (Site A -> Site B -> Site C -> App)
+        const chain = this.sites.reduceRight((nextRedirect, site) => {
+            const url = `${site}/sso-ep/?sso_token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(nextRedirect)}`;
+            return url;
+        }, finalRedirectUrl); // final redirect is the last stop
 
-        return { token, loginUrls };
+        const firstLoginUrl = chain; // full redirect chain begins here
+
+        return { token, firstLoginUrl };
     }
 
     /**
@@ -154,11 +146,11 @@ export class UserService implements IUserService {
         const tokenExpiry = loginRequest.rememberMe ? '7d' : '3h';
     
         const token = signJwt(payload, null, tokenExpiry);
-        const redirectUrl = ''; // Set your desired redirect URL after login
-        const { loginUrls } = await this.generateLoginToken(user, redirectUrl);
+        const redirectUrl = 'http://localhost:4200/dashboard'; // Set your desired redirect URL after login
+        const { firstLoginUrl } = await this.generateLoginToken(user, redirectUrl);
         
         // Add WordPress login URLs to the response
-        user.wordpressLoginUrls = loginUrls;
+        user.wordpressLoginUrls = firstLoginUrl;
         return {
             ...user.toResponse(user),
             token
