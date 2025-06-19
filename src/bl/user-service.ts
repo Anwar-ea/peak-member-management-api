@@ -146,7 +146,7 @@ export class UserService implements IUserService {
         const tokenExpiry = loginRequest.rememberMe ? '7d' : '3h';
     
         const token = signJwt(payload, null, tokenExpiry);
-        const redirectUrl = 'http://localhost:4200/dashboard'; // Set your desired redirect URL after login
+        const redirectUrl = 'https://dev-api.memberaccountability.com/dashboard'; // Set your desired redirect URL after login
         const { firstLoginUrl } = await this.generateLoginToken(user, redirectUrl);
         
         // Add WordPress login URLs to the response
