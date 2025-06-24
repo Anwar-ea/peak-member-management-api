@@ -53,7 +53,6 @@ export class UserService implements IUserService {
             user_pass: '',
             redirect_to: '', // only needed in final
             final_redirect: '',
-            start: 0,
             status: user.status ? 0 : 1
         };
 
