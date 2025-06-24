@@ -9,3 +9,4 @@ export * from './businessPlan-repository';
 export * from './calender-event-repository';
 export * from './law-firm-repository';
 export * from './verification-repository'
+export * from './intuit-creds-repository'

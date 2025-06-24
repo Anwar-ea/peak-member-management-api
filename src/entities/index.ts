@@ -18,3 +18,4 @@ export * from './law-firm';
 export * from './views'
 export * from './custom-measurable-value';
 export * from './verification';
+export * from './intuit-creds';

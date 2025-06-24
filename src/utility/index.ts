@@ -10,3 +10,4 @@ export * from './string-utility';
 export * from './documentToEntityMapper';
 export * from './model-creator-utility';
 export * from './email-utility';
+export * from './intuit-auth-utility';

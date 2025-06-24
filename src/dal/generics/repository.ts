@@ -115,6 +115,16 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         }
     }
 
+    async findOneAndUpdate(query: RootFilterQuery<TEntity>, partialEntity: Partial<TEntity>): Promise<TResponse> {
+        try {
+            const result = await this.model.findOneAndUpdate(query, partialEntity, {new: true}).populate(this.populate);
+            if(result) return result.toResponse(result);
+            else throw new Error(`No entity found with query`);
+        } catch (error) {
+            throw new Error(`An error occurred while updating`);
+        }
+    }
+
     async add(entity: TEntity): Promise<TEntity> {
         return (await (new this.model(entity)).save()).toInstance();
     }
