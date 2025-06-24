@@ -24,8 +24,11 @@ export class UserService implements IUserService {
     ) { }
     
     private readonly sites = [
-        "https://roberta334.sg-host.com",
-        "https://roberta322.sg-host.com", 
+            "https://members.aaepa.com", 
+            "https://elearning.aaepa.com", 
+            "https://shop.aaepa.com", 
+            "https://help.aaepa.com", 
+            "https://mb.aaepa.com"
     ];
 
     private readonly secretKey = 'jf8gf8g^3*s';
@@ -146,7 +149,7 @@ export class UserService implements IUserService {
         const tokenExpiry = loginRequest.rememberMe ? '7d' : '3h';
     
         const token = signJwt(payload, null, tokenExpiry);
-        const redirectUrl = 'https://dev-api.memberaccountability.com/dashboard'; // Set your desired redirect URL after login
+        const redirectUrl = 'https://memberaccountability.com/dashboard'; // Set your desired redirect URL after login
         const { firstLoginUrl } = await this.generateLoginToken(user, redirectUrl);
         
         // Add WordPress login URLs to the response
