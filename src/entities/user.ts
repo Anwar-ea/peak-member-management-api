@@ -25,6 +25,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
     lawFirmId!: Types.ObjectId;
     role?: Role;
     lawFirm?: LawFirm;
+    wordpressLoginUrls: string | undefined;
 
     toResponse(entity?: ResponseInput<User>): IUserResponse {
         if (!entity) entity = this;
@@ -45,6 +46,7 @@ export class User extends AccountEntityBase implements IToResponseBase<User, IUs
             role: entity.role ? entity.role?.toResponse() : undefined,
             lawFirm: entity.lawFirm ? entity.lawFirm?.toResponse() : undefined,
             position: entity.position,
+            wordpressLoginUrls: entity.wordpressLoginUrls
         }    
     }
 
