@@ -11,6 +11,7 @@ import { Types } from "mongoose";
 import { IDropdownResponse } from "../models/inerfaces/response/dropdown-response";
 import { IResetPassword } from "../models/inerfaces/request/resetPasswordRequest";
 import { Goals, GoalUnits } from "../models/enums/goals.enum";
+import crypto from 'crypto';
 
 @injectable()
 export class UserService implements IUserService {
@@ -22,6 +23,91 @@ export class UserService implements IUserService {
     
     ) { }
     
+    private readonly sites = [
+            "https://members.aaepa.com", 
+            "https://elearning.aaepa.com", 
+            "https://shop.aaepa.com", 
+            "https://help.aaepa.com", 
+            "https://mb.aaepa.com"
+    ];
+
+    private readonly secretKey = 'jf8gf8g^3*s';
+    private readonly secretIv = 'd&&9"dh4%:@';
+
+    /**
+     * Generates login token and URLs for WordPress SSO
+     */
+    public async generateLoginToken(user: any, finalRedirectUrl: string): Promise<{
+        token: string;
+        firstLoginUrl: string;
+    }> {
+        if (!user?.email) throw new Error('Invalid user object');
+
+        const userData = {
+            firstname: user.firstName || '',
+            lastname: user.lastName || '',
+            user_email: user.email,
+            user_login: user.userName || '',
+            display_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User',
+            action: "login",
+            user_pass: '',
+            redirect_to: '', // only needed in final
+            final_redirect: '',
+            start: 0,
+            status: user.status ? 0 : 1
+        };
+
+        const token = await this.encryptSSOToken(userData);
+
+        // Build redirect chain dynamically (Site A -> Site B -> Site C -> App)
+        const chain = this.sites.reduceRight((nextRedirect, site) => {
+            const url = `${site}/sso-ep/?sso_token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(nextRedirect)}`;
+            return url;
+        }, finalRedirectUrl); // final redirect is the last stop
+
+        const firstLoginUrl = chain; // full redirect chain begins here
+
+        return { token, firstLoginUrl };
+    }
+
+    /**
+     * Encrypts SSO token using same method as WordPress plugin
+     */
+    private async encryptSSOToken(data: Record<string, string | number>): Promise<string> {
+        // Generate key and IV exactly like PHP
+        const key : any = crypto.createHash('sha256').update(this.secretKey).digest();
+        const iv : any= crypto.createHash('sha256').update(this.secretIv).digest().subarray(0, 16);
+
+        // Convert data to EXACTLY what WordPress expects
+        // 1. First convert your data to a query string
+        const dataString = Object.entries(data)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v.toString())}`)
+            .join('&');
+        
+        // 2. Then wrap it in the 'key' parameter that WordPress expects
+        const wrappedData = { key: dataString };
+        const plaintext = new URLSearchParams(wrappedData).toString();
+
+        // Apply PKCS7 padding manually
+        const blockSize = 16;
+        const padLength = blockSize - (plaintext.length % blockSize);
+        const padding = String.fromCharCode(padLength).repeat(padLength);
+        const paddedPlaintext = plaintext + padding;
+
+        // Encrypt with same options
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        cipher.setAutoPadding(false);
+
+        let encrypted : any = cipher.update(paddedPlaintext, 'utf8');
+        encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+        // URL-safe base64 (matches PHP's strtr)
+        return encrypted.toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+    }
+
     async login(loginRequest: ILoginRequest): Promise<IUserResponse & {token: string}> {
         const user = await this.userRepository.findOne({
             $or: [
@@ -63,7 +149,11 @@ export class UserService implements IUserService {
         const tokenExpiry = loginRequest.rememberMe ? '7d' : '3h';
     
         const token = signJwt(payload, null, tokenExpiry);
-    
+        const redirectUrl = 'https://memberaccountability.com/dashboard'; // Set your desired redirect URL after login
+        const { firstLoginUrl } = await this.generateLoginToken(user, redirectUrl);
+        
+        // Add WordPress login URLs to the response
+        user.wordpressLoginUrls = firstLoginUrl;
         return {
             ...user.toResponse(user),
             token
