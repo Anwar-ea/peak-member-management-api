@@ -184,7 +184,12 @@ export class IntuitCredsService {
       contextUser.id,
       contextUser,
     );
-    return await getFinancialOverview(accessToken, realmId);
+    try{
+
+        return await getFinancialOverview(accessToken, realmId);
+    } catch(err){
+        throw err
+    }
   }
 
   async getMonthlyTrends(

@@ -4,16 +4,18 @@ import axios from "axios";
 import moment from "moment";
 import { stringify } from "querystring";
 
-const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
+// const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
+const QB_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company";
 
 export interface ReportOptions {
   accessToken: string;
   realmId: string;
-  startDate: string;
-  endDate: string;
+  start_date: string;
+  end_date: string;
   accountingMethod?: "Accrual" | "Cash";
   displayColumns?: string;
   compareTo?: "PriorYear" | "PriorPeriod";
+  summarize_column_by?: 'ProductsAndServices' | 'Month'
 }
 
 type ReponseData = { amount: number; [key: string]: unknown };
@@ -53,50 +55,50 @@ export const getFinancialOverview = async (
   realmId: string,
 ) => {
   const today = moment();
-  const startOfMonth = today.startOf("month").format("YYYY-MM-DD");
-  const startOfYear = today.startOf("year").format("YYYY-MM-DD");
-  const lastMonthStart = today
+  const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
+  const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
+  const lastMonthStart = moment()
     .subtract(1, "month")
     .startOf("month")
     .format("YYYY-MM-DD");
-  const lastMonthEnd = today
+  const lastMonthEnd = moment()
     .subtract(1, "month")
     .endOf("month")
     .format("YYYY-MM-DD");
-  const lastYearStart = today
+  const lastYearStart = moment()
     .subtract(1, "year")
     .startOf("year")
     .format("YYYY-MM-DD");
-  const lastYearEnd = today
+  const lastYearEnd = moment()
     .subtract(1, "year")
     .endOf("year")
     .format("YYYY-MM-DD");
-  const endDate = today.format("YYYY-MM-DD");
+  const endDate = moment().format("YYYY-MM-DD");
 
   const [thisMonth, thisYear, lastMonth, lastYear] = await Promise.all([
     getProfitAndLossReport({
       accessToken,
       realmId,
-      startDate: startOfMonth,
-      endDate,
+      start_date: startOfMonth,
+      end_date: endDate,
     }),
     getProfitAndLossReport({
       accessToken,
       realmId,
-      startDate: startOfYear,
-      endDate,
+      start_date: startOfYear,
+      end_date:endDate,
     }),
     getProfitAndLossReport({
       accessToken,
       realmId,
-      startDate: lastMonthStart,
-      endDate: lastMonthEnd,
+      start_date: lastMonthStart,
+      end_date: lastMonthEnd,
     }),
     getProfitAndLossReport({
       accessToken,
       realmId,
-      startDate: lastYearStart,
-      endDate: lastYearEnd,
+      start_date: lastYearStart,
+      end_date: lastYearEnd,
     }),
   ]);
 
@@ -142,14 +144,15 @@ export const getTopIncomeSources = async (
   realmId: string,
 ) => {
   const today = moment();
-  const startOfYear = today.startOf("year").format("YYYY-MM-DD");
-  const endDate = today.format("YYYY-MM-DD");
+  const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
+  const endDate = moment().format("YYYY-MM-DD");
 
   const report = await getSalesByProductServiceSummary({
     accessToken,
     realmId,
-    startDate: startOfYear,
-    endDate,
+    start_date: startOfYear,
+    end_date: endDate,
+    summarize_column_by: 'ProductsAndServices'
   });
 
   return (report?.Rows?.Row ?? [])
@@ -164,14 +167,15 @@ export const getTopIncomeSources = async (
 
 export const getTopExpenses = async (accessToken: string, realmId: string) => {
   const today = moment();
-  const startOfYear = today.startOf("year").format("YYYY-MM-DD");
-  const endDate = today.format("YYYY-MM-DD");
+  const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
+  const endDate = moment().format("YYYY-MM-DD");
 
   const report = await getProfitAndLossReport({
     accessToken,
     realmId,
-    startDate: startOfYear,
-    endDate,
+    start_date: startOfYear,
+    end_date: endDate,
+    summarize_column_by: 'ProductsAndServices'
   });
 
   const rows = report?.Rows?.Row ?? [];
@@ -195,14 +199,15 @@ export const getMonthlyRevenueAndExpensesTrend = async (
   realmId: string,
 ) => {
   const end = moment();
-  const start = end.subtract(12, "month").startOf("month");
+  const start = moment().subtract(12, "month").startOf("month");
 
   const report = await getProfitAndLossReport({
     accessToken,
     realmId,
-    startDate: start.format("YYYY-MM-DD"),
-    endDate: end.format("YYYY-MM-DD"),
+    start_date: start.format("YYYY-MM-DD"),
+    end_date: end.format("YYYY-MM-DD"),
     displayColumns: "Month",
+    summarize_column_by: 'Month'
   });
 
   const rows = report?.Rows?.Row ?? [];

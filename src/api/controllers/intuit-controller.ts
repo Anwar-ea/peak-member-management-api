@@ -66,7 +66,8 @@ export class IntuitController extends ControllerBase {
 
   private login = async (req: FastifyRequest, res: FastifyReply) => {
     let { user } = req as ExtendedRequest;
-    res.send({url: getAuthUri(JSON.stringify({ ...(user as ITokenUser), privileges: undefined }))});
+    const response = {url: getAuthUri(JSON.stringify({ ...(user as ITokenUser), privileges: undefined }))};
+    res.send(response)
   };
 
   private auth = async (
