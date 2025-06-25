@@ -11,3 +11,4 @@ export * from './abstractions/calender-event-service';
 export * from './law-firm-service';
 export * from './custom-measurable-value-service'
 export * from './verification-service';
+export * from './intuit-creds-service';

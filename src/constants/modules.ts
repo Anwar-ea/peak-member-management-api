@@ -38,4 +38,7 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Total Report",
         "Law Firm Relative Data"
     ],
+    "Intuit":[
+        "Quick Books"
+    ]
 } as const;

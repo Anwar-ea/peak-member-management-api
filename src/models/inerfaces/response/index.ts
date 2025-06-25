@@ -21,3 +21,4 @@ export * from './law-firm'
 export * from './law-firm-users';
 export * from './custom-measurable-value-response';
 export * from './verification-response';
+export * from './intuit-creds-response';

@@ -17,3 +17,4 @@ export * from './call-note-request';
 export * from './retention-request';
 export * from './law-firm'
 export * from './custom-measurable-value-request';
+export * from './intuit-creds-request';

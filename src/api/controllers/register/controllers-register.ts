@@ -18,6 +18,7 @@ import { RetentionController } from '../retention-controller';
 import { LawFirmController } from '../law-firm-controller';
 import { CustomMeasurableValueController } from '../custom-measurable-value-controller';
 import { VerificationController } from '../verification-controller';
+import { IntuitController } from '../intuit-controller';
 
 export const registerControllers = (container: DependencyContainer) => {
     container.register<AccountController>('AccountController', AccountController);
@@ -37,6 +38,7 @@ export const registerControllers = (container: DependencyContainer) => {
     container.register<CallNoteController>('CallNoteController', CallNoteController, );
     container.register<RetentionController>('RetentionController', RetentionController, );
     container.register<CustomMeasurableValueController>('CustomMeasurableValueController', CustomMeasurableValueController, );
+    container.register<IntuitController>('IntuitController', IntuitController, );
     return {
         accountController: container.resolve(AccountController),
         userController: container.resolve(UserController),
@@ -57,6 +59,7 @@ export const registerControllers = (container: DependencyContainer) => {
         lawFirmController: container.resolve(LawFirmController),
         customMeasurableValueController: container.resolve(CustomMeasurableValueController),
         verificationController: container.resolve(VerificationController),
+        intuitController: container.resolve(IntuitController),
     }
     // Add more controllers here
 
