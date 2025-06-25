@@ -157,8 +157,6 @@ export class IntuitCredsService {
         : undefined,
     };
 
-    partialEntity.accessTokenExpiry = undefined;
-    partialEntity.refreshTokenExpiry = undefined;
     return await this.IntuitCredsRepository.findOneAndUpdate(
       { userId },
       assignIn(entity, partialEntity),
@@ -252,7 +250,6 @@ export class IntuitCredsService {
         accessToken: access_token,
         refreshToken: refresh_token,
         accessTokenExpiry: expires_in,
-        refreshTokenExpiry: x_refresh_token_expires_in,
         realmId: creds.realmId,
         userId,
       };

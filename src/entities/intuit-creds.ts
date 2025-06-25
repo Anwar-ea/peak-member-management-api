@@ -50,7 +50,7 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
 
     checkExpiaryStatus(tokenType: 'accessToken' | 'refreshToken'): boolean {
         if (tokenType === 'accessToken' && this.accessToken) return moment().isBefore(this.accessTokenExpiry);
-        if (tokenType === 'refreshToken' && this.refreshToken) return moment().isAfter(this.refreshTokenExpiry);
+        if (tokenType === 'refreshToken' && this.refreshToken) return moment().isBefore(this.refreshTokenExpiry);
         return false;
     }
 }
