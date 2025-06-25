@@ -55,16 +55,18 @@ export class IntuitController extends ControllerBase {
         handler: this.topSourcesAndExpences as RouteHandlerMethod,
         middlewares: [authorize as preHandlerHookHandler],
       },
+      {
+        method: "GET",
+        path: `check-login`,
+        handler: this.isLogedIn as RouteHandlerMethod,
+        middlewares: [authorize as preHandlerHookHandler],
+      },
     ];
   }
 
   private login = async (req: FastifyRequest, res: FastifyReply) => {
     let { user } = req as ExtendedRequest;
-    res.redirect(
-      getAuthUri(
-        JSON.stringify({ ...(user as ITokenUser), privileges: undefined }),
-      ),
-    );
+    res.send({url: getAuthUri(JSON.stringify({ ...(user as ITokenUser), privileges: undefined }))});
   };
 
   private auth = async (
@@ -90,6 +92,13 @@ export class IntuitController extends ControllerBase {
       await this.service.getByUserId(req.params.id, request.user as ITokenUser),
     );
   };
+
+  private isLogedIn = async (req: FastifyRequest, res: FastifyReply) => {
+        let {user} = req as ExtendedRequest;
+
+        const creds = await this.service.getByUserId(user?.id as string, user as ITokenUser);
+        res.send({status: creds && creds.status === 'active' ? 'active' : 'expired'})
+  }
 
   private financialOverView = async (
     req: FastifyRequest,
