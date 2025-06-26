@@ -207,9 +207,14 @@ export class IntuitCredsService {
       contextUser.id,
       contextUser,
     );
-    const income = await getTopIncomeSources(accessToken, realmId);
-    const expenses = await getTopExpenses(accessToken, realmId);
-    return { income, expenses };
+    try {
+      
+      const expenses = await getTopExpenses(accessToken, realmId);
+      const income = await getTopIncomeSources(accessToken, realmId);
+      return { income, expenses };
+    } catch (error) {
+      throw error
+    }
   }
 
   async getUpdatedToken(

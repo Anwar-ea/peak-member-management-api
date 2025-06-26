@@ -3,7 +3,8 @@
 import axios from "axios";
 import moment from "moment";
 import { stringify } from "querystring";
-
+import {writeFile} from 'fs/promises'
+import path from "path";
 // const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
 const QB_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company";
 
@@ -12,12 +13,23 @@ export interface ReportOptions {
   realmId: string;
   start_date: string;
   end_date: string;
-  accountingMethod?: "Accrual" | "Cash";
+  accounting_method?: "Accrual" | "Cash";
   displayColumns?: string;
   compareTo?: "PriorYear" | "PriorPeriod";
-  summarize_column_by?: 'ProductsAndServices' | 'Month'
+  summarize_column_by?: 'ProductsAndServices' | 'Month' | 'Total';
+  sort_by?: 'TotalAmount'
+  report_basis?: 'Accrual'
 }
 
+interface ExpenseCategory {
+  name: string;
+  amount: number;
+}
+
+interface ExpenseSummary {
+  totalExpenses: number;
+  topCategories: ExpenseCategory[];
+}
 type ReponseData = { amount: number; [key: string]: unknown };
 const makeReportRequest = async (
   reportName: string,
@@ -127,7 +139,7 @@ export const getFinancialOverview = async (
       total: expensesThisYear,
       thisMonth: expensesThisMonth,
       thisYear: expensesThisYear,
-      top5Categories: await getTopExpenses(accessToken, realmId),
+      top5Categories: (await getTopExpenses(accessToken, realmId)).topCategories,
       compareLastMonth: expensesThisMonth - expensesLastMonth,
     },
     netProfit: {
@@ -165,33 +177,50 @@ export const getTopIncomeSources = async (
     .slice(0, 5);
 };
 
-export const getTopExpenses = async (accessToken: string, realmId: string) => {
+export const getTopExpenses = async (accessToken: string, realmId: string, summerizeColumnBy?: 'ProductsAndServices' | 'Month' | 'Total', accountingMethod?: "Accrual" | "Cash") => {
   const today = moment();
   const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
-  const endDate = moment().format("YYYY-MM-DD");
+  const endDate = moment().endOf('year').format("YYYY-MM-DD");
 
   const report = await getProfitAndLossReport({
     accessToken,
     realmId,
+    // accounting_method: accountingMethod ?? 'Accrual',
     start_date: startOfYear,
     end_date: endDate,
-    summarize_column_by: 'ProductsAndServices'
+    sort_by: 'TotalAmount',
+    report_basis: 'Accrual',
+    summarize_column_by: 'Total'
   });
 
-  const rows = report?.Rows?.Row ?? [];
-  return rows
-    .filter(
-      (r: any) =>
-        r.Summary?.ColData?.[0]?.value?.startsWith("Total ") &&
-        r.Summary?.ColData?.[0]?.value !== "Total Income" &&
-        r.Summary?.ColData?.[0]?.value !== "Total Expenses",
-    )
-    .map((r: any) => ({
-      name: r.Summary.ColData[0].value.replace("Total ", ""),
-      amount: parseFloat(r.Summary.ColData[1]?.value || "0"),
-    }))
-    .sort((a: ReponseData, b: ReponseData) => b.amount - a.amount)
-    .slice(0, 5);
+  const rows = report?.Rows?.Row || [];
+  let totalExpenses = 0
+const categories: ExpenseCategory[] = [];
+
+for (const row of rows) {
+  const categoryName = row?.Summary?.ColData?.[0]?.value;
+  const categoryAmount = parseFloat(row?.Summary?.ColData?.[1]?.value || '0');
+
+  if (categoryName && categoryAmount > 0 && !categoryName.toLowerCase().includes('income')) {
+    categories.push({
+      name: categoryName,
+      amount: categoryAmount
+    });
+  }
+
+  if (categoryName === 'Total Expenses') {
+    totalExpenses = categoryAmount;
+  }
+}
+
+    const topCategories = categories
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5);
+
+    return {
+      totalExpenses: totalExpenses || 0,
+      topCategories
+    };
 };
 
 export const getMonthlyRevenueAndExpensesTrend = async (
