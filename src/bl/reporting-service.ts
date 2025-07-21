@@ -25,7 +25,7 @@ export class ReportingService implements IReportingService {
             matchQuery['_id'] = new Types.ObjectId(userId);
         }
         
-        let measurableTypes: Array<GoalUnits> = [];
+        let measurableTypes: Array<GoalUnits> = [GoalUnits.Custom];
         if(contextUser.privileges.includes('lawFirmRelativeDataDashboard')) {
           matchQuery['lawFirmId'] = new Types.ObjectId(contextUser?.lawFirmId);
         }
