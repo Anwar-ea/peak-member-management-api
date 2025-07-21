@@ -8,14 +8,30 @@ import { fastifyRegisters } from "./utility";
 import { ExtendedRequest } from "./models/inerfaces/extended-Request";
 import { log, error } from "console";
 import fastifymultipart from "@fastify/multipart";
+import fastifyStatic  from '@fastify/static';
+import path from "path";
+
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8060;
 
 
 const app = fastify({ logger: true });
+
+app.register(fastifyStatic, {
+  root: path.join(__dirname , 'public'),
+  prefix: '/', // optional: all your static files will be served on the root path
+});
+
 app.register(fastifymultipart,{
   limits: {
     fileSize: 10 * 1024 * 1024 // 10 MB (set the file size limit here)
   }
+});
+app.setNotFoundHandler((req, res) => {
+   if (req.url.startsWith('/api/')) {
+    res.code(404).send({ error: 'API endpoint not found' });
+    return;
+  }
+  res.sendFile("index.html");
 });
 initializeSocket(app.server);
 fastifyRegisters(app);
@@ -33,7 +49,8 @@ app.post("/throw", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send({ message: "Hello, Fastify!" });
+    res.sendFile('index.html')
+
 });
 
 app.listen({ port: PORT }, (err, add) => {

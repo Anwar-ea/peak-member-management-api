@@ -9,3 +9,4 @@ dist
 # environment files to ignore
 .env
 
+sampledata

@@ -1,8 +1,11 @@
 // src/utility/intuit-report-utility.ts
 
 import axios from "axios";
+import { appendFile, writeFile } from "fs/promises";
 import moment from "moment";
+import path from "path";
 import { stringify } from "querystring";
+import { QBProfitLossResponse } from "../models";
 
 // const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
 const QB_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company";
@@ -12,17 +15,17 @@ export interface ReportOptions {
   realmId: string;
   start_date: string;
   end_date: string;
-  accountingMethod?: "Accrual" | "Cash";
+  accounting_method?: "Accrual" | "Cash";
   displayColumns?: string;
   compareTo?: "PriorYear" | "PriorPeriod";
-  summarize_column_by?: 'ProductsAndServices' | 'Month'
+  summarize_column_by?: "Total" | "Month" | "Week" | "Days" | "Quarter" | "Year" | "Customers" | "Vendors" | "Classes" | "Departments" | "Employees" | "ProductsAndServices"
 }
 
 type ReponseData = { amount: number; [key: string]: unknown };
 const makeReportRequest = async (
   reportName: string,
   { accessToken, realmId, ...query }: ReportOptions,
-): Promise<any> => {
+): Promise<QBProfitLossResponse> => {
   const url = `${QB_API_BASE}/${realmId}/reports/${reportName}`;
 
   const response = await axios.get(url, {
@@ -44,10 +47,18 @@ export const getSalesByProductServiceSummary = async (opts: ReportOptions) => {
   return await makeReportRequest("SalesByProductServiceSummary", opts);
 };
 
-const extractValueFromRow = (report: any, label: string): number => {
+const extractValueFromRow = (report: QBProfitLossResponse, label?: string, labels?: Array<string>): number => {
   const rows = report?.Rows?.Row ?? [];
-  const row = rows.find((r: any) => r.Summary?.ColData?.[0]?.value === label);
-  return parseFloat(row?.Summary?.ColData?.[1]?.value || "0");
+  let value = 0.0;
+  if(label){
+    const row = rows.find((r: any) => r.Summary?.ColData?.[0]?.value === label);
+    value = parseFloat(row?.Summary?.ColData?.[1]?.value || "0");
+  }
+  if(labels){
+    const rowsFiltered = rows.filter(x => labels.some(y => x.Summary?.ColData?.[0]?.value.toLowerCase().includes(y.toLocaleLowerCase())));
+    value = rowsFiltered.reduce<number>((acc, el) => acc+=parseFloat(el.Summary?.ColData?.[1]?.value || "0"), value)
+  }
+  return value;
 };
 
 export const getFinancialOverview = async (
@@ -107,9 +118,9 @@ export const getFinancialOverview = async (
   const revenueLastMonth = extractValueFromRow(lastMonth, "Total Income");
   const revenueLastYear = extractValueFromRow(lastYear, "Total Income");
 
-  const expensesThisMonth = extractValueFromRow(thisMonth, "Total Expenses");
-  const expensesThisYear = extractValueFromRow(thisYear, "Total Expenses");
-  const expensesLastMonth = extractValueFromRow(lastMonth, "Total Expenses");
+  const expensesThisMonth = extractValueFromRow(thisMonth, undefined, ['expenses', 'cost of goods']);
+  const expensesThisYear = extractValueFromRow(thisYear, undefined, ['expenses', 'cost of goods']);
+  const expensesLastMonth = extractValueFromRow(lastMonth, undefined, ['expenses', 'cost of goods']);
 
   const netProfitThisMonth = revenueThisMonth - expensesThisMonth;
   const netProfitLastMonth = revenueLastMonth - expensesLastMonth;
@@ -175,16 +186,16 @@ export const getTopExpenses = async (accessToken: string, realmId: string) => {
     realmId,
     start_date: startOfYear,
     end_date: endDate,
-    summarize_column_by: 'ProductsAndServices'
+    accounting_method: 'Accrual',
+    summarize_column_by: undefined
   });
-
   const rows = report?.Rows?.Row ?? [];
+  const pathofFile = path.join(process.cwd(),"sampledata", `${new Date().toISOString().split("T")[0]}.json`)
+  await writeFile(pathofFile, JSON.stringify(report, undefined, 2))
   return rows
     .filter(
       (r: any) =>
-        r.Summary?.ColData?.[0]?.value?.startsWith("Total ") &&
-        r.Summary?.ColData?.[0]?.value !== "Total Income" &&
-        r.Summary?.ColData?.[0]?.value !== "Total Expenses",
+        ['expenses', 'cogs'].some(x => r.group.toLowerCase().includes(x)) 
     )
     .map((r: any) => ({
       name: r.Summary.ColData[0].value.replace("Total ", ""),
