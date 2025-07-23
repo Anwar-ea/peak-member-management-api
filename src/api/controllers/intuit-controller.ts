@@ -61,6 +61,12 @@ export class IntuitController extends ControllerBase {
         handler: this.isLogedIn as RouteHandlerMethod,
         middlewares: [authorize as preHandlerHookHandler],
       },
+      {
+        method: "DELETE",
+        path: `logout/:userId`,
+        handler: this.logout as RouteHandlerMethod,
+        middlewares: [authorize as preHandlerHookHandler],
+      }
     ];
   }
 
@@ -98,7 +104,7 @@ export class IntuitController extends ControllerBase {
         let {user} = req as ExtendedRequest;
 
         const creds = await this.service.getByUserId(user?.id as string, user as ITokenUser);
-        res.send({status: creds && creds.status === 'active' ? 'active' : 'expired'})
+        res.send({status: creds && creds.status === 'active' ? 'active' : 'expired', profile: creds?.userProfile})
   }
 
   private financialOverView = async (
@@ -126,6 +132,10 @@ export class IntuitController extends ControllerBase {
     );
   };
 
+  private logout = async (req: FastifyRequest<{Params: {userId: string}}>, res: FastifyReply) => {
+    res.send(await this.service.deleteCreds(req.params.userId));
+  };
+
   private update = async (
     req: FastifyRequest<{ Body: IToDoRequest; Params: { id: string } }>,
     res: FastifyReply,
@@ -138,4 +148,5 @@ export class IntuitController extends ControllerBase {
       );
     }
   };
+  
 }

@@ -5,10 +5,11 @@ import { appendFile, writeFile } from "fs/promises";
 import moment from "moment";
 import path from "path";
 import { stringify } from "querystring";
-import { QBProfitLossResponse } from "../models";
+import { CompanyInfo, IntuitUserProfile, QBProfitLossResponse, QBRow, QBRowType } from "../models";
 
 // const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
 const QB_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company";
+const INTUIT_OPENID_BASE = "https://sandbox-accounts.platform.intuit.com/v1/openid_connect";
 
 export interface ReportOptions {
   accessToken: string;
@@ -19,9 +20,11 @@ export interface ReportOptions {
   displayColumns?: string;
   compareTo?: "PriorYear" | "PriorPeriod";
   summarize_column_by?: "Total" | "Month" | "Week" | "Days" | "Quarter" | "Year" | "Customers" | "Vendors" | "Classes" | "Departments" | "Employees" | "ProductsAndServices"
+  summarize_by?: "Total" | "Month" | "Week" | "Days" | "Quarter" | "Year" | "Customers" | "Vendors" | "Classes" | "Departments" | "Employees" | "ProductsAndServices"
 }
 
 type ReponseData = { amount: number; [key: string]: unknown };
+
 const makeReportRequest = async (
   reportName: string,
   { accessToken, realmId, ...query }: ReportOptions,
@@ -39,12 +42,55 @@ const makeReportRequest = async (
   return response.data;
 };
 
+/**
+ * Get user profile information from Intuit OpenID Connect
+ */
+export const getUserProfile = async (accessToken: string): Promise<IntuitUserProfile> => {
+  try {
+    const response = await axios.get(`${INTUIT_OPENID_BASE}/userinfo`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    throw new Error("Failed to fetch user profile from Intuit");
+  }
+};
+
+/**
+ * Get company information from QuickBooks API
+ */
+export const getCompanyInfo = async (
+  accessToken: string,
+  realmId: string
+): Promise<CompanyInfo> => {
+  try {
+    const url = `${QB_API_BASE}/${realmId}/companyinfo/${realmId}`;
+    
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching company info:", error);
+    throw new Error("Failed to fetch company information from QuickBooks");
+  }
+};
+
 export const getProfitAndLossReport = async (opts: ReportOptions) => {
   return await makeReportRequest("ProfitAndLoss", opts);
 };
 
 export const getSalesByProductServiceSummary = async (opts: ReportOptions) => {
-  return await makeReportRequest("SalesByProductServiceSummary", opts);
+  return await makeReportRequest("ItemSales", opts);
 };
 
 const extractValueFromRow = (report: QBProfitLossResponse, label?: string, labels?: Array<string>): number => {
@@ -125,6 +171,18 @@ export const getFinancialOverview = async (
   const netProfitThisMonth = revenueThisMonth - expensesThisMonth;
   const netProfitLastMonth = revenueLastMonth - expensesLastMonth;
   const netProfitYTD = revenueThisYear - expensesThisYear;
+  const topExpensesGroups =  await getTopExpenses(accessToken, realmId);
+  const totalExpenses = topExpensesGroups.reduce<number>((acc, el) => acc += el.amount, 0)
+  const top4Expenses: Array<{name: string, amount:number}> = topExpensesGroups.reduce<Array<{name: string, amount:number}>>((acc, el) => {
+    if(el.name.toLowerCase().includes('expense')){
+      const summaries = el.rows.filter(x => (x.Header && x.Summary)).map(x => ({name: x.Summary!.ColData[0].value.replace("Total ", ""),
+      amount: parseFloat(x.Summary!.ColData[1]?.value || "0"),}));
+        acc = [...acc, ...summaries]
+        if(el.rows.length === 1) acc = [...acc, {name: el.rows[0].ColData![0].value, amount: parseFloat(el.rows[0].ColData![1].value ||'0')}]
+    }
+    return acc;
+  }, []).sort((a, b)=> b.amount - a.amount).slice(0,4);
+  const topExpenses: Array<{name: string, amount:number}> = [...top4Expenses, {name: 'Others', amount: totalExpenses - top4Expenses.reduce<number>((acc, el) => acc += el.amount, 0)}];
 
   return {
     revenue: {
@@ -138,7 +196,7 @@ export const getFinancialOverview = async (
       total: expensesThisYear,
       thisMonth: expensesThisMonth,
       thisYear: expensesThisYear,
-      top5Categories: await getTopExpenses(accessToken, realmId),
+      top5Categories: topExpenses,
       compareLastMonth: expensesThisMonth - expensesLastMonth,
     },
     netProfit: {
@@ -163,16 +221,18 @@ export const getTopIncomeSources = async (
     realmId,
     start_date: startOfYear,
     end_date: endDate,
-    summarize_column_by: 'ProductsAndServices'
+    summarize_column_by: 'Total',
   });
-
+  // const pathofFile = path.join(process.cwd(),"sampledata", `items-sales-(${new Date().toISOString().split("T")[0]}).json`)
+  // await writeFile(pathofFile, JSON.stringify(report, undefined, 2))
   return (report?.Rows?.Row ?? [])
-    .filter((r: any) => r.ColData)
-    .map((r: any) => ({
-      name: r.ColData[0]?.value,
-      amount: parseFloat(r.ColData[1]?.value || "0"),
-    }))
-    .sort((a: ReponseData, b: ReponseData) => b.amount - a.amount)
+    .filter((r) => r.ColData)
+    .map((r) => ({
+      name: r.ColData![0]?.value,
+      amount: parseFloat(r.ColData![2]?.value || "0"),
+      percent: parseFloat(r.ColData![3]?.value.replaceAll(' %','') || "0")
+    })).filter(x => x.name.toLowerCase() !== 'total')
+    .sort((a, b) => b.percent - a.percent)
     .slice(0, 5);
 };
 
@@ -190,16 +250,17 @@ export const getTopExpenses = async (accessToken: string, realmId: string) => {
     summarize_column_by: undefined
   });
   const rows = report?.Rows?.Row ?? [];
-  const pathofFile = path.join(process.cwd(),"sampledata", `${new Date().toISOString().split("T")[0]}.json`)
-  await writeFile(pathofFile, JSON.stringify(report, undefined, 2))
+  // const pathofFile = path.join(process.cwd(),"sampledata", `${new Date().toISOString().split("T")[0]}.json`)
+  // await writeFile(pathofFile, JSON.stringify(report, undefined, 2))
   return rows
     .filter(
-      (r: any) =>
-        ['expenses', 'cogs'].some(x => r.group.toLowerCase().includes(x)) 
+      (r) =>
+        ['expenses', 'cogs'].some(x => r.group ? r.group.toLowerCase().includes(x) : false) 
     )
-    .map((r: any) => ({
-      name: r.Summary.ColData[0].value.replace("Total ", ""),
-      amount: parseFloat(r.Summary.ColData[1]?.value || "0"),
+    .map((r) => ({
+      name: r.Summary!.ColData[0].value.replace("Total ", ""),
+      amount: parseFloat(r.Summary!.ColData[1]?.value || "0"),
+      rows: r.Rows?.Row ?? [] as QBRow<QBRowType>[]
     }))
     .sort((a: ReponseData, b: ReponseData) => b.amount - a.amount)
     .slice(0, 5);

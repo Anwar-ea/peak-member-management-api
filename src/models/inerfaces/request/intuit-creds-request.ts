@@ -1,3 +1,5 @@
+import { IntuitUserProfile } from "../intuit";
+
 export interface IIntuitCredsRequest {
     accessToken: string;
     refreshToken: string;
@@ -5,4 +7,5 @@ export interface IIntuitCredsRequest {
     accessTokenExpiry: number;
     realmId: string;
     userId: string;
+    userProfile?: IntuitUserProfile;
 }

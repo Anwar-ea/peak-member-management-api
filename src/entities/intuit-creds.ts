@@ -1,10 +1,10 @@
 import moment from "moment";
-import { IIntuitCredsRequest, IIntuitCredsResponse, ITokenUser, ResponseInput } from "../models";
+import { IIntuitCredsRequest, IIntuitCredsResponse, IntuitUserProfile, ITokenUser, ResponseInput } from "../models";
 import { documentToEntityMapper, modelCreator } from "../utility";
 import { IToResponseBase } from "./abstractions/to-response-base";
 import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
 import { User } from "./user";
-import { Schema, Document, HydratedDocument, CallbackWithoutResultAndOptionalError, SaveOptions } from "mongoose";
+import { Schema } from "mongoose";
 
 export class IntuitCreds extends AccountEntityBase implements IToResponseBase<IntuitCreds, IIntuitCredsResponse> {
 
@@ -14,6 +14,7 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
     accessTokenExpiry?: Date;
     status!: 'active' | 'expired';
     realmId!: string;
+    userProfile?: IntuitUserProfile;
     userId!: string;
     user?: User;
 
@@ -28,7 +29,8 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
             realmId: entity.realmId,
             userId: entity.userId,
             user: entity.user ? entity.user.toResponse() : undefined,
-            status: entity.status
+            status: entity.status,
+            userProfile: entity.userProfile
         }
     };
 
@@ -45,6 +47,7 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
         this.realmId = entityRequest.realmId;
         this.status = 'active';
         this.userId = entityRequest.userId;
+        this.userProfile = entityRequest.userProfile;
         return this
     }
 
@@ -61,6 +64,15 @@ export const IntuitCredsSchema = new Schema<IntuitCreds>({
     refreshTokenExpiry: {type: Date, required: false},
     accessTokenExpiry: {type: Date, required: false},
     status: {type: String, enum: ['active', 'expired'], required: true},
+    userProfile: {type: new Schema<IntuitUserProfile>({
+        sub: {type: String, required: true},
+        email: {type: String, required: true},
+        emailVerified: {type: Boolean, required: false},
+        givenName: {type: String, required: true},
+        familyName: {type: String, required: true},
+        phoneNumber: {type: String, required: false},
+        realmId: {type: String, required: true}
+    }), required: false},
     realmId: {type: String, required: true},
     userId: {type: String, required: true, unique: true},
 })

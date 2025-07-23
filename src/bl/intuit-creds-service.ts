@@ -19,6 +19,7 @@ import {
   getMonthlyRevenueAndExpensesTrend,
   getTopIncomeSources,
   getTopExpenses,
+  getUserProfile
 } from "../utility";
 import moment from "moment";
 
@@ -48,6 +49,8 @@ export class IntuitCredsService {
       expires_in,
       x_refresh_token_expires_in,
     } = await getTokenFromCallback(code);
+    let profileRes = await getUserProfile(access_token);
+    let {sub, email, familyName, givenName, phoneNumber, emailVerified,realmId: userRealmId} = profileRes;
     const creds = await this.IntuitCredsRepository.findOne({
       userId: contextUser.id,
     });
@@ -62,6 +65,15 @@ export class IntuitCredsService {
           refreshTokenExpiry: x_refresh_token_expires_in,
           realmId,
           userId: contextUser.id,
+          userProfile:{
+            sub,
+            email,
+            familyName, 
+            givenName, 
+            phoneNumber,
+            emailVerified, 
+            realmId
+          }
         },
         contextUser,
       );
@@ -73,6 +85,15 @@ export class IntuitCredsService {
           accessTokenExpiry: expires_in,
           refreshTokenExpiry: x_refresh_token_expires_in,
           realmId,
+          userProfile:{
+            sub,
+            email,
+            familyName, 
+            givenName, 
+            phoneNumber,
+            emailVerified, 
+            realmId
+          },
           userId: contextUser.id,
         },
         contextUser,
@@ -209,7 +230,18 @@ export class IntuitCredsService {
     );
     const income = await getTopIncomeSources(accessToken, realmId);
     const expenses = await getTopExpenses(accessToken, realmId);
-    return { income, expenses };
+      const totalExpenses = expenses.reduce<number>((acc, el) => acc += el.amount, 0)
+  const top4Expenses: Array<{name: string, amount:number}> = expenses.reduce<Array<{name: string, amount:number}>>((acc, el) => {
+    if(el.name.toLowerCase().includes('expense')){
+      const summaries = el.rows.filter(x => (x.Header && x.Summary)).map(x => ({name: x.Summary!.ColData[0].value.replace("Total ", ""),
+      amount: parseFloat(x.Summary!.ColData[1]?.value || "0"),}));
+        acc = [...acc, ...summaries]
+      }
+      if(el.rows.length === 1) acc = [...acc, {name: el.rows[0].ColData![0].value, amount: parseFloat(el.rows[0].ColData![1].value ?? '0')}]
+    return acc;
+  }, []).sort((a, b)=> b.amount - a.amount).slice(0,5);
+  const topExpenses: Array<{name: string, amount:number}> = [...top4Expenses];
+    return { income:income, expenses: topExpenses };
   }
 
   async getUpdatedToken(
@@ -259,4 +291,8 @@ export class IntuitCredsService {
       throw new Error("Intuit Session Expired");
     }
   }
+
+  async deleteCreds(userId: string): Promise<void>{
+    await this.IntuitCredsRepository.deleteRange({userId});
+  } 
 }

@@ -6,7 +6,7 @@ const intuitCreds = {
   environment: process.env.INTUIT_ENVIRONMENT! as "sandbox" | "production",
   redirectUri: process.env.INTUIT_REDIRECT_URI!,
   logging: true,
-  scope: ["com.intuit.quickbooks.accounting", "com.intuit.quickbooks.payment"],
+  scope: ["com.intuit.quickbooks.accounting", "com.intuit.quickbooks.payment", "openid", "profile", "email", "phone", "address"],
 };
 const INTUIT_BASE = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";
 export const getAuthUri = (state?: string) => {
