@@ -68,8 +68,8 @@ export const IntuitCredsSchema = new Schema<IntuitCreds>({
         sub: {type: String, required: true},
         email: {type: String, required: true},
         emailVerified: {type: Boolean, required: false},
-        givenName: {type: String, required: true},
-        familyName: {type: String, required: true},
+        givenName: {type: String, required: false},
+        familyName: {type: String, required: false},
         phoneNumber: {type: String, required: false},
         realmId: {type: String, required: true}
     }), required: false},

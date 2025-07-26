@@ -2,8 +2,8 @@ export interface IntuitUserProfile {
   sub: string;
   email: string;
   emailVerified: boolean;
-  givenName: string;
-  familyName: string;
+  givenName?: string;
+  familyName?: string;
   phoneNumber?: string;
   realmId: string;
 }
