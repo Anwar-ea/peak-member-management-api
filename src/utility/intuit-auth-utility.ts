@@ -3,8 +3,7 @@ import { stringify } from "querystring";
 const intuitCreds = {
   clientId: process.env.INTUIT_CLIENT_ID!,
   clientSecret: process.env.INTUIT_CLIENT_SECRET!,
-  environment: process.env.INTUIT_ENVIRONMENT! as "sandbox" | "production",
-  redirectUri: process.env.INTUIT_REDIRECT_URI!,
+  redirectUri: process.env.APP_BASE_URL! + "/api/intuit/auth",
   logging: true,
   scope: ["com.intuit.quickbooks.accounting", "com.intuit.quickbooks.payment", "openid", "profile", "email", "phone", "address"],
 };

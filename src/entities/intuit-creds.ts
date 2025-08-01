@@ -13,6 +13,7 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
     refreshTokenExpiry?: Date;
     accessTokenExpiry?: Date;
     status!: 'active' | 'expired';
+    env!: 'sandbox' | 'production';
     realmId!: string;
     userProfile?: IntuitUserProfile;
     userId!: string;
@@ -24,6 +25,7 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
             ...super.toAccountResponseBase(entity),
             accessToken: entity.accessToken,
             refreshToken: entity.refreshToken,
+            env: entity.env,
             refreshTokenExpiry: entity.refreshTokenExpiry,
             accessTokenExpiry: entity.accessTokenExpiry,
             realmId: entity.realmId,
@@ -46,6 +48,7 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
         this.refreshTokenExpiry = moment().add(entityRequest.refreshTokenExpiry, 'seconds').toDate();
         this.realmId = entityRequest.realmId;
         this.status = 'active';
+        this.env = entityRequest.env;
         this.userId = entityRequest.userId;
         this.userProfile = entityRequest.userProfile;
         return this

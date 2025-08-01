@@ -10,6 +10,7 @@ export interface IIntuitCredsResponse extends IAccountResponseBase {
     realmId: string;
     userId: string;
     user?: IUserResponse;
+    env: 'sandbox' | 'production';
     status: 'active' | 'expired';
     userProfile?: IntuitUserProfile;
 }

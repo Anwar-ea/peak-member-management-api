@@ -1,15 +1,13 @@
 // src/utility/intuit-report-utility.ts
 
 import axios from "axios";
-import { appendFile, writeFile } from "fs/promises";
 import moment from "moment";
-import path from "path";
-import { stringify } from "querystring";
 import { CompanyInfo, IntuitUserProfile, QBProfitLossResponse, QBRow, QBRowType } from "../models";
 
-// const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
-const QB_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company";
+const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
+const QB_SANDBOX_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company";
 const INTUIT_OPENID_BASE = "https://sandbox-accounts.platform.intuit.com/v1/openid_connect";
+const INTUIT_SANDBOX_OPENID_BASE = "https://sandbox-accounts.platform.intuit.com/v1/openid_connect";
 
 export interface ReportOptions {
   accessToken: string;
@@ -28,8 +26,9 @@ type ReponseData = { amount: number; [key: string]: unknown };
 const makeReportRequest = async (
   reportName: string,
   { accessToken, realmId, ...query }: ReportOptions,
+  env: 'sandbox' | 'production'
 ): Promise<QBProfitLossResponse> => {
-  const url = `${QB_API_BASE}/${realmId}/reports/${reportName}`;
+  const url = `${env === 'sandbox' ? QB_SANDBOX_API_BASE : QB_API_BASE}/${realmId}/reports/${reportName}`;
 
   const response = await axios.get(url, {
     headers: {
@@ -45,9 +44,9 @@ const makeReportRequest = async (
 /**
  * Get user profile information from Intuit OpenID Connect
  */
-export const getUserProfile = async (accessToken: string): Promise<IntuitUserProfile> => {
+export const getUserProfile = async (accessToken: string, env: 'sandbox' | 'production'): Promise<IntuitUserProfile> => {
   try {
-    const response = await axios.get(`${INTUIT_OPENID_BASE}/userinfo`, {
+    const response = await axios.get(`${env === 'sandbox' ? INTUIT_SANDBOX_OPENID_BASE : INTUIT_OPENID_BASE}/userinfo`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
@@ -66,10 +65,11 @@ export const getUserProfile = async (accessToken: string): Promise<IntuitUserPro
  */
 export const getCompanyInfo = async (
   accessToken: string,
-  realmId: string
+  realmId: string,
+  env: 'sandbox' | 'production'
 ): Promise<CompanyInfo> => {
   try {
-    const url = `${QB_API_BASE}/${realmId}/companyinfo/${realmId}`;
+    const url = `${env === 'sandbox' ? QB_SANDBOX_API_BASE : QB_API_BASE}/${realmId}/companyinfo/${realmId}`;
     
     const response = await axios.get(url, {
       headers: {
@@ -85,12 +85,12 @@ export const getCompanyInfo = async (
   }
 };
 
-export const getProfitAndLossReport = async (opts: ReportOptions) => {
-  return await makeReportRequest("ProfitAndLoss", opts);
+export const getProfitAndLossReport = async (opts: ReportOptions, env: 'sandbox' | 'production') => {
+  return await makeReportRequest("ProfitAndLoss", opts, env);
 };
 
-export const getSalesByProductServiceSummary = async (opts: ReportOptions) => {
-  return await makeReportRequest("ItemSales", opts);
+export const getSalesByProductServiceSummary = async (opts: ReportOptions, env: 'sandbox' | 'production') => {
+  return await makeReportRequest("ItemSales", opts, env);
 };
 
 const extractValueFromRow = (report: QBProfitLossResponse, label?: string, labels?: Array<string>): number => {
@@ -110,6 +110,7 @@ const extractValueFromRow = (report: QBProfitLossResponse, label?: string, label
 export const getFinancialOverview = async (
   accessToken: string,
   realmId: string,
+  env: 'sandbox' | 'production'
 ) => {
   const today = moment();
   const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
@@ -138,25 +139,25 @@ export const getFinancialOverview = async (
       realmId,
       start_date: startOfMonth,
       end_date: endDate,
-    }),
+    }, env),
     getProfitAndLossReport({
       accessToken,
       realmId,
       start_date: startOfYear,
       end_date:endDate,
-    }),
+    }, env),
     getProfitAndLossReport({
       accessToken,
       realmId,
       start_date: lastMonthStart,
       end_date: lastMonthEnd,
-    }),
+    }, env),
     getProfitAndLossReport({
       accessToken,
       realmId,
       start_date: lastYearStart,
       end_date: lastYearEnd,
-    }),
+    }, env),
   ]);
 
   const revenueThisMonth = extractValueFromRow(thisMonth, "Total Income");
@@ -171,7 +172,7 @@ export const getFinancialOverview = async (
   const netProfitThisMonth = revenueThisMonth - expensesThisMonth;
   const netProfitLastMonth = revenueLastMonth - expensesLastMonth;
   const netProfitYTD = revenueThisYear - expensesThisYear;
-  const topExpensesGroups =  await getTopExpenses(accessToken, realmId);
+  const topExpensesGroups =  await getTopExpenses(accessToken, realmId, env);
   const totalExpenses = topExpensesGroups.reduce<number>((acc, el) => acc += el.amount, 0)
   const top4Expenses: Array<{name: string, amount:number}> = topExpensesGroups.reduce<Array<{name: string, amount:number}>>((acc, el) => {
     if(el.name.toLowerCase().includes('expense')){
@@ -211,6 +212,7 @@ export const getFinancialOverview = async (
 export const getTopIncomeSources = async (
   accessToken: string,
   realmId: string,
+  env: 'sandbox' | 'production'
 ) => {
   const today = moment();
   const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
@@ -222,7 +224,7 @@ export const getTopIncomeSources = async (
     start_date: startOfYear,
     end_date: endDate,
     summarize_column_by: 'Total',
-  });
+  }, env);
   // const pathofFile = path.join(process.cwd(),"sampledata", `items-sales-(${new Date().toISOString().split("T")[0]}).json`)
   // await writeFile(pathofFile, JSON.stringify(report, undefined, 2))
   return (report?.Rows?.Row ?? [])
@@ -236,7 +238,7 @@ export const getTopIncomeSources = async (
     .slice(0, 5);
 };
 
-export const getTopExpenses = async (accessToken: string, realmId: string) => {
+export const getTopExpenses = async (accessToken: string, realmId: string, env: 'sandbox' | 'production') => {
   const today = moment();
   const startOfYear = moment().startOf("year").format("YYYY-MM-DD");
   const endDate = moment().format("YYYY-MM-DD");
@@ -248,7 +250,7 @@ export const getTopExpenses = async (accessToken: string, realmId: string) => {
     end_date: endDate,
     accounting_method: 'Accrual',
     summarize_column_by: undefined
-  });
+  }, env);
   const rows = report?.Rows?.Row ?? [];
   // const pathofFile = path.join(process.cwd(),"sampledata", `${new Date().toISOString().split("T")[0]}.json`)
   // await writeFile(pathofFile, JSON.stringify(report, undefined, 2))
@@ -269,6 +271,7 @@ export const getTopExpenses = async (accessToken: string, realmId: string) => {
 export const getMonthlyRevenueAndExpensesTrend = async (
   accessToken: string,
   realmId: string,
+  env: 'sandbox' | 'production'
 ) => {
   const end = moment();
   const start = moment().subtract(12, "month").startOf("month");
@@ -280,7 +283,7 @@ export const getMonthlyRevenueAndExpensesTrend = async (
     end_date: end.format("YYYY-MM-DD"),
     displayColumns: "Month",
     summarize_column_by: 'Month'
-  });
+  }, env);
 
   const rows = report?.Rows?.Row ?? [];
   const months: string[] = report?.Columns?.Column?.slice(1).map(
