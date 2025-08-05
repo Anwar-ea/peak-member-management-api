@@ -12,3 +12,4 @@ export * from "./model-creator-utility";
 export * from "./email-utility";
 export * from "./intuit-auth-utility";
 export * from "./quickbooks-utility";
+export * from "./gr-avatar";
