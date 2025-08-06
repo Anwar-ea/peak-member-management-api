@@ -49,7 +49,7 @@ export class IntuitCredsService {
       refresh_token,
       expires_in,
       x_refresh_token_expires_in,
-    } = await getTokenFromCallback(code);
+    } = await getTokenFromCallback(code, env);
     let profileRes = await getUserProfile(access_token, env);
     let {sub, email, familyName, givenName, phoneNumber, emailVerified,realmId: userRealmId} = profileRes;
     const creds = await this.IntuitCredsRepository.findOne({
@@ -138,6 +138,7 @@ export class IntuitCredsService {
       userId,
       refreshTokenExpiry: { $gt: new Date() },
       status: "active",
+      env
     });
     const verifiedCreds = result ? result.toResponse() : null;
     if (result && result?.checkExpiaryStatus("accessToken"))
@@ -288,7 +289,7 @@ export class IntuitCredsService {
       refresh_token,
       expires_in,
       x_refresh_token_expires_in,
-    } = await refreshToken(creds?.refreshToken as string);
+    } = await refreshToken(creds?.refreshToken as string, env);
 
     if (creds && creds?.checkExpiaryStatus("refreshToken")) {
       let entity: Partial<IIntuitCredsRequest> = {

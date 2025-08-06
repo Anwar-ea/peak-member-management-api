@@ -72,7 +72,7 @@ export class IntuitController extends ControllerBase {
 
   private login = async (req: FastifyRequest<{Querystring:{env: 'sandbox' | 'production'}}>, res: FastifyReply) => {
     let { user } = req as ExtendedRequest;
-    const response = {url: getAuthUri(JSON.stringify({ ...(user as ITokenUser), privileges: undefined, env: req.query.env }))};
+    const response = {url: getAuthUri(JSON.stringify({ ...(user as ITokenUser), privileges: undefined, env: req.query.env }), req.query.env)};
     res.send(response)
   };
 
@@ -86,8 +86,8 @@ export class IntuitController extends ControllerBase {
     if (!realmId || !code || !state)
       throw new Error("There was an error while logging into intuit.");
       let {env, ...rest} = JSON.parse(state);
-    await this.service.login(code, realmId, env, JSON.parse(rest));
-    res.redirect(process.env.QUICK_BOOKS_URL as string);
+    await this.service.login(code, realmId, env, rest);
+    res.redirect(`${process.env.APP_BASE_URL as string}/quick-books?env=${env}`);
   };
 
   private getByUserId = async (
