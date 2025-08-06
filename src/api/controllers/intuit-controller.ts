@@ -87,7 +87,7 @@ export class IntuitController extends ControllerBase {
       throw new Error("There was an error while logging into intuit.");
       let {env, ...rest} = JSON.parse(state);
     await this.service.login(code, realmId, env, rest);
-    res.redirect(`${process.env.APP_BASE_URL as string}/quick-books?env=${env}`);
+    res.redirect(`${process.env.APP_FRONTEND_URL as string}/quick-books?env=${env}`);
   };
 
   private getByUserId = async (
