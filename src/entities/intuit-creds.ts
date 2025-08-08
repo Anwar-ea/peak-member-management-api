@@ -78,7 +78,7 @@ export const IntuitCredsSchema = new Schema<IntuitCreds>({
         realmId: {type: String, required: true}
     }), required: false},
     realmId: {type: String, required: true},
-    userId: {type: String, required: true, unique: true},
+    userId: {type: String, required: true},
 })
 
 IntuitCredsSchema.add(accountEntityBaseSchema);

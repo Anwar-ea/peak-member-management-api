@@ -6,7 +6,7 @@ import { CompanyInfo, IntuitUserProfile, QBProfitLossResponse, QBRow, QBRowType 
 
 const QB_API_BASE = "https://quickbooks.api.intuit.com/v3/company";
 const QB_SANDBOX_API_BASE = "https://sandbox-quickbooks.api.intuit.com/v3/company";
-const INTUIT_OPENID_BASE = "https://sandbox-accounts.platform.intuit.com/v1/openid_connect";
+const INTUIT_OPENID_BASE = "https://accounts.platform.intuit.com/v1/openid_connect";
 const INTUIT_SANDBOX_OPENID_BASE = "https://sandbox-accounts.platform.intuit.com/v1/openid_connect";
 
 export interface ReportOptions {
