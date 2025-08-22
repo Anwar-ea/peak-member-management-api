@@ -11,7 +11,8 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
     dueDate?: Date;
     completed!: boolean;
     userId!: Types.ObjectId;
-    user?: User
+    user?: User;
+    priority!: number;
     
     toResponse(entity?: ResponseInput<ToDo>): IToDoResponse {
         if(!entity) entity = this;
@@ -23,6 +24,7 @@ export class ToDo extends AccountEntityBase implements IToResponseBase<ToDo, ITo
             dueDate: entity.dueDate ? entity.dueDate : undefined,
             userId: entity.userId.toString(),
             user: entity.user ? entity.user.toResponse(entity.user) : undefined,
+            priority: entity.priority
         }
     }
 
@@ -56,6 +58,7 @@ const todoSchema =
     dueDate: { type: Date },
     completed: { type: Boolean, default: false },
     userId: { type: Schema.Types.ObjectId, ref: "User" },
+    priority: {type: Number, default: 1}
   });
 
 todoSchema.add(accountEntityBaseSchema)

@@ -53,6 +53,11 @@ export class ToDoController extends ControllerBase {
                 method: 'DELETE',
                 path: `${CommonRoutes.delete}/:id`,
                 handler: this.delete as RouteHandlerMethod
+            },
+            {
+                method: 'PUT',
+                path: `update_priority`,
+                handler: this.changePriority as RouteHandlerMethod
             }
         ];
 
@@ -120,6 +125,14 @@ export class ToDoController extends ControllerBase {
 
         if (request.user) {
           res.send(await this.toDoService.partialUpdate(req.params.id, {completed: false}, request.user));
+        }  
+    }
+
+    private changePriority = async (req: FastifyRequest<{Body: {id: string, priority: number}}>, res: FastifyReply) => {
+        let request = req as ExtendedRequest;
+
+        if (request.user) {
+          res.send(await this.toDoService.updatePriority(req.body.id, req.body.priority, request.user));
         }  
     }
 }

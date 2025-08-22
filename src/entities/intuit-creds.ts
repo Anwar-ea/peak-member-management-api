@@ -66,6 +66,7 @@ export const IntuitCredsSchema = new Schema<IntuitCreds>({
     refreshToken: {type: String, required: false},
     refreshTokenExpiry: {type: Date, required: false},
     accessTokenExpiry: {type: Date, required: false},
+    env: {type: String, enum: ['sandbox', 'production'], required: true},
     status: {type: String, enum: ['active', 'expired'], required: true},
     userProfile: {type: new Schema<IntuitUserProfile>({
         sub: {type: String, required: true},
@@ -77,7 +78,7 @@ export const IntuitCredsSchema = new Schema<IntuitCreds>({
         realmId: {type: String, required: true}
     }), required: false},
     realmId: {type: String, required: true},
-    userId: {type: String, required: true, unique: true},
+    userId: {type: String, required: true},
 })
 
 IntuitCredsSchema.add(accountEntityBaseSchema);
