@@ -1,10 +1,10 @@
 import moment from "moment";
-import { IIntuitCredsRequest, IIntuitCredsResponse, ITokenUser, ResponseInput } from "../models";
+import { IIntuitCredsRequest, IIntuitCredsResponse, IntuitUserProfile, ITokenUser, ResponseInput } from "../models";
 import { documentToEntityMapper, modelCreator } from "../utility";
 import { IToResponseBase } from "./abstractions/to-response-base";
 import { AccountEntityBase, accountEntityBaseSchema } from "./base-entities/account-entity-base";
 import { User } from "./user";
-import { Schema, Document, HydratedDocument, CallbackWithoutResultAndOptionalError, SaveOptions } from "mongoose";
+import { Schema } from "mongoose";
 
 export class IntuitCreds extends AccountEntityBase implements IToResponseBase<IntuitCreds, IIntuitCredsResponse> {
 
@@ -13,7 +13,9 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
     refreshTokenExpiry?: Date;
     accessTokenExpiry?: Date;
     status!: 'active' | 'expired';
+    env!: 'sandbox' | 'production';
     realmId!: string;
+    userProfile?: IntuitUserProfile;
     userId!: string;
     user?: User;
 
@@ -23,12 +25,14 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
             ...super.toAccountResponseBase(entity),
             accessToken: entity.accessToken,
             refreshToken: entity.refreshToken,
+            env: entity.env,
             refreshTokenExpiry: entity.refreshTokenExpiry,
             accessTokenExpiry: entity.accessTokenExpiry,
             realmId: entity.realmId,
             userId: entity.userId,
             user: entity.user ? entity.user.toResponse() : undefined,
-            status: entity.status
+            status: entity.status,
+            userProfile: entity.userProfile
         }
     };
 
@@ -44,7 +48,9 @@ export class IntuitCreds extends AccountEntityBase implements IToResponseBase<In
         this.refreshTokenExpiry = moment().add(entityRequest.refreshTokenExpiry, 'seconds').toDate();
         this.realmId = entityRequest.realmId;
         this.status = 'active';
+        this.env = entityRequest.env;
         this.userId = entityRequest.userId;
+        this.userProfile = entityRequest.userProfile;
         return this
     }
 
@@ -60,9 +66,19 @@ export const IntuitCredsSchema = new Schema<IntuitCreds>({
     refreshToken: {type: String, required: false},
     refreshTokenExpiry: {type: Date, required: false},
     accessTokenExpiry: {type: Date, required: false},
+    env: {type: String, enum: ['sandbox', 'production'], required: true},
     status: {type: String, enum: ['active', 'expired'], required: true},
+    userProfile: {type: new Schema<IntuitUserProfile>({
+        sub: {type: String, required: true},
+        email: {type: String, required: true},
+        emailVerified: {type: Boolean, required: false},
+        givenName: {type: String, required: false},
+        familyName: {type: String, required: false},
+        phoneNumber: {type: String, required: false},
+        realmId: {type: String, required: true}
+    }), required: false},
     realmId: {type: String, required: true},
-    userId: {type: String, required: true, unique: true},
+    userId: {type: String, required: true},
 })
 
 IntuitCredsSchema.add(accountEntityBaseSchema);

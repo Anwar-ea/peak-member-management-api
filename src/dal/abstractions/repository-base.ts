@@ -1,5 +1,5 @@
 import { IDataSourceResponse, IFetchRequest, IFilter } from "../../models";
-import { AggregateOptions, HydratedDocument, PipelineStage, ProjectionType, RootFilterQuery, UpdateWriteOpResult } from "mongoose";
+import { AggregateOptions, HydratedDocument, PipelineStage, ProjectionType, RootFilterQuery, UpdateWriteOpResult, AnyBulkWriteOperation, Document } from "mongoose";
 import { IDropdownResponse } from "../../models/inerfaces/response/dropdown-response";
 
 export interface IRepositoryBase<TEntity, TResponse> {
@@ -25,4 +25,5 @@ export interface IRepositoryBase<TEntity, TResponse> {
     deleteRange(entities: RootFilterQuery<TEntity>): Promise<TEntity[]>;
     dropdown(accountId: string, fieldNames: Array<string>) : Promise<IDropdownResponse[]>;
     aggregate<T>(pipeline: PipelineStage[], aggregateOptions?: AggregateOptions) : Promise<Array<T>>;
+    bulkWrite(operations: AnyBulkWriteOperation<TEntity>[]): Promise<unknown>;
 }

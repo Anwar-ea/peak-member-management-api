@@ -19,6 +19,7 @@ import {
   getMonthlyRevenueAndExpensesTrend,
   getTopIncomeSources,
   getTopExpenses,
+  getUserProfile
 } from "../utility";
 import moment from "moment";
 
@@ -40,6 +41,7 @@ export class IntuitCredsService {
   async login(
     code: string,
     realmId: string,
+    env: 'sandbox' | 'production',
     contextUser: ITokenUser,
   ): Promise<IIntuitCredsResponse> {
     let {
@@ -47,14 +49,18 @@ export class IntuitCredsService {
       refresh_token,
       expires_in,
       x_refresh_token_expires_in,
-    } = await getTokenFromCallback(code);
+    } = await getTokenFromCallback(code, env);
+    let profileRes = await getUserProfile(access_token, env);
+    let {sub, email, familyName, givenName, phoneNumber, emailVerified,realmId: userRealmId} = profileRes;
     const creds = await this.IntuitCredsRepository.findOne({
       userId: contextUser.id,
+      env
     });
 
     if (creds)
       return await this.partialUpdate(
         contextUser.id,
+        env,
         {
           accessToken: access_token,
           refreshToken: refresh_token,
@@ -62,6 +68,15 @@ export class IntuitCredsService {
           refreshTokenExpiry: x_refresh_token_expires_in,
           realmId,
           userId: contextUser.id,
+          userProfile:{
+            sub,
+            email,
+            familyName, 
+            givenName, 
+            phoneNumber,
+            emailVerified, 
+            realmId
+          }
         },
         contextUser,
       );
@@ -73,6 +88,16 @@ export class IntuitCredsService {
           accessTokenExpiry: expires_in,
           refreshTokenExpiry: x_refresh_token_expires_in,
           realmId,
+          env,
+          userProfile:{
+            sub,
+            email,
+            familyName, 
+            givenName, 
+            phoneNumber,
+            emailVerified, 
+            realmId
+          },
           userId: contextUser.id,
         },
         contextUser,
@@ -106,18 +131,20 @@ export class IntuitCredsService {
 
   async getByUserId(
     userId: string,
+    env: 'sandbox' | 'production',
     contextUser: ITokenUser,
   ): Promise<IIntuitCredsResponse | null> {
     const result = await this.IntuitCredsRepository.findOne({
       userId,
       refreshTokenExpiry: { $gt: new Date() },
       status: "active",
+      env
     });
     const verifiedCreds = result ? result.toResponse() : null;
     if (result && result?.checkExpiaryStatus("accessToken"))
       return verifiedCreds;
     else if (result && result?.checkExpiaryStatus("refreshToken"))
-      return await this.updateAccessToken(userId, contextUser);
+      return await this.updateAccessToken(userId,env, contextUser);
     else return verifiedCreds;
   }
 
@@ -138,6 +165,7 @@ export class IntuitCredsService {
 
   async partialUpdate(
     userId: string,
+    env: 'sandbox' | 'production',
     partialEntity: Partial<IIntuitCredsRequest>,
     contextUser: ITokenUser,
   ): Promise<IIntuitCredsResponse> {
@@ -158,7 +186,7 @@ export class IntuitCredsService {
     };
 
     return await this.IntuitCredsRepository.findOneAndUpdate(
-      { userId },
+      { userId, env },
       assignIn(entity, partialEntity),
     );
   }
@@ -177,14 +205,15 @@ export class IntuitCredsService {
     await this.IntuitCredsRepository.findOneAndUpdate({ userId }, entity);
   }
 
-  async getFinancialOverview(contextUser: ITokenUser): Promise<unknown> {
+  async getFinancialOverview(contextUser: ITokenUser, env: 'sandbox' | 'production'): Promise<unknown> {
     const { accessToken, realmId } = await this.getUpdatedToken(
       contextUser.id,
+      env,
       contextUser,
     );
     try{
 
-        return await getFinancialOverview(accessToken, realmId);
+        return await getFinancialOverview(accessToken, realmId, env);
     } catch(err){
         throw err
     }
@@ -192,38 +221,54 @@ export class IntuitCredsService {
 
   async getMonthlyTrends(
     contextUser: ITokenUser,
+    env: 'sandbox' | 'production'
   ): Promise<Array<{ month: string; revenue: number; expenses: number }>> {
     const { accessToken, realmId } = await this.getUpdatedToken(
       contextUser.id,
+      env,
       contextUser,
     );
-    return await getMonthlyRevenueAndExpensesTrend(accessToken, realmId);
+    return await getMonthlyRevenueAndExpensesTrend(accessToken, realmId, env);
   }
 
   async getTopSourcesExpences(
     contextUser: ITokenUser,
+    env: 'sandbox' | 'production'
   ): Promise<{ income: any; expenses: any }> {
     const { accessToken, realmId } = await this.getUpdatedToken(
       contextUser.id,
+      env,
       contextUser,
     );
-    const income = await getTopIncomeSources(accessToken, realmId);
-    const expenses = await getTopExpenses(accessToken, realmId);
-    return { income, expenses };
+    const income = await getTopIncomeSources(accessToken, realmId, env);
+    const expenses = await getTopExpenses(accessToken, realmId, env);
+      const totalExpenses = expenses.reduce<number>((acc, el) => acc += el.amount, 0)
+  const top4Expenses: Array<{name: string, amount:number}> = expenses.reduce<Array<{name: string, amount:number}>>((acc, el) => {
+    if(el.name.toLowerCase().includes('expense')){
+      const summaries = el.rows.filter(x => (x.Header && x.Summary)).map(x => ({name: x.Summary!.ColData[0].value.replace("Total ", ""),
+      amount: parseFloat(x.Summary!.ColData[1]?.value || "0"),}));
+        acc = [...acc, ...summaries]
+      }
+      if(el.rows.length === 1) acc = [...acc, {name: el.rows[0].ColData![0].value, amount: parseFloat(el.rows[0].ColData![1].value ?? '0')}]
+    return acc;
+  }, []).sort((a, b)=> b.amount - a.amount).slice(0,5);
+  const topExpenses: Array<{name: string, amount:number}> = [...top4Expenses];
+    return { income:income, expenses: topExpenses };
   }
 
   async getUpdatedToken(
     userId: string,
+    env: 'sandbox' | 'production',
     contextUser: ITokenUser,
   ): Promise<{ accessToken: string; realmId: string }> {
-    const creds = await this.IntuitCredsRepository.findOne({ userId });
+    const creds = await this.IntuitCredsRepository.findOne({ userId, env });
     if (creds) {
       if (creds.checkExpiaryStatus("accessToken"))
         return {
           accessToken: creds.accessToken as string,
           realmId: creds.realmId,
         };
-      const updatedCreds = await this.updateAccessToken(userId, contextUser);
+      const updatedCreds = await this.updateAccessToken(userId, env, contextUser);
       return {
         accessToken: updatedCreds.accessToken as string,
         realmId: updatedCreds.realmId,
@@ -235,15 +280,16 @@ export class IntuitCredsService {
 
   async updateAccessToken(
     userId: string,
+    env: 'sandbox' | 'production',
     contextUser: ITokenUser,
   ): Promise<IIntuitCredsResponse> {
-    const creds = await this.IntuitCredsRepository.findOne({ userId });
+    const creds = await this.IntuitCredsRepository.findOne({ userId, env });
     let {
       access_token,
       refresh_token,
       expires_in,
       x_refresh_token_expires_in,
-    } = await refreshToken(creds?.refreshToken as string);
+    } = await refreshToken(creds?.refreshToken as string, env);
 
     if (creds && creds?.checkExpiaryStatus("refreshToken")) {
       let entity: Partial<IIntuitCredsRequest> = {
@@ -253,10 +299,18 @@ export class IntuitCredsService {
         realmId: creds.realmId,
         userId,
       };
-      return await this.partialUpdate(contextUser.id, entity, contextUser);
+      return await this.partialUpdate(contextUser.id, env, entity, contextUser);
     } else {
       await this.expireSession(contextUser.id, contextUser);
       throw new Error("Intuit Session Expired");
     }
   }
+
+  async logout (userId: string, env: 'sandbox' | 'production'): Promise<void>{
+    await this.IntuitCredsRepository.deleteRange({userId, env})
+  }
+
+  async deleteCreds(userId: string): Promise<void>{
+    await this.IntuitCredsRepository.deleteRange({userId});
+  } 
 }

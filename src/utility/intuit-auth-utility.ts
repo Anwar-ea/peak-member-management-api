@@ -2,15 +2,16 @@ import axios from "axios";
 import { stringify } from "querystring";
 const intuitCreds = {
   clientId: process.env.INTUIT_CLIENT_ID!,
+  sandboxClientId: process.env.INTUIT_SANDBOX_CLIENT_ID!,
   clientSecret: process.env.INTUIT_CLIENT_SECRET!,
-  environment: process.env.INTUIT_ENVIRONMENT! as "sandbox" | "production",
-  redirectUri: process.env.INTUIT_REDIRECT_URI!,
+  sandboxClientSecret: process.env.INTUIT_SANDBOX_CLIENT_SECRET!,
+  redirectUri: process.env.APP_BASE_URL! + "/api/intuit/auth",
   logging: true,
-  scope: ["com.intuit.quickbooks.accounting", "com.intuit.quickbooks.payment"],
+  scope: ["com.intuit.quickbooks.accounting", "com.intuit.quickbooks.payment", "openid", "profile", "email", "phone", "address"],
 };
 const INTUIT_BASE = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer";
-export const getAuthUri = (state?: string) => {
-  return encodeURI(`https://appcenter.intuit.com/connect/oauth2?client_id=${intuitCreds.clientId}&redirect_uri=${intuitCreds.redirectUri}&response_type=code&scope=${intuitCreds.scope.join(" ")}&state=${state}`);
+export const getAuthUri = (state?: string, env: 'sandbox' | 'production' = 'sandbox') => {
+  return encodeURI(`https://appcenter.intuit.com/connect/oauth2?client_id=${env === 'production' ? intuitCreds.clientId : intuitCreds.sandboxClientId}&redirect_uri=${intuitCreds.redirectUri}&response_type=code&scope=${intuitCreds.scope.join(" ")}&state=${state}`);
 };
 export interface TokenResponse {
   expires_in: number
@@ -20,9 +21,9 @@ export interface TokenResponse {
   token_type: string
 }
 
-export const getTokenFromCallback = async (code: string): Promise<TokenResponse> => {
+export const getTokenFromCallback = async (code: string, env: 'sandbox' | 'production'): Promise<TokenResponse> => {
   const credentials = Buffer.from(
-    `${intuitCreds.clientId}:${intuitCreds.clientSecret}`,
+    `${env === 'production' ? intuitCreds.clientId : intuitCreds.sandboxClientId}:${env === 'production' ? intuitCreds.clientSecret : intuitCreds.sandboxClientSecret}`,
   ).toString("base64");
 
   return (
@@ -44,9 +45,9 @@ export const getTokenFromCallback = async (code: string): Promise<TokenResponse>
   ).data;
 };
 
-export const refreshToken = async (refreshToken: string): Promise<TokenResponse> => {
+export const refreshToken = async (refreshToken: string, env: 'sandbox' | 'production'): Promise<TokenResponse> => {
   const credentials = Buffer.from(
-    `${intuitCreds.clientId}:${intuitCreds.clientSecret}`,
+    `${env === 'production' ? intuitCreds.clientId : intuitCreds.sandboxClientId}:${env === 'production' ? intuitCreds.clientSecret : intuitCreds.sandboxClientSecret}`,
   ).toString("base64");
 
   return (
@@ -67,9 +68,9 @@ export const refreshToken = async (refreshToken: string): Promise<TokenResponse>
   ).data;
 };
 
-export const validateAccessToken = async (accessToken: string) => {
+export const validateAccessToken = async (accessToken: string, env: 'sandbox' | 'production') => {
   const credentials = Buffer.from(
-    `${intuitCreds.clientId}:${intuitCreds.clientSecret}`,
+    `${env === 'production' ? intuitCreds.clientId : intuitCreds.sandboxClientId}:${env === 'production' ? intuitCreds.clientSecret : intuitCreds.sandboxClientSecret}`,
   ).toString("base64");
 
   return (

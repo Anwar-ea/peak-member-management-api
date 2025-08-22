@@ -61,69 +61,80 @@ export class IntuitController extends ControllerBase {
         handler: this.isLogedIn as RouteHandlerMethod,
         middlewares: [authorize as preHandlerHookHandler],
       },
+      {
+        method: "DELETE",
+        path: `logout/:userId`,
+        handler: this.logout as RouteHandlerMethod,
+        middlewares: [authorize as preHandlerHookHandler],
+      }
     ];
   }
 
-  private login = async (req: FastifyRequest, res: FastifyReply) => {
+  private login = async (req: FastifyRequest<{Querystring:{env: 'sandbox' | 'production'}}>, res: FastifyReply) => {
     let { user } = req as ExtendedRequest;
-    const response = {url: getAuthUri(JSON.stringify({ ...(user as ITokenUser), privileges: undefined }))};
+    const response = {url: getAuthUri(JSON.stringify({ ...(user as ITokenUser), privileges: undefined, env: req.query.env }), req.query.env)};
     res.send(response)
   };
 
   private auth = async (
     req: FastifyRequest<{
-      Querystring?: { realmId?: string; code?: string; state?: string };
+      Querystring?: { realmId?: string; code?: string; state?: string;};
     }>,
     res: FastifyReply,
   ) => {
     let { realmId, code, state } = req.query!;
     if (!realmId || !code || !state)
       throw new Error("There was an error while logging into intuit.");
-    await this.service.login(code, realmId, JSON.parse(state));
-    res.redirect(process.env.QUICK_BOOKS_URL as string);
+      let {env, ...rest} = JSON.parse(state);
+    await this.service.login(code, realmId, env, rest);
+    res.redirect(`${process.env.APP_FRONTEND_URL as string}/quick-books?env=${env}`);
   };
 
   private getByUserId = async (
-    req: FastifyRequest<{ Params: { id: string } }>,
+    req: FastifyRequest<{ Params: { id: string }, Querystring:{env: 'sandbox' | 'production'} }>,
     res: FastifyReply,
   ) => {
     let request = req as ExtendedRequest;
 
     res.send(
-      await this.service.getByUserId(req.params.id, request.user as ITokenUser),
+      await this.service.getByUserId(req.params.id, req.query.env, request.user as ITokenUser),
     );
   };
 
-  private isLogedIn = async (req: FastifyRequest, res: FastifyReply) => {
+  private isLogedIn = async (req: FastifyRequest<{Querystring:{env: 'sandbox' | 'production'}}>, res: FastifyReply) => {
         let {user} = req as ExtendedRequest;
 
-        const creds = await this.service.getByUserId(user?.id as string, user as ITokenUser);
-        res.send({status: creds && creds.status === 'active' ? 'active' : 'expired'})
+        const creds = await this.service.getByUserId(user?.id as string, req.query.env, user as ITokenUser);
+        res.send({status: creds && creds.status === 'active' ? 'active' : 'expired', profile: creds?.userProfile})
   }
 
   private financialOverView = async (
-    req: FastifyRequest,
+    req: FastifyRequest<{Querystring:{env: 'sandbox' | 'production'}}>,
     res: FastifyReply,
   ) => {
     let request = req as ExtendedRequest;
     res.send(
-      await this.service.getFinancialOverview(request.user as ITokenUser),
+      await this.service.getFinancialOverview(request.user as ITokenUser, req.query.env),
     );
   };
 
-  private monthlyTrends = async (req: FastifyRequest, res: FastifyReply) => {
+  private monthlyTrends = async (req: FastifyRequest<{Querystring:{env: 'sandbox' | 'production'}}>, res: FastifyReply) => {
     let request = req as ExtendedRequest;
-    res.send(await this.service.getMonthlyTrends(request.user as ITokenUser));
+    res.send(await this.service.getMonthlyTrends(request.user as ITokenUser, req.query.env));
   };
 
   private topSourcesAndExpences = async (
-    req: FastifyRequest,
+    req: FastifyRequest<{Querystring:{env: 'sandbox' | 'production'}}>,
     res: FastifyReply,
   ) => {
     let request = req as ExtendedRequest;
     res.send(
-      await this.service.getTopSourcesExpences(request.user as ITokenUser),
+      await this.service.getTopSourcesExpences(request.user as ITokenUser, req.query.env),
     );
+  };
+
+  private logout = async (req: FastifyRequest<{Params: {userId: string}}>, res: FastifyReply) => {
+    res.send(await this.service.deleteCreds(req.params.userId));
   };
 
   private update = async (
@@ -138,4 +149,5 @@ export class IntuitController extends ControllerBase {
       );
     }
   };
+  
 }

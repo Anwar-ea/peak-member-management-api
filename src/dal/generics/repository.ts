@@ -4,7 +4,7 @@ import { injectable } from 'tsyringe';
 import { AccountEntityBase } from '../../entities/base-entities/account-entity-base';
 import { buildMongoQuery, mongoQueryOptionsMapper, setSaurceDataResponse } from '../../utility';
 import { IToResponseBase } from '../../entities/abstractions/to-response-base';
-import { AggregateOptions, HydratedDocument, PipelineStage, ProjectionType, RootFilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
+import { AggregateOptions, HydratedDocument, PipelineStage, ProjectionType, RootFilterQuery, Types, UpdateWriteOpResult, AnyBulkWriteOperation, Document, QueryOptions } from 'mongoose';
 import { IDropdownResponse } from '../../models/inerfaces/response/dropdown-response';
 
 @injectable()
@@ -33,8 +33,8 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
     //     await queryRunner.commitTransaction();
     // }
 
-    async findOne(options: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity> | null): Promise<TEntity | null> {
-        return await this.model.findOne(options, projection).populate(this.populate);
+    async findOne(options: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity> | null, queryOptions?: QueryOptions<TEntity>): Promise<TEntity | null> {
+        return await this.model.findOne(options, projection, queryOptions).populate(this.populate);
     }
 
     async firstOrDefaultWithResponse(options: RootFilterQuery<TEntity>): Promise<TResponse | null> {
@@ -51,8 +51,8 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         return entity ? entity.toResponse(entity) : null;
     }
 
-    async find(options?: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity>): Promise<Array<HydratedDocument<TEntity>>> {
-        return await this.model.find(options ?? {}, projection).populate(this.populate);
+    async find(options?: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity>, queryOptions?: QueryOptions<TEntity>): Promise<Array<HydratedDocument<TEntity>>> {
+        return await this.model.find(options ?? {}, projection, queryOptions).populate(this.populate);
     }
 
     async findWithResponse(options?: RootFilterQuery<TEntity>): Promise<Array<TResponse>> {
@@ -164,5 +164,9 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
 
     async aggregate<T>(pipeline: PipelineStage[], aggregateOptions?: AggregateOptions) : Promise<Array<T>> {
         return await this.model.aggregate<T>(pipeline, aggregateOptions);
+    }
+
+    async bulkWrite(operations: AnyBulkWriteOperation<TEntity>[]) {
+        return await this.model.bulkWrite(operations as AnyBulkWriteOperation[]);
     }
 }
