@@ -7,5 +7,6 @@ export interface IToDoResponse extends IAccountResponseBase {
     userId: string;
     completed: boolean;
     dueDate?: Date;
-    user?: IUserResponse
+    user?: IUserResponse;
+    priority: number;
 }
