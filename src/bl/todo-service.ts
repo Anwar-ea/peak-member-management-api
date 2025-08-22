@@ -73,7 +73,7 @@ export class ToDoService implements IToDoService {
         }
 
         // Get all todos for this user sorted by current priority
-        const userTodos = (await this.todoRepository.find({ userId: currentTodo.userId }, { priority: -1 })).map(x => x.toInstance());
+        const userTodos = (await this.todoRepository.find({ userId: currentTodo.userId }, undefined, { sort: {priority: -1} })).map(x => x.toInstance());
         
         // Remove the current todo from the list
         const otherTodos = userTodos.filter(todo => todo._id?.toString() !== id);

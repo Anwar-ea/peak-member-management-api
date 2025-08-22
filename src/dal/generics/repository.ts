@@ -51,8 +51,8 @@ export class GenericRepository<TEntity extends (AccountEntityBase | EntityBase) 
         return entity ? entity.toResponse(entity) : null;
     }
 
-    async find(options?: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity>): Promise<Array<HydratedDocument<TEntity>>> {
-        return await this.model.find(options ?? {}, projection).populate(this.populate);
+    async find(options?: RootFilterQuery<TEntity>, projection?: ProjectionType<TEntity>, queryOptions?: QueryOptions<TEntity>): Promise<Array<HydratedDocument<TEntity>>> {
+        return await this.model.find(options ?? {}, projection, queryOptions).populate(this.populate);
     }
 
     async findWithResponse(options?: RootFilterQuery<TEntity>): Promise<Array<TResponse>> {
