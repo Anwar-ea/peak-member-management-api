@@ -11,6 +11,7 @@ export const modulePrivilages: Record<string, Array<string>> = {
     "Retention": ["Add", "Update", "Delete", "Get"],
     "Call Note": ["Add", "Update", "Delete", "Get"],
     "Law Firm": ["Add", "Update", "Delete", "Get"],
+    "Strategic Planning": ["View"],
     "Bussiness Plan": [
         "Manage",
     ],
@@ -24,7 +25,8 @@ export const modulePrivilages: Record<string, Array<string>> = {
         "Manage Retention Rate",
         "Manage Revenue",
         "See All Score Cards",
-        "Manage Law Firms"
+        "Manage Law Firms",
+        "Manage Strategic Planning"
     ],
     "Score Card": [
         'See Revenue',

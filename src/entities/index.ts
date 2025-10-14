@@ -19,3 +19,4 @@ export * from './views'
 export * from './custom-measurable-value';
 export * from './verification';
 export * from './intuit-creds';
+export * from './strategic-planning';

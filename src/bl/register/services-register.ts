@@ -19,6 +19,7 @@ import { LawFirmService } from "../law-firm-service";
 import { CustomMeasurableValueService } from "../custom-measurable-value-service";
 import { VerificationService } from "../verification-service";
 import { IntuitCredsService } from "../intuit-creds-service";
+import { StrategicPlanningService } from "../strategic-planning-service";
 
 export const registerServices = (container: DependencyContainer) => {
     container.register<AccountService>('AccountService', AccountService);
@@ -41,4 +42,5 @@ export const registerServices = (container: DependencyContainer) => {
     container.register<CustomMeasurableValueService>('CustomMeasurableValueService', CustomMeasurableValueService);
     container.register<VerificationService>('VerificationService', VerificationService);
     container.register<IntuitCredsService>('IntuitCredsService', IntuitCredsService);
+    container.register<StrategicPlanningService>('StrategicPlanningService', StrategicPlanningService);
 }
