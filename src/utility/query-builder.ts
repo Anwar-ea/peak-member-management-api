@@ -119,9 +119,9 @@ export const mongoQueryOptionsMapper = <T extends AccountEntityBase | EntityBase
         defaultWhereClause = { ...defaultWhereClause, ...whereClause };
     }
 
-    if (getOnlyActive) defaultWhereClause = { ...defaultWhereClause, ...{ active: true } };
+    if (getOnlyActive && !filters.some(filter => filter.field === 'active')) defaultWhereClause = { ...defaultWhereClause, ...{ active: true } };
 
-    if (dontGetDeleted) defaultWhereClause = { ...defaultWhereClause, ...{ deleted: false } };
+    if (dontGetDeleted && !filters.some(filter => filter.field === 'deleted')) defaultWhereClause = { ...defaultWhereClause, ...{ deleted: false } };
     // defaultWhereClause.$or = [];
     let filter = filters.reduce((state: FilterQuery<T>, filter: IFilter<T, keyof T>) => {
         filter.operator === FilterOperators.And ? state = { ...state, ...mongoQueryMapper(filter) } : (state.$or ? state.$or.push(mongoQueryMapper(filter)) : state.$or = [mongoQueryMapper(filter)])
