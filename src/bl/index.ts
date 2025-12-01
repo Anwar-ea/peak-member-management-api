@@ -12,4 +12,5 @@ export * from './law-firm-service';
 export * from './custom-measurable-value-service'
 export * from './verification-service';
 export * from './intuit-creds-service';
+export * from './strategic-planning-service';
 export * from './todo-service';

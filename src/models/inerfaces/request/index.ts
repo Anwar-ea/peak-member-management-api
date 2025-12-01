@@ -18,3 +18,4 @@ export * from './retention-request';
 export * from './law-firm'
 export * from './custom-measurable-value-request';
 export * from './intuit-creds-request';
+export * from './strategic-planing-request';

@@ -12,3 +12,4 @@ export * from './callNote-service';
 export * from './retention-service';
 export * from './law-firm-service';
 export * from './custom-measurable-value-service';
+export * from './strategic-planning-service';

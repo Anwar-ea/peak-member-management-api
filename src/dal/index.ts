@@ -11,3 +11,4 @@ export * from './law-firm-repository';
 export * from './verification-repository'
 export * from './intuit-creds-repository'
 export * from './todo-repository'
+export * from './strategic-planning-repository'

@@ -17,6 +17,7 @@ import { LawFirmRepository } from "../law-firm-repository";
 import { CustomMeasurableValueRepository } from "../custom-measurable-value-repository";
 import { VerificationRepository } from "../verification-repository";
 import { IntuitCredsRepository } from "../intuit-creds-repository";
+import { StrategicPlanningRepository } from "../strategic-planning-repository";
 
 export const registerRepositories = (container: DependencyContainer) => {
     container.register<AccountRepository>('AccountRepository', AccountRepository);
@@ -37,4 +38,5 @@ export const registerRepositories = (container: DependencyContainer) => {
     container.register<CustomMeasurableValueRepository>('CustomMeasurableValueRepository', CustomMeasurableValueRepository);
     container.register<VerificationRepository>('VerificationRepository', VerificationRepository);
     container.register<IntuitCredsRepository>('IntuitCredsRepository', IntuitCredsRepository);
+    container.register<StrategicPlanningRepository>('StrategicPlanningRepository', StrategicPlanningRepository);
 }
