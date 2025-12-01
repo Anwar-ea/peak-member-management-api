@@ -88,4 +88,12 @@ export class MeasurableService implements IMeasurableService {
         if(measurables.length !== ids.length) throw new Error(`Some measurable with provided ids not found`);
 
     }
+
+    async toggleArchive(
+        id: string,
+        payload: { active: boolean },
+        contextUser: ITokenUser
+    ): Promise<void> {
+        await this.measurableRepository.update(id, payload);
+    }
 }

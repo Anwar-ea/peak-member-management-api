@@ -84,4 +84,12 @@ export class GoalService implements IGoalService {
         if(goals.length !== ids.length) throw new Error(`Some goal with provided ids not found`);
 
     }
+
+    async toggleArchive(
+        id: string,
+        payload: { active: boolean },
+        contextUser: ITokenUser
+    ): Promise<void> {
+        await this.goalRepository.update(id, payload);
+    }
 }

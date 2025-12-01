@@ -69,4 +69,12 @@ export class NotificationService implements INotificationService {
         if(notificationS.length !== ids.length) throw new Error(`Some notification with provided ids not found`);
 
     }
+
+    async toggleArchive(
+        id: string,
+        payload: { active: boolean },
+        contextUser: ITokenUser
+    ): Promise<void> {
+        await this.notificationRepository.update(id, payload);
+    }
 }
