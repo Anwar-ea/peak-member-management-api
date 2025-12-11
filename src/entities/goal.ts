@@ -15,6 +15,7 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
     accountableId?: Types.ObjectId;
     accountable?: User
     milestones?: Array<IMilestone>;
+    priority!: number;
 
     toResponse(entity?: ResponseInput<Goal>): IGoalResponse {
 
@@ -29,7 +30,8 @@ export class Goal extends AccountEntityBase implements IToResponseBase<Goal, IGo
             dueDate: entity.dueDate,
             accountable: entity.accountable ? entity.accountable.toResponse(entity.accountable) : undefined,
             accountableId: entity.accountableId ? entity.accountableId.toString() : undefined,
-            milestones: entity.milestones
+            milestones: entity.milestones,
+            priority: entity.priority
         }
     }
 
@@ -78,6 +80,7 @@ export const goalSchema = new Schema<Goal>({
     dueDate: { type: Date, required: false },
     accountableId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
     milestones: [{ type: milestoneSchema, required: false }],
+    priority: { type: Number, default: 0 }
 });
 
 goalSchema.add(accountEntityBaseSchema)

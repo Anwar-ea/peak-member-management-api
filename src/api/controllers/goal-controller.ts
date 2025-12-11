@@ -48,6 +48,11 @@ export class GoalController extends ControllerBase {
                 method: 'PUT',
                 path: `toggle-active/:id`,
                 handler: this.toggleActive as RouteHandlerMethod
+            },
+            {
+                method: 'PUT',
+                path: `update_priority`,
+                handler: this.changePriority as RouteHandlerMethod
             }
         ];
 
@@ -113,6 +118,23 @@ export class GoalController extends ControllerBase {
                 await this.goalService.toggleArchive(
                     req.params.id,
                     req.body,
+                    request.user
+                )
+            );
+        }
+    };
+
+    private changePriority = async (
+        req: FastifyRequest<{ Body: { id: string; priority: number } }>,
+        res: FastifyReply
+    ) => {
+        let request = req as ExtendedRequest;
+
+        if (request.user) {
+            res.send(
+                await this.goalService.updatePriority(
+                    req.body.id,
+                    req.body.priority,
                     request.user
                 )
             );

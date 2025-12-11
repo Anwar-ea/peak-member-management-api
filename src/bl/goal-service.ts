@@ -4,7 +4,7 @@ import { IGoalRepository, IUserRepository } from "../dal";
 import { FilterMatchModes, FilterOperators, IDataSourceResponse, IFetchRequest, IFilter, IGoalRequest, IGoalResponse, ITokenUser } from "../models";
 import { Goal } from "../entities";
 import { assignIn } from "lodash";
-import { Types } from "mongoose";
+import { Types, AnyBulkWriteOperation } from "mongoose";
 
 @injectable()
 export class GoalService implements IGoalService {
@@ -20,6 +20,18 @@ export class GoalService implements IGoalService {
 
     async add(entityRequest: IGoalRequest, contextUser?: ITokenUser): Promise<IGoalResponse> {
         let goal = new Goal().toEntity(entityRequest, undefined, contextUser);
+        if (goal.accountableId) {
+            let highestGoal = (
+                await (this.goalRepository as any).findOne(
+                    { accountableId: goal.accountableId },
+                    null,
+                    { priority: -1 }
+                )
+            )?.toInstance();
+            goal.priority = highestGoal ? highestGoal.priority + 1 : 0;
+        } else {
+            goal.priority = 0;
+        }
         let response  = await this.goalRepository.add(goal);
         if (response) return response.toResponse();
         else throw new Error(`Error adding ${entityRequest}`);
@@ -51,10 +63,10 @@ export class GoalService implements IGoalService {
 
     async update(id: string, entityRequest: IGoalRequest, contextUser: ITokenUser): Promise<IGoalResponse> {
         let goal = new Goal().toEntity(entityRequest, id, contextUser);
-        if(goal.milestones){
-            goal.milestones.every(x => x.completed);
-            goal.active = false;
-        }
+        // if(goal.milestones){
+        //    if( goal.milestones.every(x => x.completed)) goal.active = false;
+            
+        // }
         return await this.goalRepository.update(id, goal);
     }
         
@@ -91,5 +103,55 @@ export class GoalService implements IGoalService {
         contextUser: ITokenUser
     ): Promise<void> {
         await this.goalRepository.update(id, payload);
+    }
+
+    async updatePriority(
+        id: string,
+        newPriority: number,
+        contextUser: ITokenUser
+    ): Promise<void> {
+        // Get the goal being updated to find its accountableId
+        const currentGoal = await this.goalRepository.findOneById(id);
+        if (!currentGoal) {
+            throw new Error(`Goal with id ${id} not found`);
+        }
+
+        if (!currentGoal.accountableId) {
+            throw new Error(`Goal with id ${id} does not have an accountableId`);
+        }
+
+        // Get all goals for this accountableId sorted by current priority
+        const accountableGoals = (
+            await (this.goalRepository as any).find(
+                { accountableId: currentGoal.accountableId },
+                undefined,
+                { sort: { priority: -1 } }
+            )
+        ).map((x: Goal) => x.toInstance());
+
+        // Remove the current goal from the list
+        const otherGoals = accountableGoals.filter((goal: Goal) => goal._id?.toString() !== id);
+
+        // Insert the current goal at the new position (newPriority is the index)
+        const reorderedGoals = [...otherGoals];
+        reorderedGoals.splice(newPriority, 0, currentGoal);
+
+        // Update all goals with their new priorities (0-indexed)
+        const bulkOps = reorderedGoals
+            .reverse()
+            .map<AnyBulkWriteOperation<Goal>>((goal, index) => ({
+                updateOne: {
+                    filter: { _id: goal._id },
+                    update: {
+                        priority: index,
+                        modifiedAt: new Date(),
+                        modifiedBy: contextUser.name,
+                        modifiedById: new Types.ObjectId(contextUser.id),
+                    },
+                },
+            }));
+
+        // Execute bulk update
+        await this.goalRepository.bulkWrite(bulkOps);
     }
 }
