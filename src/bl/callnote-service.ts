@@ -78,4 +78,12 @@ export class CallNoteService implements ICallNoteService {
         if(revenues.length !== ids.length) throw new Error(`Some calender event with provided ids not found`);
 
     }
+
+    async toggleArchive(
+        id: string,
+        payload: { active: boolean },
+        contextUser: ITokenUser
+    ): Promise<void> {
+        await this.callNoteRepository.update(id, payload);
+    }
 }

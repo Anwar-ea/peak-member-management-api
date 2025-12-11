@@ -43,6 +43,11 @@ export class GoalController extends ControllerBase {
                 method: 'DELETE',
                 path: `${CommonRoutes.delete}/:id`,
                 handler: this.delete as RouteHandlerMethod
+            },
+            {
+                method: 'PUT',
+                path: `toggle-active/:id`,
+                handler: this.toggleActive as RouteHandlerMethod
             }
         ];
 
@@ -96,4 +101,21 @@ export class GoalController extends ControllerBase {
           res.send(await this.goalService.update(req.params.id, req.body, request.user));
         }  
     }
+
+    private toggleActive = async (
+        req: FastifyRequest<{ Params: { id: string }; Body: { active: boolean } }>,
+        res: FastifyReply
+    ) => {
+        let request = req as ExtendedRequest;
+
+        if (request.user) {
+            res.send(
+                await this.goalService.toggleArchive(
+                    req.params.id,
+                    req.body,
+                    request.user
+                )
+            );
+        }
+    };
 }

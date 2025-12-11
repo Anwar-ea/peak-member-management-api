@@ -73,4 +73,12 @@ export class LawFirmService implements ILawFirmService {
     async dropdown(accountId: string): Promise<IDropdownResponse[]> {
         return await this.lawFirmRepository.dropdown(accountId, ['name']);
     }
+
+    async toggleArchive(
+        id: string,
+        payload: { active: boolean },
+        contextUser: ITokenUser
+    ): Promise<void> {
+        await this.lawFirmRepository.update(id, payload);
+    }
 }
