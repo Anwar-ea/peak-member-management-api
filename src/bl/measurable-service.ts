@@ -1,16 +1,16 @@
 import { inject, injectable } from "tsyringe";
 import { IMeasurableService } from "./abstractions";
-import { IMeasurableRepository, IUserRepository } from "../dal";
+import { IMeasurableRepository, IUserRepository, MeasurableRepository } from "../dal";
 import { FilterMatchModes, FilterOperators, IDataSourceResponse, IFetchRequest, IFilter, IMeasurableRequest, IMeasurableResponse, ITokenUser } from "../models";
 import { Measurable } from "../entities";
 import { assignIn } from "lodash";
-import { Types } from "mongoose";
+import { Types, AnyBulkWriteOperation } from "mongoose";
 import { GoalUnits } from "../models/enums/goals.enum";
 
 @injectable()
 export class MeasurableService implements IMeasurableService {
     constructor(
-        @inject('MeasurableRepository') private readonly measurableRepository: IMeasurableRepository,
+        @inject('MeasurableRepository') private readonly measurableRepository: MeasurableRepository,
         @inject('UserRepository') private readonly userRepository: IUserRepository,
     ) { }
 
@@ -20,6 +20,14 @@ export class MeasurableService implements IMeasurableService {
 
     async add(entityRequest: IMeasurableRequest, contextUser?: ITokenUser): Promise<IMeasurableResponse> {
         let measurable = new Measurable().toEntity(entityRequest, undefined, contextUser);
+        let highestMeasurable = (
+            await this.measurableRepository.findOne(
+                { accountableId: new Types.ObjectId(entityRequest.accountableId) },
+                null,
+                { priority: -1 }
+            )
+        )?.toInstance();
+        measurable.priority = highestMeasurable ? highestMeasurable.priority + 1 : 0;
         let response  = await this.measurableRepository.add(measurable);
         if (response) return response.toResponse();
         else throw new Error(`Error adding ${entityRequest}`);
@@ -95,5 +103,55 @@ export class MeasurableService implements IMeasurableService {
         contextUser: ITokenUser
     ): Promise<void> {
         await this.measurableRepository.update(id, payload);
+    }
+
+    async updatePriority(
+        id: string,
+        newPriority: number,
+        contextUser: ITokenUser
+    ): Promise<void> {
+        // Get the measurable being updated to find its accountableId
+        const currentMeasurable = await this.measurableRepository.findOneById(id);
+        if (!currentMeasurable) {
+            throw new Error(`Measurable with id ${id} not found`);
+        }
+
+        if (!currentMeasurable.accountableId) {
+            throw new Error(`Measurable with id ${id} does not have an accountableId`);
+        }
+
+        // Get all measurables for this accountableId sorted by current priority
+        const accountableMeasurables = (
+            await this.measurableRepository.find(
+                { accountableId: currentMeasurable.accountableId },
+                undefined,
+                { sort: { priority: -1 } }
+            )
+        ).map((x) => x.toInstance());
+
+        // Remove the current measurable from the list
+        const otherMeasurables = accountableMeasurables.filter((measurable) => measurable._id?.toString() !== id);
+
+        // Insert the current measurable at the new position (newPriority is the index)
+        const reorderedMeasurables = [...otherMeasurables];
+        reorderedMeasurables.splice(newPriority, 0, currentMeasurable);
+
+        // Update all measurables with their new priorities (0-indexed)
+        const bulkOps = reorderedMeasurables
+            .reverse()
+            .map<AnyBulkWriteOperation<Measurable>>((measurable, index) => ({
+                updateOne: {
+                    filter: { _id: measurable._id },
+                    update: {
+                        priority: index,
+                        modifiedAt: new Date(),
+                        modifiedBy: contextUser.name,
+                        modifiedById: new Types.ObjectId(contextUser.id),
+                    },
+                },
+            }));
+
+        // Execute bulk update
+        await this.measurableRepository.bulkWrite(bulkOps);
     }
 }

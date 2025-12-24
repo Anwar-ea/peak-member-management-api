@@ -91,6 +91,12 @@ export class ReportingService implements IReportingService {
                   ],
                 },
               },
+             
+            },
+            {
+              $sort: {
+                priority: -1,
+              },
             },
             {
               $lookup: {

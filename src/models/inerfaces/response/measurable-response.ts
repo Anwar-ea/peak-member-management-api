@@ -20,4 +20,5 @@ export interface IMeasurableResponse extends IAccountResponseBase {
     visionId?: string;
     vision?: IVisionResponse;
     accountable?: IUserResponse
+    priority: number;
 }

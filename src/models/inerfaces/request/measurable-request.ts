@@ -15,4 +15,5 @@ export interface IMeasurableRequest {
     cumulativeStartDate?: Date
     formula?: string
     accountableId: string;
+    priority?: number;
 }

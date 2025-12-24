@@ -21,6 +21,7 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
     formula?: string
     accountableId!: Types.ObjectId;
     accountable?: User
+    priority!: number;
 
     toEntity = (entityRequest: IMeasurableRequest & {visionId?: string} , id?: string, contextUser?: ITokenUser): Measurable => {
         this.name = entityRequest.name;
@@ -70,6 +71,7 @@ export class Measurable extends AccountEntityBase implements IToResponseBase<Mea
             formula: entity.formula,
             accountableId: entity.accountableId.toString(),
             accountable: entity.accountable ? entity.accountable.toResponse(entity.accountable) : undefined,
+            priority: entity.priority
         };
     };
 
@@ -92,6 +94,7 @@ export const measurableSchema = new Schema<Measurable>({
     cumulativeStartDate: { type: Date },
     formula: { type: String },
     accountableId: { type: Schema.Types.ObjectId, ref: "User" },
+    priority: {type: Number, default: 1}
   });
 
 measurableSchema.virtual("accountable", {
